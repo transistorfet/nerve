@@ -1,0 +1,10 @@
+ 
+	* change name to ControlFreak??
+
+POSSIBLE FEATURES:
+	* add a winamp volume control (might be best with feedback)
+	* display the currently playing song
+
+	* add RGB LED control
+
+
