@@ -1,0 +1,11 @@
+<tab name="Comp Room">
+	<text tag="cr.music.getsong" />
+	<row>
+		<button name="Previous" tag="cr.music.previous" />
+		<button name="PlayPause" tag="cr.music.toggle" />
+		<button name="Next" tag="cr.music.next" />
+	</row>
+	<row>
+		<button name="Lamp" tag="cr.deskclock.relay_toggle" />
+	</row>
+</tab> 

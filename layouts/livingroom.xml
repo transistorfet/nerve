@@ -1,0 +1,52 @@
+<tab name="Living Room">
+	<text tag="lr.music.getsong" />
+	<row>
+		<button name="Previous" tag="lr.music.previous" />
+		<button name="PlayPause" tag="lr.music.toggle" />
+		<button name="Next" tag="lr.music.next" />
+	</row>
+	<row>
+		<button name="Power" tag="lr.stereo.power" />
+		<button name="Tape" tag="lr.stereo.tape" />
+		<button name="Tuner" tag="lr.stereo.tuner" />
+		<column>
+			<button name="Up" tag="lr.stereo.volup" />
+			<button name="Down" tag="lr.stereo.voldown" />
+		</column>
+	</row>
+	<row>
+		<button name="Power" tag="lr.tv.power" />
+		<button name="PS3" tag="lr.tv.ps3" />
+		<button name="Netbook" tag="lr.tv.netbook" />
+		<column>
+			<button name="Up" tag="lr.tv.volup" />
+			<button name="Down" tag="lr.tv.voldown" />
+		</column>
+	</row>
+	<row>
+		<button name="Wake Up" tag="lr.sys.wakeup" />
+		<button name="Sleep" tag="lr.sys.sleep" />
+	</row>
+	<row>
+		<button name="Power" tag="lr.rgb.power" />
+		<button name="Solid" tag="lr.rgb.setchannel 3" />
+		<button name="Strobe" tag="lr.rgb.setchannel 6" />
+		<button name="Swirl" tag="lr.rgb.setchannel 8" />
+	</row>
+	<label text="Delay" />
+	<seekbar tag="lr.rgb.setdelay" max="2000" />
+	<row>
+		<button name="1" tag="lr.rgb.setindex 1" />
+		<button name="2" tag="lr.rgb.setindex 2" />
+		<button name="3" tag="lr.rgb.setindex 3" />
+		<button name="4" tag="lr.rgb.setindex 4" />
+		<button name="5" tag="lr.rgb.setindex 5" />
+	</row>
+	<row>
+		<button name="6" tag="lr.rgb.setindex 6" />
+		<button name="7" tag="lr.rgb.setindex 7" />
+		<button name="8" tag="lr.rgb.setindex 8" />
+		<button name="9" tag="lr.rgb.setindex 9" />
+		<button name="10" tag="lr.rgb.setindex 10" />
+	</row>
+</tab>

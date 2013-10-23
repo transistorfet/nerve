@@ -3,10 +3,11 @@ import winamp
 
 import win32api
 import win32con
+import os
 
-import device
+import nerve
 
-class Winamp (device.Device):
+class Winamp (nerve.Device):
     def __init__(self):
 	self.winamp = winamp.Winamp()
 
@@ -36,9 +37,12 @@ class Winamp (device.Device):
 	msg.server.send(msg.query + " " + song, msg.addr)
 
 
-class Win32Sys (device.Device):
+class Win32Sys (nerve.Device):
     def wakeup(self, msg):
 	win32api.keybd_event(win32con.VK_SHIFT, 0, 0, 0)
 	win32api.keybd_event(win32con.VK_SHIFT, 0, win32con.KEYEVENTF_KEYUP, 0)
+
+    def sleep(self, msg):
+	os.system("C:\\Windows\\System32\\scrnsave.scr /s");
 
  

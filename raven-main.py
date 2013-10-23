@@ -1,38 +1,29 @@
 
 import serial
 
-import server
+import nerve
+
 import device
 import device_win32
-
 
 port = 5959
 
 # Additional Device Ideas:
 #   sys or misc or something for stuff like waking up the netbook screen, maybe sound output select
 
-def initialize():
-    arduino = serial.Serial("COM9", 19200)
-    devices.add("stereo", device.Stereo(arduino))
-    devices.add("tv", device.Television(arduino))
-    devices.add("rgb", device.RGBStrip(arduino))
+serv = nerve.Server(port)
 
-    devices.add("sys", device_win32.Win32Sys())
-    devices.add("music", device_win32.Winamp())
+arduino = serial.Serial("COM9", 19200)
+nerve.add_device("stereo", device.Stereo(arduino))
+nerve.add_device("tv", device.Television(arduino))
+nerve.add_device("rgb", device.RGBStrip(arduino))
 
-devices = device.Namespace()
+nerve.add_device("sys", device_win32.Win32Sys())
+nerve.add_device("music", device_win32.Winamp())
 
-def main():
-    serv = server.Server(port, devices.dispatch)
-    initialize()
+nerve.add_device("layout", device.Layout())
 
-    while 1:
-	line = raw_input(">> ")
-	if line == 'quit':
-	    break
-
-main()
-
+nerve.loop()
  
 """
 def dispatch(data, addr):

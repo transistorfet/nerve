@@ -1,5 +1,9 @@
+
+* add a _default function or something that allows more dynamic extensions of
+  devices (eg. layout.livingroom looks for a file, layouts/livingroom.xml)
  
-	* change name to ControlFreak??
+* add an auto discovery feature where the phone sends a broadcast message to
+  the default port number and the servers respond (pretty much normally).
 
 POSSIBLE FEATURES:
 	* add a winamp volume control (might be best with feedback)
