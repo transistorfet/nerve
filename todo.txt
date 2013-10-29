@@ -1,4 +1,5 @@
 
+
 * add a _default function or something that allows more dynamic extensions of
   devices (eg. layout.livingroom looks for a file, layouts/livingroom.xml)
  
@@ -11,4 +12,5 @@ POSSIBLE FEATURES:
 
 	* add RGB LED control
 
+	* you could add a mechanism for registering for 'push notifications' by something like rgb.* <- wildcard so that all rgb messages would be automatically sent to that endpoint
 

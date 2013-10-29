@@ -61,8 +61,9 @@ serv = nerve.Server(5959)
 deskclock = DeskClock("/dev/ttyACM0", 19200)
 nerve.add_device("deskclock", deskclock)
 
-lights = serial.Serial("/dev/ttyACM1", 19200)
-nerve.add_device("rgb", device.RGBStrip(lights))
+#lights = serial.Serial("/dev/ttyACM1", 19200)
+#nerve.add_device("rgb", device.RGBStripTemp(lights))
+nerve.add_device("rgb", device.NerveSerialDevice("/dev/ttyACM1", 19200))
 nerve.add_device("music", device_linux.Xmms2())
 nerve.add_device("layout", device.Layout())
 

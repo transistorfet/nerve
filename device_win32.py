@@ -14,12 +14,12 @@ class Winamp (nerve.Device):
     def next(self, msg):
 	self.winamp.next()
 	song = self.winamp.getCurrentPlayingTitle()
-	msg.server.send('.'.join(msg.names[:-1]) + ".getsong " + song, msg.addr)
+	msg.from_node.send('.'.join(msg.names[:-1]) + ".getsong " + song)
 
     def previous(self, msg):
 	self.winamp.previous()
 	song = self.winamp.getCurrentPlayingTitle()
-	msg.server.send('.'.join(msg.names[:-1]) + ".getsong " + song, msg.addr)
+	msg.from_node.send('.'.join(msg.names[:-1]) + ".getsong " + song)
 
     def toggle(self, msg):
 	s = self.winamp.getPlaybackStatus()
@@ -30,11 +30,11 @@ class Winamp (nerve.Device):
 
     def getvolume(self, msg):
 	volume = self.winamp.getVolume()
-	msg.server.send(msg.query + " " + str(volume), msg.addr)
+	msg.from_node.send(msg.query + " " + str(volume))
 
     def getsong(self, msg):
 	song = self.winamp.getCurrentPlayingTitle()
-	msg.server.send(msg.query + " " + song, msg.addr)
+	msg.from_node.send(msg.query + " " + song)
 
 
 class Win32Sys (nerve.Device):

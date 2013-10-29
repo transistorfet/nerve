@@ -6,6 +6,49 @@ import nerve
 import device
 import device_win32
 
+
+class Stereo (nerve.Device):
+    def __init__(self, serial):
+	self.serial = serial
+
+    def power(self, msg):
+	self.serial.send("ir S A81")
+
+    def volup(self, msg):
+	self.serial.send("ir S 481")
+
+    def voldown(self, msg):
+	self.serial.send("ir S C81")
+
+    def tape(self, msg):
+	self.serial.send("ir S C41")
+
+    def tuner(self, msg):
+	self.serial.send("ir S 841")
+
+
+class Television (nerve.Device):
+    def __init__(self, serial):
+	self.serial = serial
+
+    def power(self, msg):
+	self.serial.send("ir P 4004 100BCBD")
+
+    def volup(self, msg):
+	self.serial.send("ir P 4004 1000405")
+
+    def voldown(self, msg):
+	self.serial.send("ir P 4004 1008485")
+
+    def ps3(self, msg):
+	self.serial.send("ir P 4004 100A0A1")
+	self.serial.send("ir P 4004 1008889")
+
+    def netbook(self, msg):
+	self.serial.send("ir P 4004 100A0A1")
+	self.serial.send("ir P 4004 1004849")
+
+
 port = 5959
 
 # Additional Device Ideas:
@@ -13,15 +56,15 @@ port = 5959
 
 serv = nerve.Server(port)
 
-arduino = serial.Serial("COM9", 19200)
-nerve.add_device("stereo", device.Stereo(arduino))
-nerve.add_device("tv", device.Television(arduino))
-nerve.add_device("rgb", device.RGBStrip(arduino))
+nerve.add_device("layout", device.Layout())
+
+rgbnode = device.NerveSerialDevice("COM9", 19200)
+nerve.add_device("rgb", rgbnode)
+nerve.add_device("stereo", Stereo(rgbnode))
+nerve.add_device("tv", Television(rgbnode))
 
 nerve.add_device("sys", device_win32.Win32Sys())
 nerve.add_device("music", device_win32.Winamp())
-
-nerve.add_device("layout", device.Layout())
 
 nerve.loop()
  

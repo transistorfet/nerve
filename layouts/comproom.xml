@@ -8,4 +8,24 @@
 	<row>
 		<button name="Lamp" tag="cr.deskclock.relay_toggle" />
 	</row>
+	<row>
+		<button name="Power" tag="cr.rgb.power" />
+		<button name="Solid" tag="cr.rgb.channel 3" />
+		<button name="Strobe" tag="cr.rgb.channel 6" />
+		<button name="Swirl" tag="cr.rgb.channel 8" />
+	</row>
+	<label text="Intensity" />
+	<seekbar tag="cr.rgb.intensity" max="255" />
+	<label text="Delay" />
+	<seekbar tag="cr.rgb.delay" max="2000" />
+	<row>
+		<column>
+			<button name="Channel Up" tag="cr.rgb.chanup" />
+			<button name="Channel Down" tag="cr.rgb.chandown" />
+		</column>
+		<column>
+			<button name="Index Up" tag="cr.rgb.indexup" />
+			<button name="Index Down" tag="cr.rgb.indexdown" />
+		</column>
+	</row>
 </tab> 

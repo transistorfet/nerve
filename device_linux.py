@@ -19,6 +19,7 @@ class Xmms2 (nerve.Device):
 	    sys.exit(1)
 	self.xmms.playback_current_id(self._get_info)
 	self.xmms.broadcast_playback_current_id(self._get_info)
+	self.reply = None
 	self.stop_thread = False
 	thread.start_new_thread(self.do_thread, (self,))
 
@@ -56,6 +57,7 @@ class Xmms2 (nerve.Device):
 	self.xmms.playback_tickle()
 	#song = self.winamp.getCurrentPlayingTitle()
 	#msg.server.send('.'.join(msg.names[:-1]) + ".getsong " + song, msg.addr)
+	# you need a way to say 'call function (playback_current_song
 
     def previous(self, msg):
 	self.xmms.playlist_set_next_rel(-1)
@@ -68,7 +70,8 @@ class Xmms2 (nerve.Device):
 	self.xmms.playlist_shuffle()
 
     def getsong(self, msg):
-	msg.server.send(msg.query + " " + self.artist + " - " + self.title, msg.addr)
+	self.reply = msg
+	msg.from_node.send(msg.query + " " + self.artist + " - " + self.title)
 
     def update_info(self):
 	self.xmms.playback_current_id(self._get_info)
@@ -87,7 +90,9 @@ class Xmms2 (nerve.Device):
 	else:
 	    self.title = "No Title"
 	#print self.artist + " - " + self.title
-	#msg.server.send(msg.query + " " + self.artist + " - " + self.title, msg.addr)
+	msg = self.reply
+	if msg:
+	    msg.from_node.send(msg.query + " " + self.artist + " - " + self.title)
 
 
 

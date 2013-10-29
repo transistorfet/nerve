@@ -10,14 +10,35 @@ import string
 class InvalidRequest (Exception):
     pass
 
-class Message (object):
-    def __init__(self, line, addr, server):
-	self.addr = addr
+# TODO change Node to Endpoint or something
+
+class Node (object):
+    def __init__(self):
+	pass
+
+    def send(self, text):
+	# TODO emit error??
+	pass
+
+class NetworkNode (Node):
+    def __init__(self, server, addr):
 	self.server = server
+	self.addr = addr
+
+    def send(self, text):
+	self.server.send(text, self.addr)
+
+
+class Message (object):
+    # TODO addr and server could be replaced with a node, and then all the code will use node.send(text) to reply to the sender
+    def __init__(self, line, from_node, to_node):
+	self.from_node = from_node
+	self.to_node = to_node
 	self.line = line
 	self.args = line.split()
 	self.query = self.args.pop(0)
 	self.names = self.query.split('.')
+
 
 class Server (object):
     def __init__(self, port):
@@ -52,7 +73,7 @@ class Server (object):
 		    (host, port) = addr
 		    Console.log("RECV <- " + str(host) + ":" + str(port) + ": " + data)
 		    if (data):
-			msg = Message(data, addr, self)
+			msg = Message(data, NetworkNode(self, addr), self)
 			Namespace.root.dispatch(msg)
 		except socket.error, e:
 		    Console.log("Socket Error: " + str(e))
@@ -66,6 +87,13 @@ class Server (object):
 class Device (object):
     def __init__(self):
 	self.name = None
+
+    def dispatch(self, msg, index=0):
+	if index + 1 != len(msg.names):
+	    raise InvalidRequest
+	func = getattr(self, msg.names[index])
+	return func(msg)
+
 
 class Namespace (object):
     root = None
@@ -82,31 +110,24 @@ class Namespace (object):
 	    return self.devices[name]
 	return None
 
-    def query(self, line, addr=None, server=None):
-	msg = Message(line, addr, server)
+    def query(self, line, from_node=None, to_node=None):
+	msg = Message(line, from_node, to_node)
 	self.dispatch(msg)
 
-    def dispatch(self, msg):
-	# TODO test for key error
-	if len(msg.names) != 2:
-	    return
-	dev = self.devices[msg.names[0]]
-	func = getattr(dev, msg.names[1])
-	return func(msg)
-
-	#obj = self.devices
-	#for i in range(0, len(msg.names)):
-	#    sub = obj[msg.names[i]]
-	#    if isinstance(sub, Namespace):
-	#	if i == len(msg.names) - 1:
-	#	    raise InvalidRequest()
-	#	obj = sub.devices
-	#    elif isinstance(sub, types.MethodType):
-	#	return sub(self, msg)
+    def dispatch(self, msg, index=0):
+	if index > len(msg.names):
+	    raise InvalidRequest
+	if not msg.names[index] in self.devices:
+	    raise InvalidRequest
+	dev = self.devices[msg.names[index]]
+	return dev.dispatch(msg, index + 1)
 
 
+class Console (Node):
+    def send(self, text):
+	# TODO this is how a response is sent to the console??
+	print text
 
-class Console (object):
     @staticmethod
     def log(text):
 	print time.strftime("%Y-%m-%d %H:%M") + " " + text
@@ -132,4 +153,5 @@ def query(line, addr=None, server=None):
 
 def loop():
     Console.loop()
+
 
