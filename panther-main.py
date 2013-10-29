@@ -48,12 +48,8 @@ class DeskClock (device.SerialDevice):
 	elif line == "B1=0":
 	    nerve.query("music.sort")
 	elif line[0:5] == 'I0=A2':
-	    #lights.write('I' + (0x0200 + int(line[5:6])) + '\n')
-	    print line[5:7]
 	    rgb = nerve.get_device("rgb")
-	    s = 'I02' + line[5:7] + '\n'
-	    print s
-	    rgb.send(s)
+	    rgb.send('key 2' + line[5:7])
 
 
 serv = nerve.Server(5959)
