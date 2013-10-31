@@ -8,6 +8,7 @@ from nerve.devices.layout import *
 from nerve.devices.serialdev import *
 
 Namespace.root = Namespace();
+Namespace.root.add("layout", nerve.LayoutDevice())
 
 def add_device(name, device):
     Namespace.root.add(name, device)

@@ -54,8 +54,6 @@ port = 5959
 
 serv = nerve.Server(port)
 
-nerve.add_device("layout", nerve.Layout())
-
 rgbnode = nerve.NerveSerialDevice("COM9", 19200)
 nerve.add_device("rgb", rgbnode)
 nerve.add_device("stereo", Stereo(rgbnode))

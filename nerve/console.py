@@ -16,15 +16,15 @@ class Console (nerve.Node):
     @staticmethod
     def loop():
         while 1:
-	    try:
-		line = raw_input(">> ")
-		if line == 'quit':
-		    break
-		elif (line):
+	    line = raw_input(">> ")
+	    if line == 'quit':
+		break
+	    elif (line):
+		try:
 		    msg = nerve.Message(line, Console, Console)
 		    nerve.dispatch(msg)
-	    except:
-		t = traceback.format_exc()
-		nerve.Console.log(t)
+		except:
+		    t = traceback.format_exc()
+		    nerve.Console.log(t)
 
  
