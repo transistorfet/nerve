@@ -3,13 +3,11 @@ import serial
 import time
 
 import nerve
+from nerve.devices.xmms2 import Xmms2
 
-import device
-import device_linux
-
-class DeskClock (device.SerialDevice):
+class DeskClock (nerve.SerialDevice):
     def __init__(self, file, baud):
-	device.SerialDevice.__init__(self, file, baud)
+	nerve.SerialDevice.__init__(self, file, baud)
 	self.relay1 = False
 
     def relay_toggle(self, msg):
@@ -53,15 +51,12 @@ class DeskClock (device.SerialDevice):
 
 
 serv = nerve.Server(5959)
+nerve.add_device("layout", nerve.Layout())
 
-deskclock = DeskClock("/dev/ttyACM0", 19200)
-nerve.add_device("deskclock", deskclock)
+nerve.add_device("deskclock", DeskClock("/dev/ttyACM0", 19200))
 
-#lights = serial.Serial("/dev/ttyACM1", 19200)
-#nerve.add_device("rgb", device.RGBStripTemp(lights))
-nerve.add_device("rgb", device.NerveSerialDevice("/dev/ttyACM1", 19200))
-nerve.add_device("music", device_linux.Xmms2())
-nerve.add_device("layout", device.Layout())
+nerve.add_device("rgb", nerve.NerveSerialDevice("/dev/ttyACM1", 19200))
+nerve.add_device("music", Xmms2())
 
 nerve.Console.loop()
 

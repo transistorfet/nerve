@@ -23,6 +23,8 @@
 #    31/12/2009 Version 0.2
 #    	- Added support for keyword queries (queryAsKeyword)
 
+from __future__ import absolute_import
+
 from ctypes import *
 import win32api, win32con, win32gui, win32process, pywintypes
 import os

@@ -2,10 +2,8 @@
 import serial
 
 import nerve
-
-import device
-import device_win32
-
+from nerve.devices.winamp import Winamp
+from nerve.devices.win32sys import Win32Sys
 
 class Stereo (nerve.Device):
     def __init__(self, serial):
@@ -56,15 +54,15 @@ port = 5959
 
 serv = nerve.Server(port)
 
-nerve.add_device("layout", device.Layout())
+nerve.add_device("layout", nerve.Layout())
 
-rgbnode = device.NerveSerialDevice("COM9", 19200)
+rgbnode = nerve.NerveSerialDevice("COM9", 19200)
 nerve.add_device("rgb", rgbnode)
 nerve.add_device("stereo", Stereo(rgbnode))
 nerve.add_device("tv", Television(rgbnode))
 
-nerve.add_device("sys", device_win32.Win32Sys())
-nerve.add_device("music", device_win32.Winamp())
+nerve.add_device("sys", Win32Sys())
+nerve.add_device("music", Winamp())
 
 nerve.loop()
  
