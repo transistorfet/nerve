@@ -9,6 +9,7 @@ import nerve
 
 class Xmms2 (nerve.Device):
     def __init__(self):
+	nerve.Device.__init__(self)
 	self.xmms = xmmsclient.XMMS('PyXMMS')
 	self.artist = ""
 	self.title = ""

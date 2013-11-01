@@ -7,6 +7,7 @@ from nerve.devices.win32sys import Win32Sys
 
 class Stereo (nerve.Device):
     def __init__(self, serial):
+	nerve.Device.__init__(self)
 	self.serial = serial
 
     def power(self, msg):
@@ -27,6 +28,7 @@ class Stereo (nerve.Device):
 
 class Television (nerve.Device):
     def __init__(self, serial):
+	nerve.Device.__init__(self)
 	self.serial = serial
 
     def power(self, msg):

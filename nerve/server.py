@@ -17,7 +17,7 @@ class NetworkNode (nerve.Node):
 	self.server.send(text, self.addr)
 
 
-class Server (object):
+class Server (nerve.Node):
     def __init__(self, port):
 	self.port = port
 	thread.start_new_thread(self.do_thread, ())

@@ -15,7 +15,6 @@ class Node (object):
 
 
 class Message (object):
-    # TODO addr and server could be replaced with a node, and then all the code will use node.send(text) to reply to the sender
     def __init__(self, line, from_node, to_node):
 	self.from_node = from_node
 	self.to_node = to_node
@@ -23,6 +22,12 @@ class Message (object):
 	self.args = line.split()
 	self.query = self.args.pop(0)
 	self.names = self.query.split('.')
+
+    def reply(self, line):
+	self.from_node.send(line)
+
+    def devname(self):
+	return '.'.join(self.names[:-1])
 
 
 class Device (object):
@@ -36,10 +41,11 @@ class Device (object):
 	return func(msg)
 
 
-class Namespace (object):
+class Namespace (Device):
     root = None
 
     def __init__(self):
+	Device.__init__(self)
 	self.devices = { }
 
     def add(self, name, dev):

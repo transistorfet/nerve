@@ -5,17 +5,18 @@ import nerve
 
 class Winamp (nerve.Device):
     def __init__(self):
+	nerve.Device.__init__(self)
 	self.winamp = winamp.Winamp()
 
     def next(self, msg):
 	self.winamp.next()
 	song = self.winamp.getCurrentPlayingTitle()
-	msg.from_node.send('.'.join(msg.names[:-1]) + ".getsong " + song)
+	msg.reply(msg.devname() + ".getsong " + song)
 
     def previous(self, msg):
 	self.winamp.previous()
 	song = self.winamp.getCurrentPlayingTitle()
-	msg.from_node.send('.'.join(msg.names[:-1]) + ".getsong " + song)
+	msg.reply(msg.devname() + ".getsong " + song)
 
     def toggle(self, msg):
 	s = self.winamp.getPlaybackStatus()
@@ -26,10 +27,10 @@ class Winamp (nerve.Device):
 
     def getvolume(self, msg):
 	volume = self.winamp.getVolume()
-	msg.from_node.send(msg.query + " " + str(volume))
+	msg.reply(msg.query + " " + str(volume))
 
     def getsong(self, msg):
 	song = self.winamp.getCurrentPlayingTitle()
-	msg.from_node.send(msg.query + " " + song)
+	msg.reply(msg.query + " " + song)
 
 

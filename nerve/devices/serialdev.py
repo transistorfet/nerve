@@ -10,6 +10,7 @@ import traceback
 class SerialDevice (nerve.Device):
     def __init__(self, file, baud):
 	self.file = file
+	nerve.Device.__init__(self)
 	self.baud = baud
 	self.serial = serial.Serial(file, baud)
 	if sys.platform == 'win32':
