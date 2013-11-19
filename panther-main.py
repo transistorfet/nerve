@@ -27,10 +27,8 @@ class DeskClock (nerve.SerialDevice):
 	else:
 	    self.serial.write('L1=                \n')
 
-    def do_receive(self, msg):
-	line = msg.args[0]
+    def do_receive(self, line):
 	#print line
-
 	if line == "B7=0" or line == 'I0=A2C8':
 	    nerve.query("music.next")
 	elif line == "B6=0" or line == 'I0=A2A8':

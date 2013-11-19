@@ -37,9 +37,7 @@ class SerialDevice (nerve.Device):
 		    line = self.serial.readline()
 		    line = line.strip()
 		    nerve.Console.log("RECV <- " + self.file + ": " + line)
-		    # TODO this is very wrong below...
-		    msg = nerve.Message("serial.in" + " " + line, None, self)
-		    self.do_receive(msg)
+		    self.do_receive(line)
 	    except:
 		t = traceback.format_exc()
 		nerve.Console.log(t)
@@ -50,9 +48,7 @@ class SerialDevice (nerve.Device):
 		line = self.serial.readline()
 		line = line.strip()
 		nerve.Console.log("RECV <- " + self.file + ": " + line)
-		# TODO this is very wrong below...
-		msg = nerve.Message("serial.in" + " " + line, None, self)
-		self.do_receive(msg)
+		self.do_receive(line)
 	    except:
 		t = traceback.format_exc()
 		nerve.Console.log(t)
@@ -65,6 +61,11 @@ class NerveSerialDevice (SerialDevice):
 	query = '.'.join(msg.names[index:])
 	if len(msg.args):
 	    query += ' ' + ' '.join(msg.args)
+	self.reply = msg.from_node
 	self.send(query)
+
+    def do_receive(self, line):
+	if self.reply:
+	    self.reply.send(self.name + '.' + line)
 
 
