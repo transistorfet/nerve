@@ -57,7 +57,7 @@ class SerialDevice (nerve.Device):
 class NerveSerialDevice (SerialDevice):
     def dispatch(self, msg, index=0):
 	if index + 1 != len(msg.names):
-	    raise InvalidRequest
+	    raise nerve.InvalidRequest
 	query = '.'.join(msg.names[index:])
 	if len(msg.args):
 	    query += ' ' + ' '.join(msg.args)

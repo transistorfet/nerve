@@ -48,6 +48,9 @@
 		</column>
 	</row>
 	<row>
+		<button name="Warm White" tag="lr.rgb.color FFC040" />
+	</row>
+	<row>
 		<button name="1" tag="lr.rgb.index 1" />
 		<button name="2" tag="lr.rgb.index 2" />
 		<button name="3" tag="lr.rgb.index 3" />

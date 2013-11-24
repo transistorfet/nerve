@@ -28,4 +28,22 @@
 			<button name="Index Down" tag="cr.rgb.indexdown" />
 		</column>
 	</row>
+	<row>
+		<button name="Warm White" tag="cr.rgb.color FFC040" />
+	</row>
+	<row>
+		<button name="1" tag="cr.rgb.index 1" />
+		<button name="2" tag="cr.rgb.index 2" />
+		<button name="3" tag="cr.rgb.index 3" />
+		<button name="4" tag="cr.rgb.index 4" />
+		<button name="5" tag="cr.rgb.index 5" />
+	</row>
+	<row>
+		<button name="6" tag="cr.rgb.index 6" />
+		<button name="7" tag="cr.rgb.index 7" />
+		<button name="8" tag="cr.rgb.index 8" />
+		<button name="9" tag="cr.rgb.index 9" />
+		<button name="10" tag="cr.rgb.index 10" />
+	</row>
+
 </tab> 
