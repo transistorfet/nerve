@@ -1,0 +1,137 @@
+<tab name="Living Room" base="lr">
+	<text tag="lr.music.getsong" />
+	<row>
+		<button name="Previous" tag="lr.music.previous" />
+		<button name="PlayPause" tag="lr.music.toggle" />
+		<button name="Next" tag="lr.music.next" />
+	</row>
+	<row>
+		<button name="Random" tag="lr.music.random" />
+		<button name="Fullscreen" tag="lr.music.fullscreen" />
+		<column>
+			<button name="Up" tag="lr.music.volup" />
+			<button name="Down" tag="lr.music.voldown" />
+		</column>
+	</row>
+	<seekbar tag="lr.music.volume" max="255" />
+	<row>
+		<button name="Power" tag="lr.stereo.power" />
+		<button name="Tape" tag="lr.stereo.tape" />
+		<button name="Tuner" tag="lr.stereo.tuner" />
+		<column>
+			<button name="Up" tag="lr.stereo.volup" />
+			<button name="Down" tag="lr.stereo.voldown" />
+		</column>
+	</row>
+	<row>
+		<button name="Power" tag="lr.tv.power" />
+		<button name="PS3" tag="lr.tv.ps3" />
+		<button name="Netbook" tag="lr.tv.netbook" />
+		<column>
+			<button name="Up" tag="lr.tv.volup" />
+			<button name="Down" tag="lr.tv.voldown" />
+		</column>
+	</row>
+	<row>
+		<button name="Wake Up" tag="lr.sys.wakeup" />
+		<button name="Sleep" tag="lr.sys.sleep" />
+	</row>
+	<row>
+		<button name="Lamp" tag="lr.rgb.relay_toggle" />
+	</row>
+	<row>
+		<button name="Power" tag="lr.rgb.power" />
+		<button name="Background" tag="lr.rgb.power 1" />
+		<button name="Valence" tag="lr.rgb.power 3" />
+		<button name="Off" tag="lr.rgb.power 0" />
+	</row>
+	<label text="Modes" />
+	<row>
+		<button name="Cold" tag="lr.rgb.channel 1" />
+		<button name="Medium" tag="lr.rgb.channel 2" />
+		<button name="Warm" tag="lr.rgb.channel 3" />
+		<button name="Index" tag="lr.rgb.channel 4" />
+	</row>
+	<row>
+		<button name="Strobe" tag="lr.rgb.channel 5" />
+		<button name="RandStrobe" tag="lr.rgb.channel 6" />
+	</row>
+	<row>
+		<button name="Swirl" tag="lr.rgb.channel 7" />
+		<button name="RandSwirl" tag="lr.rgb.channel 8" />
+		<button name="Brownian" tag="lr.rgb.channel 9" />
+	</row>
+	<label text="Intensity" />
+	<seekbar tag="lr.rgb.intensity" max="255" />
+	<label text="Delay" />
+	<seekbar tag="lr.rgb.delay" max="8000" />
+	<row>
+		<column>
+			<button name="Channel Up" tag="lr.rgb.chanup" />
+			<button name="Channel Down" tag="lr.rgb.chandown" />
+		</column>
+		<column>
+			<button name="Index Up" tag="lr.rgb.indexup" />
+			<button name="Index Down" tag="lr.rgb.indexdown" />
+		</column>
+	</row>
+	<label text="Colours" />
+	<row>
+		<button name="Warm White" tag="lr.rgb.color FFC040" />
+	</row>
+	<row>
+		<button name="1" tag="lr.rgb.index 1" />
+		<button name="2" tag="lr.rgb.index 2" />
+		<button name="3" tag="lr.rgb.index 3" />
+		<button name="4" tag="lr.rgb.index 4" />
+		<button name="5" tag="lr.rgb.index 5" />
+	</row>
+	<row>
+		<button name="6" tag="lr.rgb.index 6" />
+		<button name="7" tag="lr.rgb.index 7" />
+		<button name="8" tag="lr.rgb.index 8" />
+		<button name="9" tag="lr.rgb.index 9" />
+		<button name="10" tag="lr.rgb.index 10" />
+	</row>
+	<row>
+		<button name="11" tag="lr.rgb.index 11" />
+		<button name="12" tag="lr.rgb.index 12" />
+		<button name="13" tag="lr.rgb.index 13" />
+		<button name="14" tag="lr.rgb.index 14" />
+		<button name="15" tag="lr.rgb.index 15" />
+	</row>
+	<row>
+		<button name="16" tag="lr.rgb.index 16" />
+		<button name="17" tag="lr.rgb.index 17" />
+		<button name="18" tag="lr.rgb.index 18" />
+		<button name="19" tag="lr.rgb.index 19" />
+		<button name="20" tag="lr.rgb.index 20" />
+	</row>
+	<row>
+		<button name="21" tag="lr.rgb.index 21" />
+		<button name="22" tag="lr.rgb.index 22" />
+		<button name="23" tag="lr.rgb.index 23" />
+		<button name="24" tag="lr.rgb.index 24" />
+		<button name="25" tag="lr.rgb.index 25" />
+	</row>
+	<label text="Red" />
+	<seekbar tag="lr.rgb.red" max="255" />
+	<label text="Green" />
+	<seekbar tag="lr.rgb.green" max="255" />
+	<label text="Blue" />
+	<seekbar tag="lr.rgb.blue" max="255" />
+
+	<label text="Playlists" />
+	<button name="Anne's Playlist" tag="lr.music.load_playlist http://www.youtube.com/playlist?list=PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4" />
+	<button name="Favorites" tag="lr.music.load_playlist http://www.youtube.com/playlist?list=FL_VkJGWFV9ZEIv87E-0NM5w" />
+	<button name="Dearest Anne" tag="lr.music.load_playlist http://www.youtube.com/playlist?list=PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0" />
+	<button name="Default" tag="lr.music.load_playlist file:///C:/Users/trans/Downloads/Default.m3u" />
+	<button name="Clear Playlist" tag="lr.music.clear_playlist" />
+	<button name="Kill VLC" tag="lr.music.kill_instance" />
+
+	<label text="" />
+	<row>
+		<button name="Disable Video" tag="lr.music.disable_video" />
+		<button name="Enable Video" tag="lr.music.enable_video" />
+	</row>
+</tab>

@@ -1,7 +1,11 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 from support import winamp
 
 import nerve
+
+import time
 
 class Winamp (nerve.Device):
     def __init__(self):
@@ -11,12 +15,12 @@ class Winamp (nerve.Device):
     def next(self, msg):
 	self.winamp.next()
 	song = self.winamp.getCurrentPlayingTitle()
-	msg.reply(msg.devname() + ".getsong " + song)
+	msg.reply(msg.device_name() + ".getsong " + song)
 
     def previous(self, msg):
 	self.winamp.previous()
 	song = self.winamp.getCurrentPlayingTitle()
-	msg.reply(msg.devname() + ".getsong " + song)
+	msg.reply(msg.device_name() + ".getsong " + song)
 
     def toggle(self, msg):
 	s = self.winamp.getPlaybackStatus()
@@ -31,6 +35,18 @@ class Winamp (nerve.Device):
 
     def getsong(self, msg):
 	song = self.winamp.getCurrentPlayingTitle()
+	song = song.encode("ascii", "replace")
 	msg.reply(msg.query + " " + song)
 
+    def mediaquery(self, msg):
+	result = self.winamp.query(msg.args[0])
+	line = ""
+	for entry in result:
+	    line += entry + "\n"
+	msg.reply(msg.query + " " + line)
+
+    def addalbum(self, msg):
+	files = self.query("album = \"%s\"" % msg.args[0])
+	for name in files:
+	    self.winamp.enqueueFile(name)
 

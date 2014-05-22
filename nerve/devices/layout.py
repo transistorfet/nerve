@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 import nerve
 
@@ -15,7 +17,7 @@ class LayoutDevice (nerve.Device):
 	filename = 'layouts/' + msg.names[index] + ".xml"
 	if os.path.isfile(filename):
 	    contents = self._get_file_contents(filename)
-	    msg.from_node.send(msg.query + " " + contents)
+	    msg.from_port.send(msg.query + " " + contents)
 	else:
 	    raise Exception("In " + msg.query + ": File not found: " + filename)
 

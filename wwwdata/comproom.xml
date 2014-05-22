@@ -45,5 +45,10 @@
 		<button name="9" tag="cr.rgb.index 9" />
 		<button name="10" tag="cr.rgb.index 10" />
 	</row>
-
+	<label text="Red" />
+	<seekbar tag="cr.rgb.red" max="255" />
+	<label text="Green" />
+	<seekbar tag="cr.rgb.green" max="255" />
+	<label text="Blue" />
+	<seekbar tag="cr.rgb.blue" max="255" />
 </tab> 

@@ -1,16 +1,44 @@
 
+* get a proper config system going
+* add a prefix to methods that can be dispatched to
+* make it so that you can add a device by specifying the device name, and having the system look for the right file and import it
+
 * fix the message return... (xmms2 in particular just sends all song name updates to the last IP that it received a message from)
 
-* add intensity changes to RGB daisywire control
-* fix RGBNode to control daisy downstream device when receiving serial commands
+* the server response could be the server name (cr, lr) which can then be used as the default namespace for the xml layouts
+* there could be some way of specifying the xml layout default namespace so that most of the stuff doesn't have to say specifically
+  what server to talk to
 
-* add a _default function or something that allows more dynamic extensions of devices (eg. layout.livingroom looks for a file,
-  layouts/livingroom.xml)
- 
-* add an auto discovery feature where the phone sends a broadcast message to the default port number and the servers respond (pretty
-  much normally).
+* fix RGBNode to control daisy downstream device when receiving serial commands (is this done?)
+
+* get vlc scrobbling working
+* get vlc YouTube full playlist!
+* when vlc plays a youtube link, it converts the link to the direct link to the flv, but that link expires, and causes an error when played
+
+STRUCTURAL:
 
 POSSIBLE FEATURES:
+	* you could add an auto discovery feature where the phone sends a broadcast message to the default port number and all the
+	  servers respond.  It could be used for some normal operations even, and the server would just send a message back like
+	  it normally would, in response to the request.  It could also be for config though, to know what servers are around
 	* you could add a mechanism for registering for 'push notifications' by something like rgb.* <- wildcard so that all rgb
 	  messages would be automatically sent to that endpoint
+
+	* add webserver for large file transfers??  You could possibly also map the two together.  Perhaps you could still do
+	  lr.layout.livingroom, but then it would return lr.layout.livingroom http://192.168.1.180:8080/layout/livingroom
+	  and the remote would have to know to connect to the web to get the actual file.  It could then just assume to always get
+	  layouts through the web interface of course, but this general mechanism of passing back a link could be used for other
+	  bulk transfers.
+	* with the above, in the return, could you maybe do U:<link> or something, and also have F:<port> or something, where
+	  you can do a direct TCP transfer??
+	* could you add websocket feature to web server such that you could either connect to UDP, TCP to actually send commands, or
+	  connect to websocket, so that web pages from the server could directly control stuff without needing an additional socket
+	  connection?
+
+	* make it possible to paste a link (youtube video or playlist link) to play the link on the server end of things
+	* is there a way to write a playlist to disk from nerve and tell vlc to open it? instead of enqueueing everything
+	* is there a way to not receive the json when sending a command (to speed up commands)
+
+	* you can add a 'local' namespace to the android app, so that the xml layouts can have a button for 'local.settings' which will
+	  launch the settings dialog on the phone itself.  Also, there could be a local tab
 

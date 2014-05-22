@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 import thread
 import os
@@ -10,25 +12,27 @@ import nerve
 class Xmms2 (nerve.Device):
     def __init__(self):
 	nerve.Device.__init__(self)
-	self.xmms = xmmsclient.XMMS('PyXMMS')
+
+	self.xmms = None
 	self.artist = ""
 	self.title = ""
+	self.reply = None
+
+	self.thread = nerve.Task('Xmms2Task', self.run)
+	self.thread.start()
+
+    def run(self):
+	self.xmms = xmmsclient.XMMS('PyXMMS')
 	try:
 	    self.xmms.connect(os.getenv("XMMS_PATH"))
 	except IOError, detail:
 	    print "Connection failed:", detail
 	    sys.exit(1)
+
 	self.xmms.playback_current_id(self._get_info)
 	self.xmms.broadcast_playback_current_id(self._get_info)
-	self.reply = None
-	self.stop_thread = False
-	thread.start_new_thread(self.do_thread, (self,))
 
-    def __del__(self):
-	self.stop_thread = True
-
-    def do_thread(self, nothing):
-	while not self.stop_thread:
+	while not self.thread.stopflag.isSet():
 	    fd = self.xmms.get_fd()
 
 	    if self.xmms.want_ioout():
@@ -39,7 +43,9 @@ class Xmms2 (nerve.Device):
 		self.xmms.ioin()
 	    if e and e[0] == fd:
 		self.xmms.disconnect()
-		self.stop_thread = True
+		self.thread.stopflag.set()
+
+	nerve.log("exiting XMMS2 maintenance thread.")
 
 
     ### Resources ###
@@ -57,7 +63,7 @@ class Xmms2 (nerve.Device):
 	self.xmms.playlist_set_next_rel(1)
 	self.xmms.playback_tickle()
 	#song = self.winamp.getCurrentPlayingTitle()
-	#msg.server.send('.'.join(msg.names[:-1]) + ".getsong " + song, msg.addr)
+	#msg.server.send(msg.device_name() + ".getsong " + song, msg.addr)
 	# you need a way to say 'call function (playback_current_song
 
     def previous(self, msg):
@@ -72,7 +78,7 @@ class Xmms2 (nerve.Device):
 
     def getsong(self, msg):
 	self.reply = msg
-	msg.from_node.send(msg.query + " " + self.artist + " - " + self.title)
+	msg.from_port.send(msg.query + " " + self.artist + " - " + self.title)
 
     def update_info(self):
 	self.xmms.playback_current_id(self._get_info)
@@ -90,10 +96,14 @@ class Xmms2 (nerve.Device):
 	    self.title = info['title']
 	else:
 	    self.title = "No Title"
-	#print self.artist + " - " + self.title
+
+	self.artist = self.artist.encode("ascii", "replace")
+	self.title = self.title.encode("ascii", "replace")
+	songname = self.artist + " - " + self.title
+
 	msg = self.reply
 	if msg:
-	    msg.from_node.send(msg.query + " " + self.artist + " - " + self.title)
+	    msg.from_port.send(msg.query + " " + songname)
 
 
 
