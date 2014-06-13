@@ -80,6 +80,19 @@ class Device (object):
 	    return dev
 
     def get(self, name):
+	devname, sep, rest = name.partition('.')
+	# we want to make sure we don't get internal python objects accidentally
+	if devname.startswith('__'):
+	    return None
+
+	if devname in self.subdevices:
+	    if rest:
+		return self.subdevices[name].get(rest)
+	    else:
+		return self.subdevices[name]
+	return None
+
+    def get_local(self, name):
 	if name in self.subdevices:
 	    return self.subdevices[name]
 	return None
@@ -94,7 +107,7 @@ class Device (object):
 	    #func = getattr(self, 'query_' + msg.names[index])
 	    return func(msg)
 	else:
-	    dev = self.get(msg.names[index])
+	    dev = self.get_local(msg.names[index])
 	    if dev is None:
 		raise InvalidRequest("No subdevice named " + msg.names[index] + " in device " + self.device_name())
 	    return dev.dispatch(msg, index + 1)

@@ -56,6 +56,7 @@ nerve.add_portal('udpserver.UDPServer', 5959)
 #rgb = nerve.add_device("rgb", NerveSerialDevice("COM9", 19200))
 rgb = nerve.add_device('rgb', 'serialdev.NerveSerialDevice', 'COM9', 19200)
 
+"""
 def red(self, msg):
     if len(msg.args):
 	self._redval = msg.args[0]
@@ -84,6 +85,7 @@ rgb._blueval = 'ff'
 rgb.red = red
 rgb.green = green
 rgb.blue = blue
+"""
 
 nerve.add_device("stereo", Stereo(rgb))
 nerve.add_device("tv", Television(rgb))

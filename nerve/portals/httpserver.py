@@ -9,9 +9,6 @@ import sys
 import signal
 import traceback
 
-import cStringIO
-import re
-
 import BaseHTTPServer
 import ssl
 
@@ -19,84 +16,13 @@ import cgi
 import json
 import mimetypes
 
+from nerve.portals.support import pyhtml
+
 if sys.version.startswith('3'):
-    from urllib.parse import parse_qs
+    from urllib.parse import parse_qs,urlparse
 else:
-    from urlparse import parse_qs
+    from urlparse import parse_qs,urlparse
 
-
-class PyHTMLParser (object):
-    def __init__(self, contents):
-	self.contents = contents
-	self.segments = None
-	self.pycode = ''
-
-    def evaluate(self):
-	self.parse_segments()
-	self.generate_python()
-	return self.execute_python()
-
-    def parse_segments(self):
-	self.segments = [ ]
-	contents = self.contents
-        while contents != '':
-            first = contents.partition('<%')
-            second = first[2].partition('%>')
-
-	    self.segments.append({ 'type' : 'raw', 'data' : first[0] })
-
-	    if second[0]:
-		if second[0][0] == '=':
-		    self.segments.append({ 'type' : 'eval', 'data' : second[0][1:] })
-		else:
-		    self.segments.append({ 'type' : 'exec', 'data' : second[0] })
-
-	    contents = second[2]
-
-    def generate_python(self):
-	lines = [ ]
-	for i, seg in enumerate(self.segments):
-	    if seg['type'] == 'raw':
-		lines.append("print pyhtml.segments[%d]['data']," % (i,))
-	    elif seg['type'] == 'eval':
-		lines.append("print eval(pyhtml.segments[%d]['data'])," % (i,))
-	    elif seg['type'] == 'exec':
-		sublines = seg['data'].split('\n')
-		lines.extend(sublines)
-
-	lines = self.fix_indentation(lines)
-	self.pycode = '\n'.join(lines)
-
-    def fix_indentation(self, lines):
-	indent = 0
-	for i in xrange(0, len(lines)):
-	    lines[i] = (indent * '  ') + lines[i].lstrip()
-	    if re.match('[^#]*:\s*$', lines[i]):
-		indent += 1
-	    elif lines[i].strip().lstrip().lower() == 'end':
-		indent -= 1
-		lines[i] = ''
-
-	    # TODO also take into account \ and """ """
-	return lines
-
-    def execute_python(self):
-	self.globals = { }
-	self.globals['nerve'] = nerve
-	self.globals['pyhtml'] = self
-	old_stdout = sys.stdout
-	try:
-	    self.output = cStringIO.StringIO()
-	    sys.stdout = self.output
-	    #print "<pre>\n" + self.pycode + "\n</pre>\n"
-	    exec self.pycode in self.globals
-	except Exception as e:
-	    #print '<b>Eval Error</b>: (line %s) %s<br />' % (str(self.output.getvalue().count('\n') + 1), repr(e))
-	    print '\n<b>Eval Error:</b>\n<pre>\n%s</pre><br />\n' % (traceback.format_exc(),)
-	finally:
-	    sys.stdout = old_stdout
-        return self.output.getvalue()
-	
 
 class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
     server_version = "Nerve HTTP/0.1"
@@ -124,65 +50,11 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
 	self.wfile.write('Authorization required.')
         return False
 
-    def send_404(self):
-        self.send_response(404)
-        self.send_header('Content-type', 'text/plain')
-        self.end_headers()
-        self.wfile.write('404 Not Found')
-
-    def send_json_headers(self):
-	self.send_response(200)
-	self.send_header('Content-type', 'application/json')
-	self.end_headers()
-
     def do_GET(self):
         if self.check_authorization() == False:
             return
-
-	# handle commands sent via GET
-        if self.path.startswith('/command/'):
-	    command = self.path[9:]
-
-	    try:
-		command_func = getattr(self.server, 'command_' + self.path[9:])
-	    except AttributeError:
-		self.send_404()
-		return
-
-            self.send_json_headers()
-	    ret = command_func()
-	    self.wfile.write(json.dumps(ret))
-	    return
-
-	if not self.is_valid_path(self.path):
-	    self.send_404()
-	    return
-
-	filename = self.server.root + '/' + self.path[1:]
-
-	# If the path resolves to a directory, then set the filename to the index.html file inside that directory
-	if os.path.isdir(filename):
-	    filename = filename.strip('/') + '/index.html'
-
-	# send error if nothing found
-	if not os.path.isfile(filename):
-	    self.send_404()
-	    return
-
-	# server up the file
-	(self.mimetype, self.encoding) = mimetypes.guess_type(filename)
-
-	self.send_response(200)
-	self.send_header('Content-type', self.mimetype)
-	self.end_headers()
-
-	with open(filename, 'r') as f:
-	    contents = f.read()
-
-	    if self.mimetype == 'text/html' or self.mimetype == 'text/xml':
-		contents = PyHTMLParser(contents).evaluate()
-	    self.wfile.write(contents)
-	return
+	url = urlparse(self.path)
+	return self.do_request("GET", url, parse_qs(url.query))
 
     def do_POST(self):
         if self.check_authorization() == False:
@@ -203,10 +75,77 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
         else:
             postvars = {}
 
-        self.send_json_headers()
+	url = urlparse(self.path)
+	if url.path == '/query':
+	    if 'tag' not in postvars:
+		self.send_400()
+		return
+	    self.send_json_headers()
+	    result = nerve.query(postvars['tag'][0])
+	    self.wfile.write(json.dumps(result))
+	else:
+	    return self.do_request("POST", url, postvars)
 
-	ret = self.server.handle_post(self.path, postvars)
-	self.wfile.write(json.dumps(ret))
+	"""
+	elif path[0] == '/':
+	    devname, sep, cmdname = path.rpartition('/')
+	    devname = devname[1:].replace('/', '.')
+	    dev = nerve.get_device(devname)
+	    if dev is not None:
+		func = getattr(dev, 'html_' + cmdname)
+		return func(postvars)
+	    else:
+		return { 'error' : 1 }
+	"""
+
+    def do_request(self, reqtype, url, params=None):
+	if not self.is_valid_path(url.path):
+	    self.send_404()
+	    return
+
+	# TODO debugging: remove later
+	print "Path: " + url.path
+	print "Vars: " + repr(params)
+
+	filename = os.path.join(self.server.root, url.path[1:])
+
+	# If the path resolves to a directory, then set the filename to the index.html file inside that directory
+	if os.path.isdir(filename):
+	    filename = filename.strip('/') + '/index.html'
+
+	# send error if nothing found
+	if not os.path.isfile(filename):
+	    self.send_404()
+	    return
+
+	# server up the file
+	(self.mimetype, self.encoding) = mimetypes.guess_type(filename)
+	self.send_headers(200, self.mimetype)
+
+	with open(filename, 'r') as f:
+	    contents = f.read()
+
+	    if self.mimetype == 'text/html' or self.mimetype == 'text/xml':
+		interp = pyhtml.PyHTMLParser(contents, filename=filename, reqtype=reqtype, path=url.path, params=params)
+		contents = interp.evaluate()
+	    self.wfile.write(contents)
+	return
+
+    def send_headers(self, errcode, mimetype, content=None):
+	self.send_response(errcode)
+	self.send_header('Content-type', mimetype)
+	self.end_headers()
+        if content is not None:
+	    self.wfile.write(content)
+
+    def send_400(self):
+        self.send_headers(400, 'text/plain', '400 Bad Request')
+
+    def send_404(self):
+        self.send_headers(404, 'text/plain', '404 Not Found')
+
+    def send_json_headers(self):
+        self.send_headers(200, 'application/json')
 
     @staticmethod
     def is_valid_path(path):
@@ -216,7 +155,6 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
 	    if name == '.' or name == '..':
 		return False
 	return True
-
 
 
 class HTTPServer (nerve.Portal, BaseHTTPServer.HTTPServer):
@@ -243,62 +181,4 @@ class HTTPServer (nerve.Portal, BaseHTTPServer.HTTPServer):
 	self.thread.daemon = True
 	self.thread.start()
 
-    def handle_post(self, path, postvars):
-	print "Path: " + path
-	print "Vars: " + repr(postvars)
-	if 'tag' in postvars:
-	    #nerve.query(postvars['tag'][0], CallbackPortal(self.handle_query_response))
-	    nerve.query(postvars['tag'][0])
-	elif path == '/status':
-	    player = nerve.get_device('music')
-	    if player is not None:
-		return player.getstatus(None)
-
-    def handle_query_response(self, msg):
-	pass
-
-    """
-    def form_item_selected(self, setting, value):
-        if obplayer.Config.setting(setting, True) == value:
-            return ' selected="selected"'
-        else:
-            return ''
-
-    def form_item_checked(self, setting):
-        if obplayer.Config.setting(setting, True):
-            return ' checked="checked"'
-        else:
-            return ''
-
-    def fullscreen_status(self):
-	return 'Off'
-
-    def command_restart(self):
-	os.kill(os.getpid(), signal.SIGINT)
-	return { 'status' : True }
-
-    def command_fstoggle(self):
-	return { 'status' : True, 'fullscreen' : 'Off' }  # + str(not self.Gui.gui_window_fullscreen).lower() + ' }'
-
-    def handle_post(self, path, postvars):
-        error = None
-
-	# run through each setting and make sure it's valid. if not, complain.
-        for key in postvars:
-            settingName = key
-            settingValue = postvars[key][0]
-
-            #error = obplayer.Config.validateSetting(settingName, settingValue)
-
-            if error != None:
-                return { 'status' : False, 'error' : error }
-
-	# we didn't get an errors on validate, so update each setting now.
-        for key in postvars:
-            settingName = key
-            settingValue = postvars[key][0]
-            #obplayer.Config.set(settingName, settingValue)
-
-        return { 'status' : True }
-    """
 

@@ -10,6 +10,14 @@ class DeskClock (SerialDevice):
 	SerialDevice.__init__(self, file, baud)
 	self.relay1 = False
 
+    def p0(self, msg):
+	if len(msg.args):
+	    self.serial.write('P0=' + str(int(msg.args[0], 16)) + '\n')
+
+    def p1(self, msg):
+	if len(msg.args):
+	    self.serial.write('P1=' + str(int(msg.args[0], 16)) + '\n')
+
     def relay_toggle(self, msg):
 	self.relay1 = not self.relay1
 	if self.relay1:

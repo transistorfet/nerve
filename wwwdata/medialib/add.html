@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C/DTD HTML 4.01//EN">
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+
+    <script src="/jquery.min.js" type="text/javascript"></script>
+    <script src="/common.js" type="text/javascript"></script>
+</head>
+<body>
+
+<a name="top"></a>
+<a href="playlist.html">Current Playlist</a> | <a href="add.html">Add</a>
+<hr>
+
+<% medialib = nerve.get_device('medialib') %>
+
+<%
+    if py._REQTYPE == "POST":
+	num = medialib.html_make_playlist(py._POST)
+	if num > 0:
+	    %><span class="success">Successfully added <%= num %> files to playlist</span><%
+	else:
+	    %><span class="error">Error: No files added to playlist</span><%
+	end
+    end
+%>
+
+<div>
+    <a href="<%= py._PATH %>?by=artist">By Artist</a>
+    <a href="<%= py._PATH %>?by=album">By Album</a>
+    <a href="<%= py._PATH %>?by=genre">By Genre</a>
+    <a href="<%= py._PATH %>?by=album&order=recent">By Recent</a>
+    <a href="<%= py._PATH %>?by=album&recent=52">Most Recent</a>
+    <a href="<%= py._PATH %>?by=album&order=random">Random</a>
+</div>
+
+<!-- <form method="post" action="/medialib/make_playlist.html"> -->
+<form method="post" action="<%= py._PATH %>">
+<div class="medialist">
+
+
+    <button type="submit" name="pl_replace" value="1">Replace</button>
+    <button type="submit" name="pl_enqueue" value="1">Enqueue</button>
+
+    <%
+	by = py.ARGS('by').lower()
+	if not by: by = 'artist'
+	genre = py.ARGS('genre')
+	recent = py.ARGS('recent')
+	order = py.ARGS('order').lower()
+	index = py.ARGS('index')
+	limit = py.ARGS('limit')
+
+	use_album = False if by == 'artist' else True
+	use_genre = True if by == 'genre' else False
+
+	media_list = medialib.get_media_list(by, genre, recent, order)
+    %>
+
+    <input type="hidden" name="by" value="<% echo(by) %>">
+    <input type="hidden" name="genre" value="<% echo(genre) %>">
+    <input type="hidden" name="recent" value="<% echo(recent) %>">
+    <input type="hidden" name="order" value="<% echo(order) %>">
+    <input type="hidden" name="index" value="<% echo(index) %>">
+    <input type="hidden" name="limit" value="<% echo(limit) %>">
+
+    <table>
+    <thead><tr>
+	<th></th>
+	<th>Artist</th>
+	<% if use_album: %>
+	    <th>Album</th>
+	<% end %>
+	<% if use_genre: %>
+	    <th>Genre</th>
+	<% end %>
+    </tr></thead>
+    <tbody>
+	<%
+	if media_list:
+	    for media in media_list: %>
+		<tr>
+		    <%
+		    dataname = 'album' if use_album else 'artist'
+		    dataval = urlencode(media['artist'])
+		    if use_album: dataval += " - " + urlencode(media['album'])
+		    %>
+		    <td><input type="checkbox" name="<%= dataname %>" value="<%= dataval %>" /></td>
+		    <td><%= media['artist'] %></td>
+		    <% if use_album: %>
+			<td><%= media['album'] %></td>
+		    <% end %>
+		    <% if use_genre: %>
+			<td><%= media['genre'] %></td>
+		    <% end %>
+		</tr>
+	    <%
+	    end
+	end	    
+	%>
+    </tbody>
+    </table>
+
+    <button type="submit" name="pl_replace" value="1">Replace</button>
+    <button type="submit" name="pl_enqueue" value="1">Enqueue</button>
+</div>
+</form>
+<a href="#top">Top</a>
+
+</body>
+</html> 
+ 

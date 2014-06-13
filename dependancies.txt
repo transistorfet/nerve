@@ -1,0 +1,10 @@
+
+- requests
+ 
+Serial Devices:
+- pyserial
+
+MediaLib:
+- apsw
+- mutagen
+

@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C/DTD HTML 4.01//EN">
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+
+    <script src="/jquery.min.js" type="text/javascript"></script>
+    <script src="/common.js" type="text/javascript"></script>
+</head>
+<body>
+
+<a href="playlist.html">Current Playlist</a> | <a href="add.html">Add</a>
+<hr>
+
+<% medialib = nerve.get_device('medialib') %>
+<%
+    if py._REQTYPE == "POST":
+	if 'pl_remove' in py._POST:
+	    num = medialib.html_remove_files(py._POST)
+	    if num > 0:
+		%><span class="success">Successfully removed <%= num %> files from playlist</span><%
+	    else:
+		%><span class="error">Error: No files removed from playlist</span><%
+	    end
+	elif 'pl_sort' in py._POST:
+	    medialib.sort_playlist()
+	elif 'pl_shuffle' in py._POST:
+	    medialib.shuffle_playlist()
+	end
+    end
+%>
+
+<% playlist = medialib.get_media_info(medialib.get_playlist()) %>
+
+<span class="files"><%= len(playlist) %> files in playlist.</span>
+
+<form method="post" action="<%= py._PATH %>">
+<div class="medialist">
+    <button type="submit" name="pl_remove">Remove Selected</button>
+    <button type="submit" name="pl_sort">Sort</button>
+    <button type="submit" name="pl_shuffle">Shuffle</button>
+
+    <% if playlist: %>
+    <table>
+    <thead><tr>
+	<th></th>
+	<th>Artist</th>
+	<th>Title</th>
+	<th>#</th>
+	<th>Album</th>
+    </tr></thead>
+    <tbody>
+	<% for media in playlist: %>
+	    <tr>
+		<td><input type="checkbox" name="media" value="<%= urlencode(media['filename']) %>" /></td>
+		<td><%= media['artist'] %></td>
+		<td><%= media['title'] %></td>
+		<td><%= media['track_num'] %></td>
+		<td><%= media['album'] %></td>
+	    </tr>
+	<% end %>
+    </tbody>
+    </table>
+    <% end %>
+
+    <button type="submit" name="pl_remove">Remove Selected</button>
+    <button type="submit" name="pl_sort">Sort</button>
+    <button type="submit" name="pl_shuffle">Shuffle</button>
+</div>
+</form>
+
+<script type="text/javascript">
+
+
+
+</script>
+
+</body>
+</html> 
+ 
