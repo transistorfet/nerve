@@ -39,25 +39,25 @@ class PyHTMLParser (object):
 	    self._GET = { }
 	    self._POST = params
 
-    def ARGS(self, name, as_array=False):
+    def ARGS(self, name, default='', as_array=False):
 	if name not in self._ARGS:
-	    return ''
+	    return default
 	if as_array is False:
 	    return self._ARGS[name][0]
 	else:
 	    return self._ARGS[name]
 
-    def GET(self, name, as_array=False):
+    def GET(self, name, default='', as_array=False):
 	if name not in self._GET:
-	    return ''
+	    return default
 	if as_array is False:
 	    return self._GET[name][0]
 	else:
 	    return self._GET[name]
 
-    def POST(self, name, as_array=False):
+    def POST(self, name, default='', as_array=False):
 	if name not in self._POST:
-	    return ''
+	    return default
 	if as_array is False:
 	    return self._POST[name][0]
 	else:
@@ -122,8 +122,6 @@ class PyHTMLParser (object):
 		if not found:
 		    indent += 1
 		lines[i] = ((indent - 1) * '  ') + lines[i].lstrip()
-		print lines[i]
-
 	    elif code.lower() == 'end':
 		indent -= 1
 		lines[i] = ''
@@ -143,7 +141,7 @@ class PyHTMLParser (object):
 	    self.output = cStringIO.StringIO()
 	    sys.stdout = self.output
 	    self.globals['echo'] = self.output.write
-	    self.debug_print_env()
+	    #self.debug_print_env()
 	    exec self.pycode in self.globals
 	except Exception as e:
 	    #print '<b>Eval Error</b>: (line %s) %s<br />' % (str(self.output.getvalue().count('\n') + 1), repr(e))
@@ -157,6 +155,12 @@ class PyHTMLParser (object):
 	#for s in self.segments:
 	#    print self.htmlspecialchars(repr(s))
 	#print "\n</pre><br />\n"
+
+	#print "<table>\n"
+	#for s in self.segments:
+	#    print "<tr><td>" + s['type'] + "</td><td>" + self.htmlspecialchars(repr(s['data'])) + "</td></tr>"
+	#print "\n</table><br />\n"
+
 	print "<pre>\n" + self.htmlspecialchars(self.pycode) + "\n</pre>\n"
 	
 

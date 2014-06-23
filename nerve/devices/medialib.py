@@ -13,6 +13,9 @@ import urllib
 import codecs
 import random
 
+import requests
+import json
+
 class Database (object):
     def __init__(self, filename):
 	self.filename = filename
@@ -238,6 +241,76 @@ class Playlist (object):
 	    f.write('\n')
 
 
+class YoutubePlaylistFetcher (nerve.Task):
+    def __init__(self, list_ids, medialib):
+	nerve.Task.__init__(self, 'YoutubePlaylistFetcher')
+	self.list_ids = list_ids
+	self.medialib = medialib
+
+	self.db = DatabaseCursor(self.medialib.dbconnection)
+	self.json = None
+
+    def hash_video(self, meta):
+	url = 'http://www.youtube.com/watch?v=%s' % (meta['encrypted_id'],)
+
+	rows = list(self.db.get('media', 'id,file_last_modified', self.db.inline_expr('filename', url)))
+	if len(rows) > 0 and rows[0][1] >= meta['time_created']:
+	    nerve.log("Skipping " + url)
+	    return url
+
+	parts = meta['title'].split("-", 1)
+	if len(parts) < 2:
+	    artist = meta['author']
+	    title = meta['title']
+	else:
+	    artist = parts[0].strip()
+	    title = parts[1].strip()
+	data = {
+	    'filename' : url,
+	    'artist' : artist,
+	    'title' : title,
+	    'album' : 'YouTube',
+	    'track_num' : '',
+	    'genre' : '',
+	    'tags' : meta['keywords'],
+	    'media_type' : 'video',
+	    'duration' : meta['length_seconds'],
+	    'file_size' : '',
+	    'file_last_modified' : meta['time_created'],
+	}
+
+	if len(rows) <= 0:
+	    nerve.log("Adding " + url)
+	    self.db.insert('media', data)
+	else:
+	    nerve.log(u"Updating " + url)
+	    self.db.where('id', rows[0][0])
+	    self.db.update('media', data)
+	return url
+
+    def fetch_json(self, list_id):
+	url = 'http://www.youtube.com/list_ajax?action_get_list=1&style=json&list=%s' % (list_id,)
+	r = requests.get(url)
+	if r.text:
+	    return json.loads(r.text)
+	return None
+
+    def run(self):
+	for list_id in self.list_ids:
+	    data = self.fetch_json(list_id)
+	    if data is None or 'video' not in data:
+		nerve.log("Unable to fetch youtube playlist " + list_id)
+	    else:
+		playlist = [ ]
+		for video in data['video']:
+		    if self.stopflag.isSet():
+			return
+		    url = self.hash_video(video)
+		    playlist.append(url)
+		pl = Playlist(data['title'])
+		pl.set_files(playlist)
+
+
 class MediaLib (nerve.Device):
     def __init__(self, path=None):
 	nerve.Device.__init__(self)
@@ -252,6 +325,9 @@ class MediaLib (nerve.Device):
 
 	# TODO reenable after testing
 	#self.thread = MediaUpdaterTask('MediaUpdater', self)
+	#self.thread.start()
+
+	#self.thread = YoutubePlaylistFetcher([ 'PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4', 'FL_VkJGWFV9ZEIv87E-0NM5w', 'PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0' ], self)
 	#self.thread.start()
 
     def html_make_playlist(self, postvars):
@@ -278,6 +354,14 @@ class MediaLib (nerve.Device):
 			for media in self.db.get('media'):
 			    files.append(media[0])
 
+	    elif 'id' in postvars:
+		for track_id in postvars['id']:
+		    self.db.select('filename')
+		    self.db.where('id', track_id)
+		    self.db.order_by('filename ASC')
+		    for media in self.db.get('media'):
+			files.append(media[0])
+
 	    if 'pl_replace' in postvars:
 		playlist.set_files(files)
 	    else:
@@ -292,30 +376,53 @@ class MediaLib (nerve.Device):
 		files.append(urllib.unquote(media))
 	    return playlist.remove_files(files)
 
-    def get_media_list(self, by, val=None, recent=None, order='normal'):
-	if by == 'artist':
-	    self.db.distinct(True)
+    def html_add_urls(self, postvars):
+	urls = [ ]
+	if 'urls' in postvars:
+	    for url in postvars['urls']:
+		urls.append(urllib.unquote(url))
+	    playlist = Playlist(self.current)
+	    if 'pl_replace' in postvars:
+		playlist.set_files(urls)
+	    elif 'pl_enqueue':
+		playlist.add_files(urls)
+	return len(urls)
+
+    def get_media_list(self, mode, order, offset, limit, search=None, recent=None):
+	if mode == 'artist':
 	    self.db.select('artist')
 	    self.db.where_not('artist', '')
-	    self.db.order_by('artist ASC')
-	elif by == 'album':
-	    self.db.distinct(True)
+	    self.db.group_by('artist')
+	elif mode == 'album':
 	    self.db.select('artist,album')
 	    self.db.where_not('album', '')
-	    self.db.order_by('artist,album ASC')
-	elif by == 'genre':
-	    self.db.select('album,artist,genre')
-	    if val:
-		self.db.where_like('genre', val)
 	    self.db.group_by('artist,album')
-	    self.db.order_by('genre,artist,album ASC')
+	elif mode == 'genre':
+	    self.db.select('artist,album,genre')
+	    self.db.group_by('artist,album')
+	elif mode == 'title' or mode == 'tags':
+	    self.db.select('artist,album,title,track_num,tags,id')
 	else:
 	    return [ ]
 
+	if search:
+	    self.db.where_like(order, search)
+
+	if order == 'artist':
+	    self.db.order_by('artist ASC')
+	elif order == 'album':
+	    self.db.order_by('artist,album ASC')
+	elif order == 'genre':
+	    self.db.order_by('genre,artist,album ASC')
+	elif order == 'tags':
+	    self.db.order_by('tags,artist,album ASC')
+	elif order == 'title':
+	    self.db.order_by('title,artist,album ASC')
+	elif order == 'modified':
+	    self.db.order_by('file_last_modified DESC')
+
 	if recent:
 	    self.db.where_gt('file_last_modified', time.time() - (float(recent) * (60*60*24*7)))
-	if order == 'recent':
-	    self.db.order_by('file_last_modified DESC')
 
 	result = list(self.db.get_assoc('media'))
 	if order == 'random':
@@ -354,8 +461,21 @@ class MediaLib (nerve.Device):
 	for filename in media_list:
 	    self.db.select('id,filename,artist,album,title,track_num,genre,tags,duration')
 	    self.db.where('filename', filename)
-	    result = self.db.get_assoc('media')
-	    info.extend(list(result))
+	    result = list(self.db.get_assoc('media'))
+	    if len(result) > 0:
+		info.extend(list(result))
+	    else:
+		info.append({
+		    'id' : -1,
+		    'filename' : filename,
+		    'artist' : '',
+		    'album' : '',
+		    'title' : filename,
+		    'track_num' : '',
+		    'genre' : '',
+		    'tags' : '',
+		    'duration' : 0
+		})
 	return info
 
 

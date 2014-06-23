@@ -12,7 +12,7 @@
 <body>
 
 <a name="top"></a>
-<a href="playlist.html">Current Playlist</a> | <a href="add.html">Add</a>
+<a href="playlist.html">Current Playlist</a> | <a href="add.html">Add Media</a> | <a href="youtube_search.html">Search YouTube</a>
 <hr>
 
 <% medialib = nerve.get_device('medialib') %>
@@ -28,53 +28,80 @@
     end
 %>
 
+<%
+    mode = py.ARGS('mode', default='artist').lower()
+    order = py.ARGS('order', default='artist').lower()
+    offset = py.ARGS('offset', default='0')
+    limit = py.ARGS('limit', default='1000')
+    search = urldecode(py.ARGS('search'))
+    recent = py.ARGS('recent')
+
+    media_list = medialib.get_media_list(mode, order, offset, limit, urldecode(search), recent)
+
+    has_album = True if 'album' in media_list[0] else False
+    has_genre = True if 'genre' in media_list[0] else False
+    has_title = True if 'title' in media_list[0] else False
+    has_track_num = True if 'track_num' in media_list[0] else False
+%>
+
 <div>
-    <a href="<%= py._PATH %>?by=artist">By Artist</a>
-    <a href="<%= py._PATH %>?by=album">By Album</a>
-    <a href="<%= py._PATH %>?by=genre">By Genre</a>
-    <a href="<%= py._PATH %>?by=album&order=recent">By Recent</a>
-    <a href="<%= py._PATH %>?by=album&recent=52">Most Recent</a>
-    <a href="<%= py._PATH %>?by=album&order=random">Random</a>
+    <a href="<%= py._PATH %>?mode=artist">By Artist</a>
+    <a href="<%= py._PATH %>?mode=album">By Album</a>
+    <a href="<%= py._PATH %>?mode=genre&order=genre">By Genre</a>
+    <a href="<%= py._PATH %>?mode=title&order=artist">By Title</a>
+    <a href="<%= py._PATH %>?mode=album&order=modified">By Modified Date</a>
+    <a href="<%= py._PATH %>?mode=album&recent=52">Most Recent</a>
+    <a href="<%= py._PATH %>?mode=album&order=random">Random</a>
 </div>
 
-<!-- <form method="post" action="/medialib/make_playlist.html"> -->
+<div>
+    <% for ch in range(ord('A'), ord('Z') + 1): %>
+	<a href="<%= py._PATH %>?mode=title&order=artist&search=<%= chr(ch) %>%"><%= chr(ch) %></a>
+    <% end %>
+</div>
+
+<form method="get" action="<%= py._PATH %>">
+    <input type="hidden" name="mode" value="title">
+
+    <select name="order">
+	<option value="artist">artist</option>
+	<option value="album">album</option>
+	<option value="title">title</option>
+	<option value="genre">genre</option>
+	<option value="tags">tags</option>
+    </select>
+    <input type="text" name="search">
+    <button type="submit" name="pl_search" value="1">Search</button>
+</form>
+
+<hr>
+
 <form method="post" action="<%= py._PATH %>">
 <div class="medialist">
-
-
     <button type="submit" name="pl_replace" value="1">Replace</button>
     <button type="submit" name="pl_enqueue" value="1">Enqueue</button>
 
-    <%
-	by = py.ARGS('by').lower()
-	if not by: by = 'artist'
-	genre = py.ARGS('genre')
-	recent = py.ARGS('recent')
-	order = py.ARGS('order').lower()
-	index = py.ARGS('index')
-	limit = py.ARGS('limit')
-
-	use_album = False if by == 'artist' else True
-	use_genre = True if by == 'genre' else False
-
-	media_list = medialib.get_media_list(by, genre, recent, order)
-    %>
-
-    <input type="hidden" name="by" value="<% echo(by) %>">
-    <input type="hidden" name="genre" value="<% echo(genre) %>">
-    <input type="hidden" name="recent" value="<% echo(recent) %>">
+    <input type="hidden" name="mode" value="<% echo(mode) %>">
     <input type="hidden" name="order" value="<% echo(order) %>">
-    <input type="hidden" name="index" value="<% echo(index) %>">
+    <input type="hidden" name="offset" value="<% echo(offset) %>">
     <input type="hidden" name="limit" value="<% echo(limit) %>">
+    <input type="hidden" name="search" value="<% echo(urlencode(search)) %>">
+    <input type="hidden" name="recent" value="<% echo(recent) %>">
 
     <table>
     <thead><tr>
 	<th></th>
 	<th>Artist</th>
-	<% if use_album: %>
+	<% if has_title: %>
+	    <th>Title</th>
+	<% end %>
+	<% if has_album: %>
 	    <th>Album</th>
 	<% end %>
-	<% if use_genre: %>
+	<% if has_track_num: %>
+	    <th>#</th>
+	<% end %>
+	<% if has_genre: %>
 	    <th>Genre</th>
 	<% end %>
     </tr></thead>
@@ -84,16 +111,29 @@
 	    for media in media_list: %>
 		<tr>
 		    <%
-		    dataname = 'album' if use_album else 'artist'
-		    dataval = urlencode(media['artist'])
-		    if use_album: dataval += " - " + urlencode(media['album'])
+		    if mode == 'artist':
+			dataname = 'artist'
+			dataval = urlencode(media['artist'])
+		    elif mode == 'album' or mode == 'genre':
+			dataname = 'album'
+			dataval = urlencode(media['artist']) +" - " + urlencode(media['album'])
+		    elif mode == 'title' or mode == 'tags':
+			dataname = 'id'
+			dataval = media['id']
+		    end
 		    %>
 		    <td><input type="checkbox" name="<%= dataname %>" value="<%= dataval %>" /></td>
-		    <td><%= media['artist'] %></td>
-		    <% if use_album: %>
+		    <td><a href="<%= py._PATH %>?mode=title&order=artist&search=<%= urlencode(media['artist']) %>"><%= media['artist'] %></a></td>
+		    <% if has_title: %>
+			<td><%= media['title'] %></td>
+		    <% end %>
+		    <% if has_album: %>
 			<td><%= media['album'] %></td>
 		    <% end %>
-		    <% if use_genre: %>
+		    <% if has_track_num: %>
+			<td><%= media['track_num'] %></td>
+		    <% end %>
+		    <% if has_genre: %>
 			<td><%= media['genre'] %></td>
 		    <% end %>
 		</tr>

@@ -28,10 +28,17 @@ td {
 .medialist table {
 	border-collapse: collapse;
 }
-.medialist th,td {
+.medialist th,
+.medialist td {
   text-align: left;
 }
-.medialist table,th,td {
+.medialist table,
+.medialist th,
+.medialist td {
   border: 1px solid lightgrey;
+}
+
+.medialist a {
+    color: black;
 }
 
