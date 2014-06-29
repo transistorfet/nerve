@@ -4,6 +4,7 @@
 import nerve
 
 import os
+import sys
 import shutil
 import time
 import traceback
@@ -18,6 +19,7 @@ class Config (object):
     def __init__(self, configdir=None):
 	self.path = [ 'config/default', 'nerve' ]
 	if configdir is not None:
+	    sys.path.insert(0, configdir)
 	    self.path.insert(0, configdir.strip('/'))
 	self.data = [ { } ]	# a blank dict, in case set() is called before load()
 	self.init = None
@@ -65,7 +67,7 @@ class Config (object):
 	if filename is None:
 	    return True
 
-	nerve.log("Running init script located at " + filename)
+	nerve.log("running init script located at " + filename)
 	try:
 	    #execfile(filename, self.data, self.data)
 	    global_dict = { 'nerve' : nerve }
@@ -92,19 +94,16 @@ class Config (object):
 
     def create_object(self, typename, name, *args):
 	(modulename, dot, classname) = name.rpartition('.')
-	module = self.import_module([ d + '.' + typename for d in self.path ], modulename)
+	module = self.import_module(modulename)
 	objclass = getattr(module, classname)
 	return objclass(*args)
 
     @staticmethod
-    def import_module(path, modulename):
-	for dirname in path:
-	    try:
-		dirname = dirname.replace('/', '.')
-		name = dirname + '.' + modulename
-		exec 'import %s as nervemodule' % (name,)
-		return locals()['nervemodule']
-	    except ImportError:
-		pass
-	raise LookupError("Unable to locate device named " + modulename)
+    def import_module(modulename):
+	try:
+	    exec 'import %s as nervemodule' % (modulename,)
+	    return locals()['nervemodule']
+	except ImportError as e:
+	    #nerve.log("error loading module " + modulename + "\n\n" + traceback.format_exc())
+	    raise e
 

@@ -3,7 +3,7 @@
 
 import time
 
-from nerve.devices.serialdev import SerialDevice
+from nerve.serial import SerialDevice
 
 class DeskClock (SerialDevice):
     def __init__(self, file, baud):
@@ -60,14 +60,14 @@ class DeskClock (SerialDevice):
 
 #from config.panther.devices.deskclock import DeskClock
 
-nerve.add_portal('udpserver.UDPServer', 5959)
-#nerve.add_portal('tcpserver.TCPServer', 5959)
+nerve.add_portal('raw.UDPServer', 5959)
+#nerve.add_portal('raw.TCPServer', 5959)
 
 nerve.add_device('deskclock', DeskClock("/dev/ttyACM0", 19200))
-rgb = nerve.add_device('rgb', 'serialdev.NerveSerialDevice', "/dev/ttyACM1", 19200)
+rgb = nerve.add_device('rgb', 'serial.NerveSerialDevice', "/dev/ttyACM1", 19200)
 
 nerve.add_device('music', 'xmms2.Xmms2')
 
-nerve.add_portal('console.Console')
+nerve.add_portal('raw.Console')
 
 

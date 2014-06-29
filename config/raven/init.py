@@ -47,69 +47,21 @@ class Television (nerve.Device):
 	self.serial.send("ir P 4004 1004849")
 
 
-nerve.add_portal('udpserver.UDPServer', 5959)
+nerve.add_portal('raw.UDPServer', 5959)
 
-#from nerve.portals.udpserver import UDPServer
-#serv = UDPServer(5959)
-
-#from nerve.devices.serialdev import NerveSerialDevice
-#rgb = nerve.add_device("rgb", NerveSerialDevice("COM9", 19200))
-rgb = nerve.add_device('rgb', 'serialdev.NerveSerialDevice', 'COM9', 19200)
-
-"""
-def red(self, msg):
-    if len(msg.args):
-	self._redval = msg.args[0]
-	self.send("color %02x%02x%02x" % (int(self._redval, 16), int(self._greenval, 16), int(self._blueval, 16)))
-    else:
-	msg.reply(msg.query + " " + self._redval)
-
-def green(self, msg):
-    if len(msg.args):
-	self._greenval = msg.args[0]
-	self.send("color %02x%02x%02x" % (int(self._redval, 16), int(self._greenval, 16), int(self._blueval, 16)))
-    else:
-	msg.reply(msg.query + " " + self._greenval)
-
-def blue(self, msg):
-    if len(msg.args):
-	self._blueval = msg.args[0]
-	self.send("color %02x%02x%02x" % (int(self._redval, 16), int(self._greenval, 16), int(self._blueval, 16)))
-    else:
-	msg.reply(msg.query + " " + self._blueval)
-
-rgb._redval = 'ff'
-rgb._greenval = 'ff'
-rgb._blueval = 'ff'
-
-rgb.red = red
-rgb.green = green
-rgb.blue = blue
-"""
-
+rgb = nerve.add_device('rgb', 'serial.NerveSerialDevice', 'COM9', 19200)
 nerve.add_device("stereo", Stereo(rgb))
 nerve.add_device("tv", Television(rgb))
 
-#from nerve.devices.win32sys import Win32Sys
-#nerve.add_device("sys", Win32Sys())
-nerve.add_device("sys", 'win32sys.Win32Sys')
-#from nerve.devices.vlchttp import VLCHTTP
-#nerve.add_device("music", VLCHTTP())
-nerve.add_device("music", 'vlchttp.VLCHTTP')
+nerve.add_device("sys", 'misc.Win32Sys')
+nerve.add_device("music", 'vlc.VLCHTTP')
 
-#from nerve.devices.layout import LayoutDevice
-#nerve.add_device('layout', LayoutDevice())
-nerve.add_device('layout', 'layout.LayoutDevice')
+#nerve.add_device('layout', 'layout.LayoutDevice')
 
-#from nerve.portals.httpserver import HTTPServer
-#HTTPServer(8999)
-nerve.add_portal('httpserver.HTTPServer', 8999)
+nerve.add_portal('http.HTTPServer', 8999)
 
-#from nerve.portals.console import Console
-#Console()
-nerve.add_portal('console.Console')
+nerve.add_portal('raw.Console')
 
-#nerve.loop()
  
 """
 def dispatch(data, addr):

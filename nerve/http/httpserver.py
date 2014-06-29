@@ -16,7 +16,7 @@ import cgi
 import json
 import mimetypes
 
-from nerve.portals.support import pyhtml
+from nerve.http import pyhtml
 
 if sys.version.startswith('3'):
     from urllib.parse import parse_qs,urlparse

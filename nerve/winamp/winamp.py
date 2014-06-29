@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from support import winamp
+import winampapi
 
 import nerve
 
@@ -10,7 +10,7 @@ import time
 class Winamp (nerve.Device):
     def __init__(self):
 	nerve.Device.__init__(self)
-	self.winamp = winamp.Winamp()
+	self.winamp = winampapi.Winamp()
 
     def next(self, msg):
 	self.winamp.next()
@@ -24,9 +24,9 @@ class Winamp (nerve.Device):
 
     def toggle(self, msg):
 	s = self.winamp.getPlaybackStatus()
-	if s == winamp.Winamp.PLAYBACK_PLAYING or s == winamp.Winamp.PLAYBACK_PAUSE:
+	if s == winampapi.Winamp.PLAYBACK_PLAYING or s == winampapi.Winamp.PLAYBACK_PAUSE:
 	    self.winamp.pause()
-	elif s == winamp.Winamp.PLAYBACK_NOT_PLAYING:
+	elif s == winampapi.Winamp.PLAYBACK_NOT_PLAYING:
 	    self.winamp.play()
 
     def getvolume(self, msg):
