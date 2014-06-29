@@ -3,7 +3,6 @@
 
 import nerve
 
-import apsw
 import time
 import os
 import os.path
@@ -16,196 +15,6 @@ import random
 import requests
 import json
 
-class Database (object):
-    def __init__(self, filename):
-	self.filename = filename
-	self.dbcon = apsw.Connection(os.path.join(nerve.configdir(), filename))
-
-
-class DatabaseCursor (object):
-    def __init__(self, db):
-	self.db = db
-	self.dbcursor = self.db.dbcon.cursor()
-	self.reset_cache()
-
-    def reset_cache(self):
-	self.cache_where = u""
-	self.cache_group = u""
-	self.cache_order = u""
-	self.cache_limit = u""
-	self.cache_select = u"*"
-	self.cache_distinct = u""
-
-    def query(self, q):
-	self.dbcursor.execute(text)
-
-    def table_exists(self, name):
-        for row in self.dbcursor.execute("SELECT name FROM sqlite_master WHERE type IN ('table','view') AND name = '" + name + "' UNION ALL SELECT name FROM sqlite_temp_master WHERE type IN ('table','view') AND name = '" + name + "'"):
-            return True
-        return False
-
-    def create_table(self, table, columns):
-	self.dbcursor.execute(u"CREATE TABLE IF NOT EXISTS %s (%s)" % (table, columns))
-
-    def escape(self, text):
-	if text is None:
-	    return u""
-	if isinstance(text, str):
-	    text = unicode(text, 'utf-8')
-	elif not isinstance(text, unicode):
-	    text = str(text)
-	return text.replace(u"'", u"''")
-
-    def inline_expr(self, name, val, compare='='):
-	return u"%s%s'%s' " % (name, compare, self.escape(val))
-
-    def where(self, where, val, compare='='):
-	where_sql = self.inline_expr(where, val, compare)
-	if not self.cache_where:
-	    self.cache_where = where_sql
-	else:
-	    self.cache_where += u" AND " + where_sql
-
-    def where_not(self, where, val):
-	self.where(where, val, "<>")
-
-    def where_gt(self, where, val):
-	self.where(where, val, ">")
-
-    def where_lt(self, where, val):
-	self.where(where, val, "<")
-
-    def where_like(self, where, val):
-	self.where(where, val, " LIKE ")
-
-    def set_where(self, where):
-	self.cache_where = where
-
-    def group_by(self, group):
-	self.cache_group = group
-
-    def order_by(self, order):
-	self.cache_order = order
-
-    def limit(self, limit):
-	self.cache_limit = limit
-
-    def select(self, fields):
-	self.cache_select = fields
-
-    def distinct(self, enabled):
-	if enabled is True:
-	    self.cache_distinct = u'DISTINCT'
-	else:
-	    self.cache_distinct = u""
-
-    def compile_clauses(self):
-	query = u""
-	if self.cache_where:
-	    query += u"WHERE %s " % (self.cache_where,)
-	if self.cache_group:
-	    query += u"GROUP BY %s " % (self.cache_group,)
-	if self.cache_order:
-	    query += u"ORDER BY %s " % (self.cache_order,)
-	if self.cache_limit:
-	    query += u"LIMIT %s " % (self.cache_limit,)
-	return query
-
-    def compile_select(self, table, select=None, where=None):
-	if select is not None:
-	    self.cache_select = select
-	if where is not None:
-	    self.cache_where = where
-
-	query = u"SELECT %s %s FROM %s " % (self.cache_distinct, self.cache_select, table)
-	query += self.compile_clauses()
-	return query
-
-    def get(self, table, select=None, where=None):
-	query = self.compile_select(table, select, where)
-	#print query
-	result = self.dbcursor.execute(query)
-	#result = self.dbcursor.execute(query.decode('utf-8'))
-	self.reset_cache()
-	return result
-
-    def get_assoc(self, table, select=None, where=None):
-	query = self.compile_select(table, select, where)
-	#print query.encode('utf-8', 'replace')
-	result = self.dbcursor.execute(query)
-	#result = self.dbcursor.execute(query.decode('utf-8'))
-
-	# TODO this doesn't work with SELECT *
-	keys = [ key.strip() for key in self.cache_select.split(',') ]
-	rows = [ ]
-	for row in result:
-	    assoc = { }
-	    for i in range(len(keys)):
-		if isinstance(row[i], unicode):
-		    assoc[keys[i]] = row[i].encode('utf-8')
-		else:
-		    assoc[keys[i]] = row[i]
-	    rows.append(assoc)
-
-	self.reset_cache()
-	return rows
-
-    def insert(self, table, data):
-	columns = data.keys()
-	values = [ ]
-	for key in columns:
-	    values.append(u"\'%s\'" % (self.escape(data[key]),))
-
-	query = u"INSERT INTO %s (%s) VALUES (%s)" % (table, ','.join(columns), ','.join(values))
-	#print query
-	self.dbcursor.execute(query)
-	#self.dbcursor.execute(query.decode('utf-8'))
-	self.reset_cache()
-
-    def update(self, table, data, where=None):
-	if where is not None:
-	    self.cache_where = where
-
-	values = [ ]
-	for key in data.keys():
-	    values.append(u"%s=\'%s\'" % (key, self.escape(data[key])))
-
-	query = u"UPDATE %s SET %s " % (table, ','.join(values))
-	query += self.compile_clauses()
-	#print query
-	result = self.dbcursor.execute(query)
-	#result = self.dbcursor.execute(query.decode('utf-8'))
-	self.reset_cache()
-	return result
-
-    """
-    def select(self, table, values=None, where=None, whereval=None, order_by=None):
-	if values is None:
-	    values = '*'
-	query = "SELECT %s FROM %s " % (values, table)
-	if where is not None:
-	    query += "WHERE %s='%s' " % (where, self.escape(whereval))
-	if order_by is not None:
-	    query += "ORDER BY %s " % (order_by,)
-	return self.dbcursor.execute(query.decode('utf-8'))
-    """
-
-
-
-class MetaData (object):
-    def __init__(self, filename):
-	self.filename = filename
-	self.meta = { }
-	try:
-	    self.meta = mutagen.File(filename, None, True)
-	except ValueError:
-	    pass
-
-    def get(self, name, default=None):
-	if self.meta and name in self.meta and len(self.meta[name]) > 0:
-	    return self.meta[name][0].encode('utf-8', 'replace')
-	return default
-
 
 class Playlist (object):
     def __init__(self, name):
@@ -217,18 +26,16 @@ class Playlist (object):
 
     def get_files(self):
 	with codecs.open(self.filename, 'r', encoding='utf-8') as f:
-	    contents = f.read().split('\n')
+	    contents = [ media for media in f.read().split('\n') if media ]
 	return contents
 
     def set_files(self, media_list):
 	with codecs.open(self.filename, 'w', encoding='utf-8') as f:
-	    for media in media_list:
-		f.write(media + '\n')
+	    f.write('\n'.join(media_list))
 
     def add_files(self, media_list):
 	with codecs.open(self.filename, 'a', encoding='utf-8') as f:
-	    for media in media_list:
-		f.write(media + '\n')
+	    f.write('\n' + '\n'.join(media_list))
 
     def remove_files(self, media_list):
 	existing_list = self.get_files()
@@ -238,93 +45,24 @@ class Playlist (object):
 
     def clear_playlist(self):
 	with codecs.open(self.filename, 'w', encoding='utf-8') as f:
-	    f.write('\n')
-
-
-class YoutubePlaylistFetcher (nerve.Task):
-    def __init__(self, list_ids, medialib):
-	nerve.Task.__init__(self, 'YoutubePlaylistFetcher')
-	self.list_ids = list_ids
-	self.medialib = medialib
-
-	self.db = DatabaseCursor(self.medialib.dbconnection)
-	self.json = None
-
-    def hash_video(self, meta):
-	url = 'http://www.youtube.com/watch?v=%s' % (meta['encrypted_id'],)
-
-	rows = list(self.db.get('media', 'id,file_last_modified', self.db.inline_expr('filename', url)))
-	if len(rows) > 0 and rows[0][1] >= meta['time_created']:
-	    nerve.log("Skipping " + url)
-	    return url
-
-	parts = meta['title'].split("-", 1)
-	if len(parts) < 2:
-	    artist = meta['author']
-	    title = meta['title']
-	else:
-	    artist = parts[0].strip()
-	    title = parts[1].strip()
-	data = {
-	    'filename' : url,
-	    'artist' : artist,
-	    'title' : title,
-	    'album' : 'YouTube',
-	    'track_num' : '',
-	    'genre' : '',
-	    'tags' : meta['keywords'],
-	    'media_type' : 'video',
-	    'duration' : meta['length_seconds'],
-	    'file_size' : '',
-	    'file_last_modified' : meta['time_created'],
-	}
-
-	if len(rows) <= 0:
-	    nerve.log("Adding " + url)
-	    self.db.insert('media', data)
-	else:
-	    nerve.log(u"Updating " + url)
-	    self.db.where('id', rows[0][0])
-	    self.db.update('media', data)
-	return url
-
-    def fetch_json(self, list_id):
-	url = 'http://www.youtube.com/list_ajax?action_get_list=1&style=json&list=%s' % (list_id,)
-	r = requests.get(url)
-	if r.text:
-	    return json.loads(r.text)
-	return None
-
-    def run(self):
-	for list_id in self.list_ids:
-	    data = self.fetch_json(list_id)
-	    if data is None or 'video' not in data:
-		nerve.log("Unable to fetch youtube playlist " + list_id)
-	    else:
-		playlist = [ ]
-		for video in data['video']:
-		    if self.stopflag.isSet():
-			return
-		    url = self.hash_video(video)
-		    playlist.append(url)
-		pl = Playlist(data['title'])
-		pl.set_files(playlist)
+	    f.write('')
 
 
 class MediaLib (nerve.Device):
     def __init__(self, path=None):
 	nerve.Device.__init__(self)
+	self.playlists = 'playlists'
+	self.dbconnection = nerve.Database('medialib.sqlite')
+	self.db = nerve.DatabaseCursor(self.dbconnection)
+	self.db.create_table('media', "id INTEGER PRIMARY KEY, filename TEXT, artist TEXT, album TEXT, title TEXT, track_num NUMERIC, genre TEXT, tags TEXT, duration NUMERIC, media_type TEXT, file_hash TEXT, file_size INT, file_last_modified INT")
+
+	self.current = 'Default'
+
+	# TODO reenable after testing
 	#self.path = [ '/media/media/Torrents' ]
 	#self.path = [ '/media/media/Music', '/media/media/Torrents' ]
 	self.path = [ 'Y:\Torrents', 'Y:\Music' ]
-	self.playlists = 'playlists'
-	self.current = 'Default'
-	self.dbconnection = Database('medialib.sqlite')
-	self.db = DatabaseCursor(self.dbconnection)
-	self.db.create_table('media', "id INTEGER PRIMARY KEY, filename TEXT, artist TEXT, album TEXT, title TEXT, track_num NUMERIC, genre TEXT, tags TEXT, duration NUMERIC, media_type TEXT, file_hash TEXT, file_size INT, file_last_modified INT")
-
-	# TODO reenable after testing
-	#self.thread = MediaUpdaterTask('MediaUpdater', self)
+	#self.thread = MediaUpdaterTask(self, self.path)
 	#self.thread.start()
 
 	#self.thread = YoutubePlaylistFetcher([ 'PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4', 'FL_VkJGWFV9ZEIv87E-0NM5w', 'PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0' ], self)
@@ -388,7 +126,7 @@ class MediaLib (nerve.Device):
 		playlist.add_files(urls)
 	return len(urls)
 
-    def get_media_list(self, mode, order, offset, limit, search=None, recent=None):
+    def get_media_list(self, mode, order, offset, limit, search=None, recent=None, media_type=None):
 	if mode == 'artist':
 	    self.db.select('artist')
 	    self.db.where_not('artist', '')
@@ -423,6 +161,9 @@ class MediaLib (nerve.Device):
 
 	if recent:
 	    self.db.where_gt('file_last_modified', time.time() - (float(recent) * (60*60*24*7)))
+
+	if media_type:
+	    self.db.where('media_type', media_type)
 
 	result = list(self.db.get_assoc('media'))
 	if order == 'random':
@@ -480,10 +221,11 @@ class MediaLib (nerve.Device):
 
 
 class MediaUpdaterTask (nerve.Task):
-    def __init__(self, name, medialib):
-	nerve.Task.__init__(self, name)
+    def __init__(self, medialib, path):
+	nerve.Task.__init__(self, 'MediaUpdaterTask')
 	self.medialib = medialib
-	self.db = DatabaseCursor(self.medialib.dbconnection)
+	self.db = nerve.DatabaseCursor(self.medialib.dbconnection)
+	self.path = path
 
     def hash_file(self, filename):
 	(mode, inode, dev, nlink, uid, gid, size, atime, mtime, ctime) = os.stat(filename)
@@ -519,7 +261,7 @@ class MediaUpdaterTask (nerve.Task):
 	    self.db.update('media', data)
 
     def run(self):
-	for libpath in self.medialib.path:
+	for libpath in self.path:
 	    for root, dirs, files in os.walk(unicode(libpath)):
 		if self.stopflag.isSet():
 		    return
@@ -527,4 +269,91 @@ class MediaUpdaterTask (nerve.Task):
 		for media in files:
 		    if media.endswith('.mp3'):
 			self.hash_file(os.path.join(root, media))
+
+
+class MetaData (object):
+    def __init__(self, filename):
+	self.filename = filename
+	self.meta = { }
+	try:
+	    self.meta = mutagen.File(filename, None, True)
+	except ValueError:
+	    pass
+
+    def get(self, name, default=None):
+	if self.meta and name in self.meta and len(self.meta[name]) > 0:
+	    return self.meta[name][0].encode('utf-8', 'replace')
+	return default
+
+
+
+class YoutubePlaylistFetcher (nerve.Task):
+    def __init__(self, medialib, list_ids):
+	nerve.Task.__init__(self, 'YoutubePlaylistFetcher')
+	self.list_ids = list_ids
+	self.medialib = medialib
+
+	self.db = nerve.DatabaseCursor(self.medialib.dbconnection)
+	self.json = None
+
+    def hash_video(self, meta):
+	url = 'http://www.youtube.com/watch?v=%s' % (meta['encrypted_id'],)
+
+	rows = list(self.db.get('media', 'id,file_last_modified', self.db.inline_expr('filename', url)))
+	if len(rows) > 0 and rows[0][1] >= meta['time_created']:
+	    nerve.log("Skipping " + url)
+	    return url
+
+	parts = meta['title'].split("-", 1)
+	if len(parts) < 2:
+	    artist = meta['author']
+	    title = meta['title']
+	else:
+	    artist = parts[0].strip()
+	    title = parts[1].strip()
+	data = {
+	    'filename' : url,
+	    'artist' : artist,
+	    'title' : title,
+	    'album' : 'YouTube',
+	    'track_num' : '',
+	    'genre' : '',
+	    'tags' : meta['keywords'],
+	    'media_type' : 'video',
+	    'duration' : meta['length_seconds'],
+	    'file_size' : '',
+	    'file_last_modified' : meta['time_created'],
+	}
+
+	if len(rows) <= 0:
+	    nerve.log("Adding " + url)
+	    self.db.insert('media', data)
+	else:
+	    nerve.log(u"Updating " + url)
+	    self.db.where('id', rows[0][0])
+	    self.db.update('media', data)
+	return url
+
+    def fetch_json(self, list_id):
+	url = 'http://www.youtube.com/list_ajax?action_get_list=1&style=json&list=%s' % (list_id,)
+	r = requests.get(url)
+	if r.text:
+	    return json.loads(r.text)
+	return None
+
+    def run(self):
+	for list_id in self.list_ids:
+	    data = self.fetch_json(list_id)
+	    if data is None or 'video' not in data:
+		nerve.log("Unable to fetch youtube playlist " + list_id)
+	    else:
+		playlist = [ ]
+		for video in data['video']:
+		    if self.stopflag.isSet():
+			return
+		    url = self.hash_video(video)
+		    playlist.append(url)
+		pl = Playlist(data['title'])
+		pl.set_files(playlist)
+
 

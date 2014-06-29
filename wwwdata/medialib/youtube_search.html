@@ -40,14 +40,14 @@
 %>
 
 <form method="post" action="<%= py._PATH %>">
-    <input type="text" name="q">
+    <input type="text" name="q" value="<%= py.ARGS('q') %>" />
     <button type="submit" name="yt_search" value="1">Search</button>
 </form>
 
-<form method="post" action="<%= py._PATH %>">
-<div class="medialist">
+<% if media_list and 'results' in media_list['responseData']: %>
+    <form method="post" action="<%= py._PATH %>">
+    <div class="medialist">
 
-    <% if media_list and 'results' in media_list['responseData']: %>
 	<button type="submit" name="pl_replace" value="1">Replace</button>
 	<button type="submit" name="pl_enqueue" value="1">Enqueue</button>
 
@@ -70,15 +70,16 @@
 
 	<button type="submit" name="pl_replace" value="1">Replace</button>
 	<button type="submit" name="pl_enqueue" value="1">Enqueue</button>
-    <% else: %>
-	<div style="font-size: 0.8em;">
-	    There are no search results
-	</div>
-    <% end %>
 
-</div>
-</form>
-<a href="#top">Top</a>
+    </div>
+    </form>
+    <a href="#top">Top</a>
+
+<% elif py.POST('yt_search'): %>
+    <div style="font-size: 0.8em;">
+	There are no search results
+    </div>
+<% end %>
 
 </body>
 </html> 

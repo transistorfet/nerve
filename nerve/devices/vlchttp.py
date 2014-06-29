@@ -133,6 +133,10 @@ class VLCHTTP (nerve.Device):
 		ret.append(song)
 	return ret
 
+    def playlist_seek(self, id):
+	url = 'http://%s/requests/status.json?command=pl_play&id=%s' % (self.server, id)
+	r = requests.get(url, auth=('', 'test'))
+
     def play(self, msg):
 	if len(msg.args) != 1:
 	    return

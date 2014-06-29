@@ -35,13 +35,16 @@
     limit = py.ARGS('limit', default='1000')
     search = urldecode(py.ARGS('search'))
     recent = py.ARGS('recent')
+    media_type = py.ARGS('type')
 
-    media_list = medialib.get_media_list(mode, order, offset, limit, urldecode(search), recent)
+    media_list = medialib.get_media_list(mode, order, offset, limit, urldecode(search), recent, media_type)
 
-    has_album = True if 'album' in media_list[0] else False
-    has_genre = True if 'genre' in media_list[0] else False
-    has_title = True if 'title' in media_list[0] else False
-    has_track_num = True if 'track_num' in media_list[0] else False
+    if media_list:
+	has_album = True if 'album' in media_list[0] else False
+	has_genre = True if 'genre' in media_list[0] else False
+	has_title = True if 'title' in media_list[0] else False
+	has_track_num = True if 'track_num' in media_list[0] else False
+    end
 %>
 
 <div>
@@ -70,45 +73,45 @@
 	<option value="genre">genre</option>
 	<option value="tags">tags</option>
     </select>
-    <input type="text" name="search">
+    <input type="text" name="search" value="%%">
     <button type="submit" name="pl_search" value="1">Search</button>
 </form>
 
 <hr>
 
-<form method="post" action="<%= py._PATH %>">
-<div class="medialist">
-    <button type="submit" name="pl_replace" value="1">Replace</button>
-    <button type="submit" name="pl_enqueue" value="1">Enqueue</button>
+<% if media_list: %>
+    <form method="post" action="<%= py._PATH %>">
+    <div class="medialist">
+	<button type="submit" name="pl_replace" value="1">Replace</button>
+	<button type="submit" name="pl_enqueue" value="1">Enqueue</button>
 
-    <input type="hidden" name="mode" value="<% echo(mode) %>">
-    <input type="hidden" name="order" value="<% echo(order) %>">
-    <input type="hidden" name="offset" value="<% echo(offset) %>">
-    <input type="hidden" name="limit" value="<% echo(limit) %>">
-    <input type="hidden" name="search" value="<% echo(urlencode(search)) %>">
-    <input type="hidden" name="recent" value="<% echo(recent) %>">
+	<input type="hidden" name="mode" value="<% echo(mode) %>">
+	<input type="hidden" name="order" value="<% echo(order) %>">
+	<input type="hidden" name="offset" value="<% echo(offset) %>">
+	<input type="hidden" name="limit" value="<% echo(limit) %>">
+	<input type="hidden" name="search" value="<% echo(urlencode(search)) %>">
+	<input type="hidden" name="recent" value="<% echo(recent) %>">
+	<input type="hidden" name="type" value="<% echo(media_type) %>">
 
-    <table>
-    <thead><tr>
-	<th></th>
-	<th>Artist</th>
-	<% if has_title: %>
-	    <th>Title</th>
-	<% end %>
-	<% if has_album: %>
-	    <th>Album</th>
-	<% end %>
-	<% if has_track_num: %>
-	    <th>#</th>
-	<% end %>
-	<% if has_genre: %>
-	    <th>Genre</th>
-	<% end %>
-    </tr></thead>
-    <tbody>
-	<%
-	if media_list:
-	    for media in media_list: %>
+	<table>
+	<thead><tr>
+	    <th></th>
+	    <th>Artist</th>
+	    <% if has_title: %>
+		<th>Title</th>
+	    <% end %>
+	    <% if has_album: %>
+		<th>Album</th>
+	    <% end %>
+	    <% if has_track_num: %>
+		<th>#</th>
+	    <% end %>
+	    <% if has_genre: %>
+		<th>Genre</th>
+	    <% end %>
+	</tr></thead>
+	<tbody>
+	    <% for media in media_list: %>
 		<tr>
 		    <%
 		    if mode == 'artist':
@@ -137,18 +140,19 @@
 			<td><%= media['genre'] %></td>
 		    <% end %>
 		</tr>
-	    <%
-	    end
-	end	    
-	%>
-    </tbody>
-    </table>
+	    <% end %>
+	</tbody>
+	</table>
 
-    <button type="submit" name="pl_replace" value="1">Replace</button>
-    <button type="submit" name="pl_enqueue" value="1">Enqueue</button>
-</div>
-</form>
-<a href="#top">Top</a>
+	<button type="submit" name="pl_replace" value="1">Replace</button>
+	<button type="submit" name="pl_enqueue" value="1">Enqueue</button>
+    </div>
+    </form>
+    <a href="#top">Top</a>
+
+<% elif py.ARGS('mode'): %>
+    <span>No media files found using the given search criteria</span>
+<% end %>
 
 </body>
 </html> 

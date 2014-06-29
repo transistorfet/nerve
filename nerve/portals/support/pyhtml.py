@@ -94,7 +94,7 @@ class PyHTMLParser (object):
             first = contents.partition('<%')
             second = first[2].partition('%>')
 
-	    segments.append({ 'type' : 'raw', 'data' : first[0] })
+	    segments.append({ 'type' : 'raw', 'data' : first[0] if first[0][-1] == '\n' else first[0].rstrip(' \t') })
 
 	    if second[0]:
 		if second[0][0] == '=':
@@ -102,7 +102,10 @@ class PyHTMLParser (object):
 		else:
 		    segments.append({ 'type' : 'exec', 'data' : second[0] })
 
-	    contents = second[2]
+	    if len(second[2]) > 0 and second[2][0] == '\n':
+		contents = second[2][1:]
+	    else:
+		contents = second[2]
 	return segments
 
     def _fix_indentation(self, lines):
@@ -133,6 +136,7 @@ class PyHTMLParser (object):
 	self.globals = { }
 	self.globals['nerve'] = nerve
 	self.globals['py'] = self
+	self.globals['json'] = json
 	self.globals['urlencode'] = urllib.quote
 	self.globals['urldecode'] = urllib.unquote
 	self.globals['utf8'] = utf8
@@ -146,6 +150,7 @@ class PyHTMLParser (object):
 	except Exception as e:
 	    #print '<b>Eval Error</b>: (line %s) %s<br />' % (str(self.output.getvalue().count('\n') + 1), repr(e))
 	    print '\n<b>Eval Error:</b>\n<pre>\n%s</pre><br />\n' % (traceback.format_exc(),)
+	    print '<br /><pre>' + self.htmlspecialchars('\n'.join([ str(num + 1) + ':  ' + line for num,line in enumerate(self.pycode.splitlines()) ])) + '</pre>'
 	finally:
 	    sys.stdout = old_stdout
         return self.output.getvalue()

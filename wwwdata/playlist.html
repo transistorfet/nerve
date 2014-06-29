@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C/DTD HTML 4.01//EN">
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+
+    <script src="/jquery.min.js" type="text/javascript"></script>
+    <script src="/common.js" type="text/javascript"></script>
+</head>
+<body>
+
+<a href="index.html">Status</a> | <a href="playlist.html">Playlist</a> | <a href="medialib/playlist.html">Medialib Playlist</a> | <a href="medialib/add.html">Medialib</a>
+
+<% player = nerve.get_device('music') %>
+<%
+    if py._REQTYPE == "POST":
+	if py.ARGS('play'):
+	    player.playlist_seek(py.ARGS('play'))
+	end
+    end
+%>
+
+<% playlist = player.getplaylist(None) %>
+
+<div class="files"><%= len(playlist) %> files in playlist.</div>
+
+<div class="medialist">
+
+    <% if playlist: %>
+    <% #echo('<pre>' + json.dumps(playlist, sort_keys=True, indent=4, separators=(',', ':')) + '</pre>') %>
+    <table>
+    <thead><tr>
+	<th>Name</th>
+    </tr></thead>
+    <tbody>
+	<% for media in playlist: %>
+	    <tr><td><a href="#" class="play_seek" data-id="<%= media['id'] %>"><%= media['name'] %></a></td></tr>
+	<% end %>
+    </tbody>
+    </table>
+    <% end %>
+
+</div>
+
+<script type="text/javascript">
+
+    $(document).ready(function()
+    {
+	$('.play_seek').click(function () {
+	    var id = $(this).attr('data-id');
+	    $.post('/playlist.html', {'play':id}, function(response) {
+	    }, 'json');
+	});
+    });
+
+</script>
+
+</body>
+</html> 
+ 

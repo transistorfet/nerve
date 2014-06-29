@@ -1,6 +1,11 @@
 
+* add voice commands somehow, possibly through android or google web api
+
+* change portals and devices to a common 'modules' thing, and then modules can have portals and devices, and other objects
+  nerve/<module>/..., the __init__.py file would contain exported devices, which could then be looked up using '<module>.<class>'
+
 * get a proper config system going
-* add a prefix to methods that can be dispatched to
+* add a prefix to methods that can be dispatched to with a query
 * make it so that you can add a device by specifying the device name, and having the system look for the right file and import it
 
 * fix the message return... (xmms2 in particular just sends all song name updates to the last IP that it received a message from)
@@ -12,7 +17,6 @@
 * fix RGBNode to control daisy downstream device when receiving serial commands (is this done?)
 
 * get vlc scrobbling working
-* get vlc YouTube full playlist!
 * when vlc plays a youtube link, it converts the link to the direct link to the flv, but that link expires, and causes an error when played
 
 STRUCTURAL:

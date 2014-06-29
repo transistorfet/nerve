@@ -7,4 +7,5 @@ from nerve.config import *
 from nerve.core import *
 from nerve.tasks import *
 from nerve.main import *
+from nerve.db import *
 
