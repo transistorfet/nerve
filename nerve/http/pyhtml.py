@@ -22,6 +22,8 @@ def utf8(data):
     return str(data)
 
 class PyHTMLParser (object):
+    version = '0.1'
+
     def __init__(self, contents, filename=None, reqtype=None, path=None, params=None):
 	self.segments = None
 	self.pycode = ''
@@ -94,7 +96,7 @@ class PyHTMLParser (object):
             first = contents.partition('<%')
             second = first[2].partition('%>')
 
-	    segments.append({ 'type' : 'raw', 'data' : first[0] if first[0][-1] == '\n' else first[0].rstrip(' \t') })
+	    segments.append({ 'type' : 'raw', 'data' : first[0] if len(first[0]) > 0 and first[0][-1] == '\n' else first[0].rstrip(' \t') })
 
 	    if second[0]:
 		if second[0][0] == '=':
@@ -133,26 +135,33 @@ class PyHTMLParser (object):
 	return lines
 
     def execute_python(self):
-	self.globals = { }
-	self.globals['nerve'] = nerve
-	self.globals['py'] = self
-	self.globals['json'] = json
-	self.globals['urlencode'] = urllib.quote
-	self.globals['urldecode'] = urllib.unquote
-	self.globals['utf8'] = utf8
 	old_stdout = sys.stdout
+
 	try:
 	    self.output = cStringIO.StringIO()
 	    sys.stdout = self.output
+
+	    self.globals = { }
+	    self.globals['nerve'] = nerve
+	    self.globals['py'] = self
+	    self.globals['json'] = json
+	    self.globals['re'] = re
+	    self.globals['urlencode'] = urllib.quote
+	    self.globals['urldecode'] = urllib.unquote
+	    self.globals['utf8'] = utf8
 	    self.globals['echo'] = self.output.write
+
 	    #self.debug_print_env()
 	    exec self.pycode in self.globals
+
 	except Exception as e:
 	    #print '<b>Eval Error</b>: (line %s) %s<br />' % (str(self.output.getvalue().count('\n') + 1), repr(e))
 	    print '\n<b>Eval Error:</b>\n<pre>\n%s</pre><br />\n' % (traceback.format_exc(),)
 	    print '<br /><pre>' + self.htmlspecialchars('\n'.join([ str(num + 1) + ':  ' + line for num,line in enumerate(self.pycode.splitlines()) ])) + '</pre>'
+
 	finally:
 	    sys.stdout = old_stdout
+
         return self.output.getvalue()
 
     def debug_print_env(self):

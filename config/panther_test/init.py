@@ -3,11 +3,11 @@
 
 #import nerve
 
-#nerve.add_device('music', 'xmms2.Xmms2')
-#nerve.add_device('music', 'vlc.VLCHTTP')
+#nerve.add_device('player', 'xmms2.Xmms2')
+#nerve.add_device('player', 'vlc.VLCHTTP')
 #nerve.add_device('layout', 'layout.LayoutDevice')
 #nerve.add_device('deskclock', 'deskclock.Deskclock', "/dev/ttyACM0", 19200)
-#nerve.add_device('player', 'vlc.VLCHTTP')
+nerve.add_device('player', 'vlc.VLCHTTP')
 nerve.add_device('medialib', 'medialib.MediaLib')
 
 #nerve.add_portal('raw.UDPServer', 5960)
@@ -19,7 +19,7 @@ rgb = nerve.add_device('rgb', 'serial.NerveSerialDevice', "/dev/ttyACM1", 19200)
 
 config = {
     'devices' : [
-	[ 'music', 'xmms2.Xmms2' ],
+	[ 'player', 'xmms2.Xmms2' ],
 	[ 'deskclock', 'deskclock.Deskclock' ],
 	[ 'rgb', 'serialdev.NerveSerialDevice' ],
 	[ 'deskclockold', 'serialdev.SerialDevice' ]
@@ -34,5 +34,12 @@ config = {
     'deskclock' : { 'devfile' : '/dev/ttyACM0', 'baud' : 19200 },
     'rgb' : { 'devfile' : '/dev/ttyACM1', 'baud' : 19200 },
     'deskclockold' : { 'devfile' : '/dev/ttyACM0', 'baud' : 19200 }
+}
+
+{
+    'devices' : [
+	{ 'device' : 'xmms2.Xmms2', 'node' : 'player' },
+	{ 'device' : 'deskclock.Deskclock', 'node' : 'deskclock', 'devfile' : '/dev/ttyACM0', 'baud' : 19200 },
+    ]
 }
 

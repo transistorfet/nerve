@@ -28,9 +28,9 @@ class DeskClock (SerialDevice):
     def do_idle(self):
 	self.serial.write('L0=' + time.strftime("%H:%M %a %b %d") + '\n')
 
-	music = nerve.get_device("music")
-	if music != None:
-	    title = music.title.ljust(16)
+	player = nerve.get_device("player")
+	if player != None:
+	    title = player.title.ljust(16)
 	    title = title[0:16]
 	    self.serial.write('L1=' + title.encode('ascii', 'replace') + '\n')
 	else:
@@ -39,11 +39,11 @@ class DeskClock (SerialDevice):
     def do_receive(self, line):
 	#print line
 	if line == "B7=0" or line == 'I0=A2C8':
-	    nerve.query("music.next")
+	    nerve.query("player.next")
 	elif line == "B6=0" or line == 'I0=A2A8':
-	    nerve.query("music.toggle")
+	    nerve.query("player.toggle")
 	elif line == "B5=0" or line == 'I0=A298':
-	    nerve.query("music.previous")
+	    nerve.query("player.previous")
 	elif line == "B4=0":
 	    rgb = nerve.get_device("rgb")
 	    rgb.send('key 248')
@@ -51,9 +51,9 @@ class DeskClock (SerialDevice):
 	    nerve.query(self.name + ".relay_toggle")
 	    #self.relay_toggle(msg)
 	elif line == "B0=0":
-	    nerve.query("music.shuffle")
+	    nerve.query("player.shuffle")
 	elif line == "B1=0":
-	    nerve.query("music.sort")
+	    nerve.query("player.sort")
 	elif line[0:5] == 'I0=A2':
 	    rgb = nerve.get_device("rgb")
 	    rgb.send('key 2' + line[5:7])
@@ -66,7 +66,7 @@ nerve.add_portal('raw.UDPServer', 5959)
 nerve.add_device('deskclock', DeskClock("/dev/ttyACM0", 19200))
 rgb = nerve.add_device('rgb', 'serial.NerveSerialDevice', "/dev/ttyACM1", 19200)
 
-nerve.add_device('music', 'xmms2.Xmms2')
+nerve.add_device('player', 'xmms2.Xmms2')
 
 nerve.add_portal('raw.Console')
 

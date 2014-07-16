@@ -1,0 +1,89 @@
+ 
+
+- resource identifiers should conform to the uri spec...
+
+	http://localhost:8888/player.next
+	http://localhost:8888/player/next
+
+	localhost:8888/player/next
+
+	/player/next
+
+	nerve://192.168.1.180/player/next	# 'nerve' being the raw protocol
+
+	http://192.168.1.180/player/next
+
+
+- the query function would take a valid uri, parse it, as well as taking arguments
+
+	nerve.query('http://localhost:8888/player/pl_add', 'a string of arguments')
+	nerve.query('http://localhost:8888/player/pl_add', [ 'list', 'of', 'arguments' ])
+	nerve.query('http://localhost:8888/player/pl_add', { 'dict' : 'arguments' })
+
+	(or should the second argument be only a string or list, and have an optional third argument that's the dict.
+	Either way, you also need to pass a source address too somehow...)
+
+	nerve.query(query, args, src=None) # or should src be 'replyTo' or something
+	nerve.query('http://localhost:8888/player/pl_add', 'a string of arguments', src='console')
+	nerve.query('http://localhost:8888/player/pl_add', 'a string of arguments', src='localhost:8888/console')
+
+- Populating a device tree???
+	nerve.add_node('player', 'http://localhost:8888/player')
+	nerve.add_node('player', AliasDevice('http://localhost:8888/player')) # or this??
+	nerve.add_node('medialib', MediaLib(config='medialib')
+
+	config = {
+		'medialib' : { 'path' : [ '/media/media/Music', '/media/media/Torrents' ] }
+	}
+
+
+
+	nerve.query('player.next', '')
+	nerve.query('http://192.168.1.180:8888/player/next', '')
+	nerve.query('192.168.1.180:8888:player.next', '')  # ???
+
+
+-----
+
+config consists of a list of 'servers' (instead of portals...) and a list of root devices, and a device type
+The device name must be unique, and can then be used as the root index into the global configs.  The
+device type could maybe be stored there too...
+
+config = {
+	'devices' : [ 'player', 'medialib', 'rgb', 'deskclock' ],
+
+	'player' : {
+		'type' : 'vlchttp.VLCHTTP',
+		'vlcuser' : 'person',
+		'vlcpasswd' : 'somethingencryptedisuppose',
+		'vlcport' : 7999
+	},
+
+	'medialib' : {
+		'type' : 'medialib.MediaLib',
+		'path' : [ '/media/media/Music', '/media/media/Torrents' ],
+		'updatehours' : 24,
+	},
+
+	'rgb' : {
+		'type' : 'serial.NerveSerialDevice',
+		'file' : '/dev/ttyACM1',
+		'baud' : 19200
+	},
+
+	'deskclock' : {
+		'type' : 'deskclock.DeskClock',
+		'file' : '/dev/ttyACM0',
+		'baud' : 19200
+	}'
+
+	'servers' : [ 'http', 'console', 'udpserver' ]
+
+	'udpserver' : {
+		'type' : 'raw.UDPServer',
+		'port' : 5959
+	}
+}
+
+
+

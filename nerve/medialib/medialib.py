@@ -26,7 +26,7 @@ class Playlist (object):
 
     def get_files(self):
 	with codecs.open(self.filename, 'r', encoding='utf-8') as f:
-	    contents = [ media for media in f.read().split('\n') if media ]
+	    contents = [ media for media in f.read().split('\n') if media and not media.startswith('#') ]
 	return contents
 
     def set_files(self, media_list):
@@ -39,6 +39,7 @@ class Playlist (object):
 
     def remove_files(self, media_list):
 	existing_list = self.get_files()
+	# TODO rewrite this so it only removes one matching file rather than both
 	new_list = [ existing for existing in existing_list if existing not in media_list ]
 	self.set_files(new_list)
 	return len(existing_list) - len(new_list)
@@ -55,18 +56,20 @@ class MediaLib (nerve.Device):
 	self.dbconnection = nerve.Database('medialib.sqlite')
 	self.db = nerve.DatabaseCursor(self.dbconnection)
 	self.db.create_table('media', "id INTEGER PRIMARY KEY, filename TEXT, artist TEXT, album TEXT, title TEXT, track_num NUMERIC, genre TEXT, tags TEXT, duration NUMERIC, media_type TEXT, file_hash TEXT, file_size INT, file_last_modified INT")
+	self.db.create_table('info', "name TEXT PRIMARY KEY, value TEXT")
 
 	self.current = 'Default'
 
 	# TODO reenable after testing
 	#self.path = [ '/media/media/Torrents' ]
 	#self.path = [ '/media/media/Music', '/media/media/Torrents' ]
-	self.path = [ 'Y:\Torrents', 'Y:\Music' ]
-	#self.thread = MediaUpdaterTask(self, self.path)
-	#self.thread.start()
+	#self.path = [ 'Y:\Torrents', 'Y:\Music' ]
+	self.path = nerve.get_config("medialib_dirs")
+	self.thread = MediaUpdaterTask(self, self.path)
+	self.thread.start()
 
-	#self.thread = YoutubePlaylistFetcher([ 'PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4', 'FL_VkJGWFV9ZEIv87E-0NM5w', 'PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0' ], self)
-	#self.thread.start()
+	self.thread = YoutubePlaylistFetcher(self, nerve.get_config("youtube_playlists")) # [ 'PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4', 'FL_VkJGWFV9ZEIv87E-0NM5w', 'PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0' ])
+	self.thread.start()
 
     def html_make_playlist(self, postvars):
 	playlist = Playlist(self.current)
@@ -143,7 +146,7 @@ class MediaLib (nerve.Device):
 	else:
 	    return [ ]
 
-	if search:
+	if search and len(search) > 0:
 	    self.db.where_like(order, search)
 
 	if order == 'artist':
@@ -227,7 +230,7 @@ class MediaUpdaterTask (nerve.Task):
 	self.db = nerve.DatabaseCursor(self.medialib.dbconnection)
 	self.path = path
 
-    def hash_file(self, filename):
+    def update_file(self, filename):
 	(mode, inode, dev, nlink, uid, gid, size, atime, mtime, ctime) = os.stat(filename)
 
 	safe_filename = filename
@@ -236,7 +239,7 @@ class MediaUpdaterTask (nerve.Task):
 
 	rows = list(self.db.get('media', 'id,file_last_modified', self.db.inline_expr('filename', filename)))
 	if len(rows) > 0 and mtime <= rows[0][1]:
-	    nerve.log("Skipping " + safe_filename)
+	    #nerve.log("Skipping " + safe_filename)
 	    return
 
 	meta = MetaData(filename)
@@ -260,7 +263,8 @@ class MediaUpdaterTask (nerve.Task):
 	    self.db.where('id', rows[0][0])
 	    self.db.update('media', data)
 
-    def run(self):
+    def update_all(self):
+	nerve.log("Starting medialib update...")
 	for libpath in self.path:
 	    for root, dirs, files in os.walk(unicode(libpath)):
 		if self.stopflag.isSet():
@@ -268,7 +272,17 @@ class MediaUpdaterTask (nerve.Task):
 		nerve.log("Searching " + root)
 		for media in files:
 		    if media.endswith('.mp3'):
-			self.hash_file(os.path.join(root, media))
+			self.update_file(os.path.join(root, media))
+	nerve.log("Medialib update complete")
+
+    def run(self):
+	while True:
+	    row = self.db.get_single('info', 'name,value', self.db.inline_expr('name', 'last_updated'))
+	    if row is None or float(row[1]) + 86400 < time.time():
+		self.update_all()
+		self.db.insert('info', { 'name' : 'last_updated', 'value' : str(time.time()) }, replace=True)
+	    if self.stopflag.wait(3600):
+		break 
 
 
 class MetaData (object):
@@ -301,7 +315,7 @@ class YoutubePlaylistFetcher (nerve.Task):
 
 	rows = list(self.db.get('media', 'id,file_last_modified', self.db.inline_expr('filename', url)))
 	if len(rows) > 0 and rows[0][1] >= meta['time_created']:
-	    nerve.log("Skipping " + url)
+	    #nerve.log("Skipping " + url)
 	    return url
 
 	parts = meta['title'].split("-", 1)
@@ -341,7 +355,8 @@ class YoutubePlaylistFetcher (nerve.Task):
 	    return json.loads(r.text)
 	return None
 
-    def run(self):
+    def update_all(self):
+	nerve.log("Starting youtube medialib update...")
 	for list_id in self.list_ids:
 	    data = self.fetch_json(list_id)
 	    if data is None or 'video' not in data:
@@ -355,5 +370,14 @@ class YoutubePlaylistFetcher (nerve.Task):
 		    playlist.append(url)
 		pl = Playlist(data['title'])
 		pl.set_files(playlist)
+	nerve.log("Youtube medialib update complete")
 
+    def run(self):
+	while True:
+	    row = self.db.get_single('info', 'name,value', self.db.inline_expr('name', 'youtube_last_updated'))
+	    if row is None or float(row[1]) + 86400 < time.time():
+		self.update_all()
+		self.db.insert('info', { 'name' : 'youtube_last_updated', 'value' : str(time.time()) }, replace=True)
+	    if self.stopflag.wait(3600):
+		break 
 

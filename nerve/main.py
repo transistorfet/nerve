@@ -82,12 +82,12 @@ def configdir():
 
 def add_portal(portal, *args):
     global mainloops
-    return mainloops[0].config.create_object('portals', portal, *args)
+    return mainloops[0].config.create_object(portal, *args)
 
 def add_device(name, dev, *args):
     global mainloops
     if not isinstance(dev, nerve.Device):
-	dev = mainloops[0].config.create_object('devices', dev, *args)
+	dev = mainloops[0].config.create_object(dev, *args)
     return mainloops[0].root.add(name, dev)
 
 def get_device(name):

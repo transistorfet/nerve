@@ -92,7 +92,7 @@ class Config (object):
 	else:
 	    return filelist
 
-    def create_object(self, typename, name, *args):
+    def create_object(self, name, *args):
 	(modulename, dot, classname) = name.rpartition('.')
 	module = self.import_module(modulename)
 	objclass = getattr(module, classname)

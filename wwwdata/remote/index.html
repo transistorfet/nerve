@@ -1,0 +1,184 @@
+<!DOCTYPE html PUBLIC "-//W3C/DTD HTML 4.01//EN">
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+
+    <script type="text/javascript" src="/jquery.min.js"></script>
+    <script type="text/javascript" src="/common.js"></script>
+</head>
+<body>
+
+<a href="/">Root</a> | <a href="/remote/index.html">Remote</a> | <a href="/remote/player.html">Player</a> | <a href="/medialib/playlist.html">Medialib Playlist</a> | <a href="/medialib/add.html">Medialib</a>
+
+<hr>
+
+<div class="update" data-path="/remote/player.json" data-time="5000">
+    <span class="song"></span><br />
+</div>
+
+<table>
+    <tr>
+	<td><button data-tag="player.previous" class="button">Previous</button></td>
+	<td><button data-tag="player.toggle" class="button">PlayPause</button></td>
+	<td><button data-tag="player.next" class="button">Next</button></td>
+    </tr>
+    <tr>
+	<td><button data-tag="player.random" class="button">Random</button></td>
+	<td><button data-tag="player.fullscreen" class="button">Fullscreen</button></td>
+    </tr>
+</table>
+
+<hr>
+
+<table>
+    <tr>
+	<td><button data-tag="stereo.power" class="button">Stereo</button></td>
+	<td><button data-tag="tv.power" class="button">TV</button></td>
+	<td><button data-tag="rgb.power 0" class="button">Lights Off</button></td>
+	<td><button data-tag="rgb.power" class="button">Lights</button></td>
+    </tr>
+    <tr>
+	<td><button data-tag="stereo.volup" class="button">Vol Up</button></td>
+	<td><button data-tag="tv.volup" class="button">Vol Up</button></td>
+	<td><button data-tag="rgb.key 258" class="button">Vol Up</button></td>
+    </tr>
+    <tr>
+	<td><button data-tag="stereo.voldown" class="button">Vol Down</button></td>
+	<td><button data-tag="tv.voldown" class="button">Vol Down</button></td>
+	<td><button data-tag="rgb.key 278" class="button">Vol Down</button></td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+	<td><button data-tag="sys.wakeup" class="button">Wake Up</button></td>
+	<td><button data-tag="sys.sleep" class="button">Sleep</button></td>
+    </tr>
+</table>
+
+<hr>
+<div class="row">
+    <input id="playurl" data-tag="player.play" type="text" />
+    <button class="sendtext" data-text="playurl">Add</button>
+</div>
+<hr>
+
+<table>
+    <tr>
+	<td><button data-tag="player.load_playlist http://www.youtube.com/playlist?list=PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4" class="button">Anne's Playlist</button></td>
+	<td><button data-tag="player.load_playlist http://www.youtube.com/playlist?list=FL_VkJGWFV9ZEIv87E-0NM5w" class="button">Favorites</button></td>
+	<td><button data-tag="player.load_playlist http://www.youtube.com/playlist?list=PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0" class="button">Dearest Anne</button></td>
+    </tr>
+</table>
+<table>
+    <tr>
+	<td><button data-tag="player.load_playlist file:///W:/nerve/config/raven_medialib/playlists/Default.m3u" class="button">Medialib Playlist</button></td>
+    </tr>
+</table>
+<table>
+    <tr>
+	<td><button data-tag="player.clear_playlist" class="button">Clear Playlist</button></td>
+	<td><button data-tag="player.kill_instance" class="button">Kill VLC</button></td>
+    </tr>
+</table>
+
+<hr>
+
+<div class="update" data-path="/remote/player.json" data-time="5000">
+    <span class="song"></span><br/>
+    <span class="volume"></span><br/>
+    <span class="state"></span><br/>
+    <span class="position"></span><br/>
+    <span class="loop"></span><br/>
+    <span class="random"></span><br/>
+    <span class="fullscreen"></span><br/>
+</div>
+
+
+<!-- <a id="previous" data-tag="player.previous" href="#" class="button">Previous</a>
+<a id="playpause" data-tag="player.toggle" href="#" class="button">PlayPause</a>
+<a id="next" data-tag="player.next" href="#" class="button">Next</a> -->
+
+<hr>
+
+<h5>Stereo</h5>
+<table>
+    <tr>
+	<td><button data-tag="stereo.power" class="button">Power</button></td>
+	<td><button data-tag="stereo.tape" class="button">Tape</button></td>
+	<td><button data-tag="stereo.tuner" class="button">Tuner</button></td>
+	<td><button data-tag="stereo.volup" class="button">Up</button></td>
+	<td><button data-tag="stereo.voldown" class="button">Down</button></td>
+    </tr>
+</table>
+
+<hr>
+
+
+<h5>RGB Node<h5>
+<div class="slider" data-tag="rgb.intensity" data-max="256"></div>
+<table>
+    <tr>
+	<td><button data-tag="rgb.power" class="button">Power</button></td>
+	<td><button data-tag="rgb.key 258" class="button">Vol Up</button></td>
+	<td><button data-tag="rgb.key 278" class="button">Vol Down</button></td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+	<td><button data-tag="rgb.channel 1" class="button">1</button></td>
+	<td><button data-tag="rgb.channel 2" class="button">2</button></td>
+	<td><button data-tag="rgb.channel 3" class="button">3</button></td>
+	<td><button data-tag="rgb.channel 4" class="button">4</button></td>
+	<td><button data-tag="rgb.channel 5" class="button">5</button></td>
+	<td><button data-tag="rgb.channel 6" class="button">6</button></td>
+	<td><button data-tag="rgb.channel 7" class="button">7</button></td>
+	<td><button data-tag="rgb.channel 8" class="button">8</button></td>
+	<td><button data-tag="rgb.channel 9" class="button">9</button></td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+	<td><a class="button" href="#" data-tag="rgb.index 1"><div style="width:50px; height:50px; border: 1px solid #000; background: #ff0000;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 2"><div style="width:50px; height:50px; border: 1px solid #000; background: #ff2000;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 3"><div style="width:50px; height:50px; border: 1px solid #000; background: #ff4000;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 4"><div style="width:50px; height:50px; border: 1px solid #000; background: #ff8000;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 5"><div style="width:50px; height:50px; border: 1px solid #000; background: #ffff00;"></div></a></td>
+    </tr>
+    <tr>
+	<td><a class="button" href="#" data-tag="rgb.index 6"><div style="width:50px; height:50px; border: 1px solid #000; background: #80ff00;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 7"><div style="width:50px; height:50px; border: 1px solid #000; background: #40ff00;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 8"><div style="width:50px; height:50px; border: 1px solid #000; background: #20ff00;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 9"><div style="width:50px; height:50px; border: 1px solid #000; background: #00ff00;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 10"><div style="width:50px; height:50px; border: 1px solid #000; background: #00ff20;"></div></a></td>
+    </tr>
+    <tr>
+	<td><a class="button" href="#" data-tag="rgb.index 11"><div style="width:50px; height:50px; border: 1px solid #000; background: #00ff40;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 12"><div style="width:50px; height:50px; border: 1px solid #000; background: #00ff80;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 13"><div style="width:50px; height:50px; border: 1px solid #000; background: #00ffff;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 14"><div style="width:50px; height:50px; border: 1px solid #000; background: #0080ff;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 15"><div style="width:50px; height:50px; border: 1px solid #000; background: #0040ff;"></div></a></td>
+    </tr>
+    <tr>
+	<td><a class="button" href="#" data-tag="rgb.index 16"><div style="width:50px; height:50px; border: 1px solid #000; background: #0020ff;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 17"><div style="width:50px; height:50px; border: 1px solid #000; background: #0000ff;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 18"><div style="width:50px; height:50px; border: 1px solid #000; background: #2000ff;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 19"><div style="width:50px; height:50px; border: 1px solid #000; background: #4000ff;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 20"><div style="width:50px; height:50px; border: 1px solid #000; background: #8000ff;"></div></a></td>
+    </tr>
+    <tr>
+	<td><a class="button" href="#" data-tag="rgb.index 21"><div style="width:50px; height:50px; border: 1px solid #000; background: #ff00ff;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 22"><div style="width:50px; height:50px; border: 1px solid #000; background: #ff0080;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 23"><div style="width:50px; height:50px; border: 1px solid #000; background: #ff0040;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 24"><div style="width:50px; height:50px; border: 1px solid #000; background: #ff0020;"></div></a></td>
+	<td><a class="button" href="#" data-tag="rgb.index 25"><div style="width:50px; height:50px; border: 1px solid #000; background: #ffffff;"></div></a></td>
+    </tr>
+</table>
+
+</body>
+</html> 

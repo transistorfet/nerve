@@ -1,44 +1,66 @@
 
 html {
-  font-family: sans-serif;
-  -webkit-text-size-adjust: 100%;
-  -moz-text-size-adjust: 100%;
-  -ms-text-size-adjust: 100%;
+    font-family: sans-serif;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
 }
 
 body {
 }
 
 table {
-  width: 100%;
+    width: 100%;
 }
 
 td {
-  /* width: 100%; */
-  text-align: center;
+    /* width: 100%; */
+    text-align: center;
 }
 
 .button {
-  width: 100%;
-  margin-left: 2px;
-  margin-right: 2px;
-  padding: 2px;
+    width: 100%;
+    margin-left: 2px;
+    margin-right: 2px;
+    padding: 2px;
+    font-size: 1.25em;
 }
 
+
+/* Medialib Style */
 .medialist table {
-	border-collapse: collapse;
+    border-collapse: collapse;
 }
 .medialist th,
 .medialist td {
-  text-align: left;
+    text-align: left;
 }
 .medialist table,
 .medialist th,
 .medialist td {
-  border: 1px solid lightgrey;
+    border: 1px solid lightgrey;
 }
 
 .medialist a {
     color: black;
 }
 
+
+/* Settings Menu Style */
+.settings table {
+    border-collapse: collapse;
+    table-layout: auto;
+}
+.settings th,
+.settings td {
+    text-align: left;
+}
+.settings table,
+.settings th,
+.settings td {
+    border: 1px solid lightgrey;
+}
+
+.settings a {
+    color: black;
+}

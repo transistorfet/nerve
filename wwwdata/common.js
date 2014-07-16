@@ -26,25 +26,13 @@ $(document).ready(function()
 	}, 'json');
     });
 
-    $('#getstatus').click(function () {
-	$.post('/music/status', {}, function(response) {
-	    $('#status_song').text(response.song)
-	    $('#status_volume').text(response.volume)
-	    $('#status_state').text(response.state)
-	    $('#status_random').text(response.random)
-	}, 'json');
-    });
-
     $('.update').click(function() {
 	var path = $(this).attr('data-path');
 	var time = $(this).attr('data-time');
+	var parent = $(this);
 	$.post(path, {}, function(response) {
 	    for (var key in response) {
-		//var target = $(this).find('.' + key)
-		var target = $('.' + key, this)
-		if (target) {
-		    $(target).html(response[key])
-		}
+		$('.' + key, parent).html(response[key])
 	    }
 	}, 'json');
     });

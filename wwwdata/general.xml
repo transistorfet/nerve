@@ -1,50 +1,51 @@
 <tab name="General" base="">
-	<text tag="lr.music.getsong" />
+	<text tag="lr.player.getsong" />
 	<row>
-		<button name="Previous" tag="lr.music.previous" />
-		<button name="PlayPause" tag="lr.music.toggle" />
-		<button name="Next" tag="lr.music.next" />
-	</row>
-	<row>
-		<button name="Random" tag="lr.music.random" />
-		<button name="Fullscreen" tag="lr.music.fullscreen" />
+		<button name="Previous" tag="lr.player.previous" />
+		<button name="PlayPause" tag="lr.player.toggle" />
+		<button name="Next" tag="lr.player.next" />
 	</row>
 
 	<label text="" />
 	<row>
-		<column>
-			<button name="Stereo" tag="lr.stereo.power" />
-			<button name="Up" tag="lr.stereo.volup" />
-			<button name="Down" tag="lr.stereo.voldown" />
-		</column>
-		<column>
-			<button name="TV" tag="lr.tv.power" />
-			<button name="Up" tag="lr.tv.volup" />
-			<button name="Down" tag="lr.tv.voldown" />
-		</column>
-		<column>
-			<row>
-				<button name="Lights" tag="lr.rgb.power" />
-				<button name="Lights Off" tag="lr.rgb.power 0" />
-			</row>
-			<button name="Up" tag="lr.rgb.key 258" />
-			<button name="Down" tag="lr.rgb.key 258" />
-		</column>
-	</row>
-
-	<label text="" />
-	<row>
+		<button name="Stereo" tag="lr.stereo.power" />
 		<column>
 			<button name="Tape" tag="lr.stereo.tape" />
 			<button name="Tuner" tag="lr.stereo.tuner" />
 		</column>
 		<column>
+			<button name="Up" tag="lr.stereo.volup" />
+			<button name="Down" tag="lr.stereo.voldown" />
+		</column>
+	</row>
+
+	<label text="" />
+	<row>
+		<button name="TV" tag="lr.tv.power" />
+		<column>
 			<button name="Netbook" tag="lr.tv.netbook" />
 			<button name="PS3" tag="lr.tv.ps3" />
 		</column>
 		<column>
-		<button name="Wake Up" tag="lr.sys.wakeup" />
+			<button name="Up" tag="lr.tv.volup" />
+			<button name="Down" tag="lr.tv.voldown" />
+		</column>
+	</row>
+	<row>
 		<button name="Sleep" tag="lr.sys.sleep" />
+		<button name="Wake Up" tag="lr.sys.wakeup" />
+		<button name="Fullscreen" tag="lr.player.fullscreen" />
+	</row>
+
+	<label text="" />
+	<row>
+		<column>
+			<button name="Lights On" tag="lr.rgb.power" />
+			<button name="Lights Off" tag="lr.rgb.power 0" />
+		</column>
+		<column>
+			<button name="Up" tag="lr.rgb.key 258" />
+			<button name="Down" tag="lr.rgb.key 258" />
 		</column>
 	</row>
 
@@ -135,17 +136,18 @@
 	<seekbar tag="lr.rgb.blue" max="255" />
 
 	<label text="Playlists" />
-	<button name="Anne's Playlist" tag="lr.music.load_playlist http://www.youtube.com/playlist?list=PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4" />
-	<button name="Favorites" tag="lr.music.load_playlist http://www.youtube.com/playlist?list=FL_VkJGWFV9ZEIv87E-0NM5w" />
-	<button name="Dearest Anne" tag="lr.music.load_playlist http://www.youtube.com/playlist?list=PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0" />
-	<button name="MediaLib Playlist" tag="lr.music.load_playlist file:///W:/nerve/config/raven_medialib/playlists/Default.m3u" />
-	<button name="Clear Playlist" tag="lr.music.clear_playlist" />
-	<button name="Kill VLC" tag="lr.music.kill_instance" />
+	<button name="Anne's Playlist" tag="lr.player.load_playlist http://www.youtube.com/playlist?list=PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4" />
+	<button name="Favorites" tag="lr.player.load_playlist http://www.youtube.com/playlist?list=FL_VkJGWFV9ZEIv87E-0NM5w" />
+	<button name="Dearest Anne" tag="lr.player.load_playlist http://www.youtube.com/playlist?list=PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0" />
+	<button name="MediaLib Playlist" tag="lr.player.load_playlist file:///W:/nerve/config/raven_medialib/playlists/Default.m3u" />
+	<button name="Clear Playlist" tag="lr.player.clear_playlist" />
+	<button name="Kill VLC" tag="lr.player.kill_instance" />
 
 	<label text="" />
 	<row>
-		<button name="Disable Video" tag="lr.music.disable_video" />
-		<button name="Enable Video" tag="lr.music.enable_video" />
+		<button name="Disable Video" tag="lr.player.disable_video" />
+		<button name="Enable Video" tag="lr.player.enable_video" />
 	</row>
+	<button name="Random" tag="lr.player.random" />
 </tab>
 

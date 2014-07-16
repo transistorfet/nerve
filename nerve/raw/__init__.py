@@ -6,3 +6,5 @@ from tcpserver import TCPServer
 from tcpclient import TCPClient
 from udpserver import UDPServer
 
+PORTALS = [ 'Console', 'TCPServer', 'TCPClient', 'UDPServer' ]
+

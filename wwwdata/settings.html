@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C/DTD HTML 4.01//EN">
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <link rel="stylesheet" type="text/css" href="style.css" />
+
+    <script src="jquery.min.js" type="text/javascript"></script>
+    <script src="common.js" type="text/javascript"></script>
+</head>
+<body>
+
+<h2>Settings for "SERVERNAME"</h2>
+<hr>
+
+<h4>Devices</h4>
+<div id="devices">
+    <% for device in nerve.get_device_list(): %>
+    <form method="post" action="<%= py._PATH %>">
+	<table class="settings">
+	    <% for setting in device.get_config_info(): %>
+		<tr><td><%= setting['propername'] %></td><td>
+		    <% if setting['type'] == 'str' or setting['type'] == 'num': %>
+			<input type="text" name="<%= setting['name'] %>" value="<%= device.get_config(setting['name']) %>" />
+		    <% end %>
+		</td></tr>
+	    <% end %>
+	</table>
+    </form>
+    <% end %>
+    <form method="post" action="<%= py._PATH %>">
+	<label>Device Name:</label><input type="text" name="devname" />
+	<label>Type:</label><select name="devtype">
+	    <option value="">(select type)</option>
+	    <% for devtype in nerve.get_device_types(): %>
+		<option value="<%= devtype.clsname %>"><%= devtype.name %></option>
+	    <% end %>
+	</select>
+	<button type="button" name="st_devadd">Add Device</button>
+    </form>
+</div>
+
+<h4>Servers</h4>
+<div id="servers">
+    <% for server in nerve.get_server_list(): %>
+    <form method="post" action="<%= py._PATH %>">
+	<table class="settings">
+	    <% for setting in server.get_config_info(): %>
+		<tr><td><%= setting['propername'] %></td><td>
+		    <% if setting['type'] == 'str' or setting['type'] == 'num': %>
+			<input type="text" name="<%= setting['name'] %>" value="<%= server.get_config(setting['name']) %>" />
+		    <% end %>
+		</td></tr>
+	    <% end %>
+	</table>
+    </form>
+    <% end %>
+    <form method="post" action="<%= py._PATH %>">
+	<label>Server Name:</label><input type="text" name="servname" />
+	<label>Type:</label><select name="servtype">
+	    <option value="">(select type)</option>
+	    <% for servtype in nerve.get_server_types(): %>
+		<option value="<%= servtype.clsname %>"><%= servtype.name %></option>
+	    <% end %>
+	</select>
+	<button type="button" name="st_servadd">Add Server</button>
+    </form>
+</div>
+
+<script>
+
+$(document).ready(function () {
+//    $('#st_add').click(function (e) {
+//	$('#devices').append('<
+//    });
+});
+
+</script>
+
+</body>
+</html> 

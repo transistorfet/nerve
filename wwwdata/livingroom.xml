@@ -1,19 +1,19 @@
 <tab name="Living Room" base="lr">
-	<text tag="lr.music.getsong" />
+	<text tag="lr.player.getsong" />
 	<row>
-		<button name="Previous" tag="lr.music.previous" />
-		<button name="PlayPause" tag="lr.music.toggle" />
-		<button name="Next" tag="lr.music.next" />
+		<button name="Previous" tag="lr.player.previous" />
+		<button name="PlayPause" tag="lr.player.toggle" />
+		<button name="Next" tag="lr.player.next" />
 	</row>
 	<row>
-		<button name="Random" tag="lr.music.random" />
-		<button name="Fullscreen" tag="lr.music.fullscreen" />
+		<button name="Random" tag="lr.player.random" />
+		<button name="Fullscreen" tag="lr.player.fullscreen" />
 		<column>
-			<button name="Up" tag="lr.music.volup" />
-			<button name="Down" tag="lr.music.voldown" />
+			<button name="Up" tag="lr.player.volup" />
+			<button name="Down" tag="lr.player.voldown" />
 		</column>
 	</row>
-	<seekbar tag="lr.music.volume" max="255" />
+	<seekbar tag="lr.player.volume" max="255" />
 	<row>
 		<button name="Power" tag="lr.stereo.power" />
 		<button name="Tape" tag="lr.stereo.tape" />
@@ -122,16 +122,16 @@
 	<seekbar tag="lr.rgb.blue" max="255" />
 
 	<label text="Playlists" />
-	<button name="Anne's Playlist" tag="lr.music.load_playlist http://www.youtube.com/playlist?list=PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4" />
-	<button name="Favorites" tag="lr.music.load_playlist http://www.youtube.com/playlist?list=FL_VkJGWFV9ZEIv87E-0NM5w" />
-	<button name="Dearest Anne" tag="lr.music.load_playlist http://www.youtube.com/playlist?list=PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0" />
-	<button name="MediaLib Playlist" tag="lr.music.load_playlist file:///W:/nerve/config/raven_medialib/playlists/Default.m3u" />
-	<button name="Clear Playlist" tag="lr.music.clear_playlist" />
-	<button name="Kill VLC" tag="lr.music.kill_instance" />
+	<button name="Anne's Playlist" tag="lr.player.load_playlist http://www.youtube.com/playlist?list=PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4" />
+	<button name="Favorites" tag="lr.player.load_playlist http://www.youtube.com/playlist?list=FL_VkJGWFV9ZEIv87E-0NM5w" />
+	<button name="Dearest Anne" tag="lr.player.load_playlist http://www.youtube.com/playlist?list=PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0" />
+	<button name="MediaLib Playlist" tag="lr.player.load_playlist file:///W:/nerve/config/raven_medialib/playlists/Default.m3u" />
+	<button name="Clear Playlist" tag="lr.player.clear_playlist" />
+	<button name="Kill VLC" tag="lr.player.kill_instance" />
 
 	<label text="" />
 	<row>
-		<button name="Disable Video" tag="lr.music.disable_video" />
-		<button name="Enable Video" tag="lr.music.enable_video" />
+		<button name="Disable Video" tag="lr.player.disable_video" />
+		<button name="Enable Video" tag="lr.player.enable_video" />
 	</row>
 </tab>

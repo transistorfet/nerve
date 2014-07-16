@@ -54,7 +54,7 @@ nerve.add_device("stereo", Stereo(rgb))
 nerve.add_device("tv", Television(rgb))
 
 nerve.add_device("sys", 'misc.Win32Sys')
-nerve.add_device("music", 'vlc.VLCHTTP')
+nerve.add_device("player", 'vlc.VLCHTTP')
 
 #nerve.add_device('layout', 'layout.LayoutDevice')
 
@@ -71,22 +71,22 @@ def dispatch(data, addr):
 
     words = msg.split()
     cmd = words[0].split('.')
-    if cmd[0] == 'music':
+    if cmd[0] == 'player':
 	if cmd[1] == 'next':
-	    music.next()
+	    player.next()
 	elif cmd[1] == 'previous':
-	    music.previous()
+	    player.previous()
 	elif cmd[1] == 'toggle':
-	    s = music.getPlaybackStatus()
+	    s = player.getPlaybackStatus()
 	    if s == winamp.Winamp.PLAYBACK_PLAYING or s == winamp.Winamp.PLAYBACK_PAUSE:
-		music.pause()
+		player.pause()
 	    elif s == winamp.Winamp.PLAYBACK_NOT_PLAYING:
-		music.play()
+		player.play()
 	elif cmd[1] == 'getvolume':
-	    volume = music.getVolume()
+	    volume = player.getVolume()
 	    serv.send(str(volume), addr)
 	elif cmd[1] == 'getsong':
-	    song = music.getCurrentPlayingTitle()
+	    song = player.getCurrentPlayingTitle()
 	    serv.send(song, addr)
     elif cmd[0] == 'stereo':
 	if cmd[1] == 'power':

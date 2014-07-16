@@ -77,6 +77,7 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
 
 	url = urlparse(self.path)
 	if url.path == '/query':
+	    print "Vars: " + repr(postvars)
 	    if 'tag' not in postvars:
 		self.send_400()
 		return
@@ -125,7 +126,7 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
 	with open(filename, 'r') as f:
 	    contents = f.read()
 
-	    if self.mimetype == 'text/html' or self.mimetype == 'text/xml':
+	    if self.mimetype == 'text/html' or self.mimetype == 'text/xml' or self.mimetype == 'application/json':
 		interp = pyhtml.PyHTMLParser(contents, filename=filename, reqtype=reqtype, path=url.path, params=params)
 		contents = interp.evaluate()
 	    self.wfile.write(contents)

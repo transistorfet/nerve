@@ -6,13 +6,13 @@
 
     <link rel="stylesheet" type="text/css" href="/style.css" />
 
-    <script src="/jquery.min.js" type="text/javascript"></script>
-    <script src="/common.js" type="text/javascript"></script>
+    <script type="text/javascript" src="/jquery.min.js"></script>
+    <script type="text/javascript" src="/common.js"></script>
 </head>
 <body>
 
 <a name="top"></a>
-<a href="playlist.html">Current Playlist</a> | <a href="add.html">Add Media</a> | <a href="youtube_search.html">Search YouTube</a>
+<a href="/">Root</a> | <a href="index.html">Remote</a> | <a href="player.html">Player</a> | <a href="playlist.html">Current Playlist</a> | <a href="add.html">Add Media</a> | <a href="youtube_search.html">Search YouTube</a>
 <hr>
 
 <% medialib = nerve.get_device('medialib') %>
@@ -64,17 +64,33 @@
 </div>
 
 <form method="get" action="<%= py._PATH %>">
-    <input type="hidden" name="mode" value="title">
+    <select name="mode">
+	<option value="title" <%= ' selected' if mode == 'title' else '' %>>title</option>
+	<option value="artist" <%= ' selected' if mode == 'artist' else '' %>>artist</option>
+	<option value="album" <%= ' selected' if mode == 'album' else '' %>>album</option>
+	<option value="genre" <%= ' selected' if mode == 'genre' else '' %>>genre</option>
+    </select>
+
+    <select name="type">
+	<option value="" <%= ' selected' if not media_type else '' %>>any</option>
+	<option value="audio" <%= ' selected' if media_type == 'audio' else '' %>>audio</option>
+	<option value="video" <%= ' selected' if media_type == 'video' else '' %>>video</option>
+    </select>
+
+    <input type="text" name="recent" value="<%= recent if recent else '' %>">
+
+    <br />
 
     <select name="order">
-	<option value="artist">artist</option>
-	<option value="album">album</option>
-	<option value="title">title</option>
-	<option value="genre">genre</option>
-	<option value="tags">tags</option>
+	<option value="artist" <%= ' selected' if order == 'artist' else '' %>>artist</option>
+	<option value="album" <%= ' selected' if order == 'album' else '' %>>album</option>
+	<option value="title" <%= ' selected' if order == 'title' else '' %>>title</option>
+	<option value="genre" <%= ' selected' if order == 'genre' else '' %>>genre</option>
+	<option value="tags" <%= ' selected' if order == 'tags' else '' %>>tags</option>
+	<option value="modified" <%= ' selected' if order == 'modified' else '' %>>last modified</option>
     </select>
-    <input type="text" name="search" value="%%">
-    <button type="submit" name="pl_search" value="1">Search</button>
+    <input type="text" name="search" value="<%= search if search else '%%' %>">
+    <button type="submit" name="pl_search" value="">Search</button>
 </form>
 
 <hr>

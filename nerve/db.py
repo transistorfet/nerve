@@ -141,13 +141,21 @@ class DatabaseCursor (object):
 	self.reset_cache()
 	return rows
 
-    def insert(self, table, data):
+    def get_single(self, table, select=None, where=None):
+	result = list(self.get(table, select, where))
+	if len(result) > 0:
+	    return result[0]
+	else:
+	    return None
+
+    def insert(self, table, data, replace=False):
 	columns = data.keys()
 	values = [ ]
 	for key in columns:
 	    values.append(u"\'%s\'" % (self.escape(data[key]),))
 
-	query = u"INSERT INTO %s (%s) VALUES (%s)" % (table, ','.join(columns), ','.join(values))
+	insert = 'INSERT' if replace is False else 'INSERT OR REPLACE'
+	query = u"%s INTO %s (%s) VALUES (%s)" % (insert, table, ','.join(columns), ','.join(values))
 	#print query
 	self.dbcursor.execute(query)
 	#self.dbcursor.execute(query.decode('utf-8'))
