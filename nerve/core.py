@@ -112,4 +112,47 @@ class Device (object):
 		raise InvalidRequest("No subdevice named " + msg.names[index] + " in device " + self.device_name())
 	    return dev.dispatch(msg, index + 1)
 
+import Queue
+import time
+
+class Something (object):
+    dispatch_queue = Queue.PriorityQueue()
+
+    @staticmethod
+    #def request(url, *args, delay=0, callback=None):
+    def request(url, args, delay=0, callback=None):
+	entry = (time.time() + delay, url, args, callback)
+	Something.dispatch_queue.put(entry)
+
+
+    def dispatch_request(self, url, args):
+	urldata = urlparse.urlparse(url)
+	# TODO do all the rest
+
+    def run(self):
+	while not self.thread.stopflag.wait(1):
+	    try:
+		entry = Something.dispatch_queue.get(True, 1.0)
+
+		## If the next entry is scheduled for the future, then put it back and wait a bit
+		if time.time() > entry[0]:
+		    Something.dispatch_queue.put(entry)
+		    time.sleep(0.1)
+
+		## Otherwise, disptach the request
+		else:
+		    result = self.disptach_request(entry[1], entry[2])
+		    if entry[3] is not None:
+			entry[3](result)
+
+		Something.dispatch_queue.task_done()
+	    except queue.Empty as e:
+		pass
+
+class AliasDevice (Device):
+    def __init__(self, portal, uri):
+	pass
+
+    def dispatch(self, msg, index=0):
+	pass
 

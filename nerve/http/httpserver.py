@@ -105,7 +105,6 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
 	    return
 
 	# TODO debugging: remove later
-	print "Path: " + url.path
 	print "Vars: " + repr(params)
 
 	filename = os.path.join(self.server.root, url.path[1:])
@@ -119,14 +118,15 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
 	    self.send_404()
 	    return
 
-	# server up the file
+	# serve up the file
 	(self.mimetype, self.encoding) = mimetypes.guess_type(filename)
 	self.send_headers(200, self.mimetype)
+	(_, _, extension) = filename.rpartition('.')
 
 	with open(filename, 'r') as f:
 	    contents = f.read()
 
-	    if self.mimetype == 'text/html' or self.mimetype == 'text/xml' or self.mimetype == 'application/json':
+	    if self.mimetype == 'text/html' or self.mimetype == 'text/xml' or extension == 'json':
 		interp = pyhtml.PyHTMLParser(contents, filename=filename, reqtype=reqtype, path=url.path, params=params)
 		contents = interp.evaluate()
 	    self.wfile.write(contents)
@@ -161,7 +161,7 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
 class HTTPServer (nerve.Portal, BaseHTTPServer.HTTPServer):
 
     def __init__(self, port):
-	self.root = 'wwwdata'
+	self.root = 'nerve/http/wwwdata'
 
         self.username = None #obplayer.Config.setting('http_admin_username')
         self.password = None #obplayer.Config.setting('http_admin_password')

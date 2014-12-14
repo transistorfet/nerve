@@ -1,4 +1,6 @@
 
+* add and read extended m3u data
+
 * add voice commands somehow, possibly through android or google web api
 
 * change portals and devices to a common 'modules' thing, and then modules can have portals and devices, and other objects

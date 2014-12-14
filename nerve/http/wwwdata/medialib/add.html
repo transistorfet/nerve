@@ -12,7 +12,7 @@
 <body>
 
 <a name="top"></a>
-<a href="/">Root</a> | <a href="index.html">Remote</a> | <a href="player.html">Player</a> | <a href="playlist.html">Current Playlist</a> | <a href="add.html">Add Media</a> | <a href="youtube_search.html">Search YouTube</a>
+<a href="/">Root</a> | <a href="/remote/index.html">Remote</a> | <a href="/remote/player.html">Player</a> | <a href="playlist.html">Current Playlist</a> | <a href="add.html">Add Media</a> | <a href="youtube_search.html">Search YouTube</a>
 <hr>
 
 <% medialib = nerve.get_device('medialib') %>
@@ -88,6 +88,7 @@
 	<option value="genre" <%= ' selected' if order == 'genre' else '' %>>genre</option>
 	<option value="tags" <%= ' selected' if order == 'tags' else '' %>>tags</option>
 	<option value="modified" <%= ' selected' if order == 'modified' else '' %>>last modified</option>
+	<option value="random" <%= ' selected' if order == 'random' else '' %>>random</option>
     </select>
     <input type="text" name="search" value="<%= search if search else '%%' %>">
     <button type="submit" name="pl_search" value="">Search</button>

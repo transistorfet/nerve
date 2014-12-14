@@ -11,6 +11,7 @@ import traceback
 import threading
 
 mainloops = [ ]
+stdout = sys.stdout
 
 class Main (object):
     def __init__(self):
@@ -53,7 +54,8 @@ class Main (object):
 	sys.exit(0)
 
 def log(text):
-    print time.strftime("%Y-%m-%d %H:%M") + " " + text
+    global stdout
+    stdout.write(time.strftime("%Y-%m-%d %H:%M") + " " + text + "\n")
 
 def loop():
     global mainloops

@@ -1,73 +1,128 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import time
+import nerve
+import os
 
-from nerve.serial import SerialDevice
+class Stereo (nerve.Device):
+    def __init__(self, serial):
+	nerve.Device.__init__(self)
+	self.serial = serial
 
-class DeskClock (SerialDevice):
-    def __init__(self, file, baud):
-	SerialDevice.__init__(self, file, baud)
-	self.relay1 = False
+    def power(self, msg):
+	self.serial.send("ir S A81")
 
-    def p0(self, msg):
-	if len(msg.args):
-	    self.serial.write('P0=' + str(int(msg.args[0], 16)) + '\n')
+    def volup(self, msg):
+	self.serial.send("ir S 481")
 
-    def p1(self, msg):
-	if len(msg.args):
-	    self.serial.write('P1=' + str(int(msg.args[0], 16)) + '\n')
+    def voldown(self, msg):
+	self.serial.send("ir S C81")
 
-    def relay_toggle(self, msg):
-	self.relay1 = not self.relay1
-	if self.relay1:
-	    self.serial.write('R1=1\n')
-	else:
-	    self.serial.write('R1=0\n')
+    def tape(self, msg):
+	self.serial.send("ir S C41")
 
-    def do_idle(self):
-	self.serial.write('L0=' + time.strftime("%H:%M %a %b %d") + '\n')
+    def tuner(self, msg):
+	self.serial.send("ir S 841")
 
-	player = nerve.get_device("player")
-	if player != None:
-	    title = player.title.ljust(16)
-	    title = title[0:16]
-	    self.serial.write('L1=' + title.encode('ascii', 'replace') + '\n')
-	else:
-	    self.serial.write('L1=                \n')
 
-    def do_receive(self, line):
-	#print line
-	if line == "B7=0" or line == 'I0=A2C8':
-	    nerve.query("player.next")
-	elif line == "B6=0" or line == 'I0=A2A8':
-	    nerve.query("player.toggle")
-	elif line == "B5=0" or line == 'I0=A298':
-	    nerve.query("player.previous")
-	elif line == "B4=0":
-	    rgb = nerve.get_device("rgb")
-	    rgb.send('key 248')
-	elif line == "B3=0" or line == 'I0=A207':
-	    nerve.query(self.name + ".relay_toggle")
-	    #self.relay_toggle(msg)
-	elif line == "B0=0":
-	    nerve.query("player.shuffle")
-	elif line == "B1=0":
-	    nerve.query("player.sort")
-	elif line[0:5] == 'I0=A2':
-	    rgb = nerve.get_device("rgb")
-	    rgb.send('key 2' + line[5:7])
+class Television (nerve.Device):
+    def __init__(self, serial):
+	nerve.Device.__init__(self)
+	self.serial = serial
 
-#from config.panther.devices.deskclock import DeskClock
+    def power(self, msg):
+	self.serial.send("ir P 4004 100BCBD")
+
+    def volup(self, msg):
+	self.serial.send("ir P 4004 1000405")
+
+    def voldown(self, msg):
+	self.serial.send("ir P 4004 1008485")
+
+    def ps3(self, msg):
+	self.serial.send("ir P 4004 100A0A1")
+	self.serial.send("ir P 4004 1008889")
+
+    def netbook(self, msg):
+	self.serial.send("ir P 4004 100A0A1")
+	self.serial.send("ir P 4004 1004849")
+
+    def computer(self, msg):
+	self.serial.send("ir P 4004 100A0A1")
+	self.serial.send("ir P 4004 1004849")
+
+class Sys (nerve.Device):
+    def sleep(self, msg):
+	os.system("xscreensaver-command -activate")
+
+    def wakeup(self, msg):
+	os.system("xscreensaver-command -deactivate")
 
 nerve.add_portal('raw.UDPServer', 5959)
-#nerve.add_portal('raw.TCPServer', 5959)
 
-nerve.add_device('deskclock', DeskClock("/dev/ttyACM0", 19200))
-rgb = nerve.add_device('rgb', 'serial.NerveSerialDevice', "/dev/ttyACM1", 19200)
+rgb = nerve.add_device('rgb', 'serial.NerveSerialDevice', '/dev/ttyACM0', 19200)
+nerve.add_device("stereo", Stereo(rgb))
+nerve.add_device("tv", Television(rgb))
 
-nerve.add_device('player', 'xmms2.Xmms2')
+nerve.add_device("sys", Sys())
+nerve.add_device("player", 'vlc.VLCHTTP')
+
+nerve.add_device('medialib', 'medialib.MediaLib')
+
+nerve.add_portal('http.HTTPServer', 8888)
 
 nerve.add_portal('raw.Console')
+
+ 
+"""
+def dispatch(data, addr):
+    (host, port) = addr
+    msg = data.lower().strip('\n')
+    print "RECV from " + str(host) + ":" + str(port) + ": " + msg
+
+    words = msg.split()
+    cmd = words[0].split('.')
+    if cmd[0] == 'player':
+	if cmd[1] == 'next':
+	    player.next()
+	elif cmd[1] == 'previous':
+	    player.previous()
+	elif cmd[1] == 'toggle':
+	    s = player.getPlaybackStatus()
+	    if s == winamp.Winamp.PLAYBACK_PLAYING or s == winamp.Winamp.PLAYBACK_PAUSE:
+		player.pause()
+	    elif s == winamp.Winamp.PLAYBACK_NOT_PLAYING:
+		player.play()
+	elif cmd[1] == 'getvolume':
+	    volume = player.getVolume()
+	    serv.send(str(volume), addr)
+	elif cmd[1] == 'getsong':
+	    song = player.getCurrentPlayingTitle()
+	    serv.send(song, addr)
+    elif cmd[0] == 'stereo':
+	if cmd[1] == 'power':
+	    arduino.write("CA\n")
+	elif cmd[1] == 'volup':
+	    arduino.write("CB\n")
+	elif cmd[1] == 'voldown':
+	    arduino.write("CC\n")
+	elif cmd[1] == 'tape':
+	    arduino.write("CD\n")
+	elif cmd[1] == 'tuner':
+	    arduino.write("CE\n")
+    elif cmd[0] == 'tv':
+	if cmd[1] == 'power':
+	    arduino.write("Ca\n")
+	elif cmd[1] == 'volup':
+	    arduino.write("Cb\n")
+	elif cmd[1] == 'voldown':
+	    arduino.write("Cc\n")
+	elif cmd[1] == 'ps3':
+	    arduino.write("Cd\n")
+	    arduino.write("Ce\n")
+	elif cmd[1] == 'netbook':
+	    arduino.write("Cd\n")
+	    arduino.write("Cf\n")
+"""
 
 

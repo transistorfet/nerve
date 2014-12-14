@@ -11,7 +11,7 @@
 </head>
 <body>
 
-<a href="/">Root</a> | <a href="index.html">Remote</a> | <a href="player.html">Player</a> | <a href="playlist.html">Current Playlist</a> | <a href="add.html">Add Media</a> | <a href="youtube_search.html">Search YouTube</a>
+<a href="/">Root</a> |<a href="/remote/index.html">Remote</a> | <a href="/remote/player.html">Player</a> | <a href="playlist.html">Current Playlist</a> | <a href="add.html">Add Media</a> | <a href="youtube_search.html">Search YouTube</a>
 <hr>
 
 <% medialib = nerve.get_device('medialib') %>
@@ -20,9 +20,9 @@
 	if 'pl_remove' in py._POST:
 	    num = medialib.html_remove_files(py._POST)
 	    if num > 0:
-		%><span class="success">Successfully removed <%= num %> files from playlist</span><%
+		%><div class="success">Successfully removed <%= num %> files from playlist</div><%
 	    else:
-		%><span class="error">Error: No files removed from playlist</span><%
+		%><div class="error">Error: No files removed from playlist</div><%
 	    end
 	elif 'pl_sort' in py._POST:
 	    medialib.sort_playlist()
@@ -32,9 +32,10 @@
     end
 %>
 
-<% playlist = medialib.get_media_info(medialib.get_playlist()) %>
+<% #playlist = medialib.get_media_info(medialib.get_playlist()) %>
+<% playlist = medialib.get_playlist() %>
 
-<span class="files"><%= len(playlist) %> files in playlist.</span>
+<div class="files"><%= len(playlist) %> files in playlist.</div>
 
 <form method="post" action="<%= py._PATH %>">
 <div class="medialist">
@@ -59,8 +60,8 @@
 		<td><input type="checkbox" name="media" value="<%= urlencode(media['filename']) %>" /></td>
 		<td><%= media['artist'] %></td>
 		<td><%= media['title'] %></td>
-		<td><%= media['track_num'] %></td>
-		<td><%= media['album'] %></td>
+		<!-- <td><%= "media['track_num']" %></td> -->
+		<!-- <td><%= "media['album']" %></td> -->
 	    </tr>
 	<% end %>
     </tbody>

@@ -17,7 +17,7 @@
 	<label text="Intensity" />
 	<seekbar tag="cr.rgb.intensity" max="255" />
 	<label text="Delay" />
-	<seekbar tag="cr.rgb.delay" max="8000" />
+	<seekbar tag="cr.rgb.delay" max="30000" />
 	<row>
 		<column>
 			<button name="Channel Up" tag="cr.rgb.chanup" />

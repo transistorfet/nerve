@@ -8,3 +8,11 @@ MediaLib:
 - apsw
 - mutagen
 
+
+Debian Packages:
+python-apsw
+python-requests
+python-serial
+python-mutagen
+python-xmmsclient
+

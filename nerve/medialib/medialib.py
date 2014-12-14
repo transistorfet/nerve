@@ -24,29 +24,57 @@ class Playlist (object):
 	    os.mkdir(plroot)
 	self.filename = plroot + '/' + name + '.m3u'
 
-    def get_files(self):
+    def load(self):
+	self.media_list = [ ]
+	artist = ""
+	title = ""
+	duration = 0
 	with codecs.open(self.filename, 'r', encoding='utf-8') as f:
-	    contents = [ media for media in f.read().split('\n') if media and not media.startswith('#') ]
-	return contents
+	    for line in f.read().split('\n'):
+		line = line.strip()
+		if line and line.startswith('#'):
+		    if line.startswith('#EXTINF:'):
+			(duration, info) = line[8:].split(', ', 1)
+			(artist, title) = info.split(' - ', 1)
+		elif line != '':
+		    media = {
+			'artist' : artist,
+			'title' : title,
+			'duration' : duration,
+			'filename' : line
+		    }
+		    self.media_list.append(media)
 
-    def set_files(self, media_list):
+    def save(self):
 	with codecs.open(self.filename, 'w', encoding='utf-8') as f:
-	    f.write('\n'.join(media_list))
+	    f.write("#EXTM3U\n")
+	    for media in self.media_list:
+		f.write("#EXTINF:%d, %s - %s\n" % (media['duration'], media['artist'], media['title']))
+		f.write(media['filename'] + "\n")
 
-    def add_files(self, media_list):
-	with codecs.open(self.filename, 'a', encoding='utf-8') as f:
-	    f.write('\n' + '\n'.join(media_list))
+    def get_list(self):
+	self.load()
+	return self.media_list
 
-    def remove_files(self, media_list):
-	existing_list = self.get_files()
-	# TODO rewrite this so it only removes one matching file rather than both
-	new_list = [ existing for existing in existing_list if existing not in media_list ]
-	self.set_files(new_list)
-	return len(existing_list) - len(new_list)
+    def set_list(self, media_list):
+	self.media_list = media_list
+	self.save()
 
-    def clear_playlist(self):
-	with codecs.open(self.filename, 'w', encoding='utf-8') as f:
-	    f.write('')
+    def add_list(self, media_list):
+	self.load()
+	self.media_list.extend(media_list)
+	self.save()
+
+    def remove_files(self, file_list):
+	self.load()
+	existing = len(self.media_list)
+	self.media_list = [ media for media in self.media_list if media['filename'] not in file_list ]
+	self.save()
+	return existing - len(self.media_list)
+
+    def clear(self):
+	self.media_list = [ ]
+	self.save()
 
 
 class MediaLib (nerve.Device):
@@ -73,41 +101,41 @@ class MediaLib (nerve.Device):
 
     def html_make_playlist(self, postvars):
 	playlist = Playlist(self.current)
-	files = [ ]
+	media_list = [ ]
 	if 'pl_replace' in postvars or 'pl_enqueue' in postvars:
 	    if 'artist' in postvars:
 		for artist in postvars['artist']:
-		    self.db.select('filename')
+		    self.db.select('artist,title,duration,filename')
 		    self.db.where('artist', urllib.unquote(artist))
 		    self.db.order_by('filename ASC')
 		    for media in self.db.get('media'):
-			files.append(media[0])
+		    	media_list.append({ 'artist' : media[0], 'title' : media[1], 'duration' : media[2], 'filename' : media[3] })
 
 	    elif 'album' in postvars:
 		for pair in postvars['album']:
 		    artist, foo, album = pair.partition(" - ")
 
 		    if artist and album:
-			self.db.select('filename')
+			self.db.select('artist,title,duration,filename')
 			self.db.where('artist', urllib.unquote(artist))
 			self.db.where('album', urllib.unquote(album))
 			self.db.order_by('filename ASC')
 			for media in self.db.get('media'):
-			    files.append(media[0])
+			    media_list.append({ 'artist' : media[0], 'title' : media[1], 'duration' : media[2], 'filename' : media[3] })
 
 	    elif 'id' in postvars:
 		for track_id in postvars['id']:
-		    self.db.select('filename')
+		    self.db.select('artist,title,duration,filename')
 		    self.db.where('id', track_id)
 		    self.db.order_by('filename ASC')
 		    for media in self.db.get('media'):
-			files.append(media[0])
+		    	media_list.append({ 'artist' : media[0], 'title' : media[1], 'duration' : media[2], 'filename' : media[3] })
 
 	    if 'pl_replace' in postvars:
-		playlist.set_files(files)
+		playlist.set_list(media_list)
 	    else:
-		playlist.add_files(files)
-	return len(files)
+		playlist.add_list(media_list)
+	return len(media_list)
 
     def html_remove_files(self, postvars):
 	if 'pl_remove' in postvars and 'media' in postvars:
@@ -147,7 +175,12 @@ class MediaLib (nerve.Device):
 	    return [ ]
 
 	if search and len(search) > 0:
-	    self.db.where_like(order, search)
+	    whereorder = order
+	    if order == 'modified':
+		whereorder = 'file_last_modified'
+	    elif order == 'random':
+		whereorder = 'title'
+	    self.db.where_like(whereorder, search)
 
 	if order == 'artist':
 	    self.db.order_by('artist ASC')
@@ -177,28 +210,28 @@ class MediaLib (nerve.Device):
 	if name is None:
 	    name = self.current
 	playlist = Playlist(name)
-	files = playlist.get_files()
-	return files
+	media_list = playlist.get_list()
+	return media_list
 
     def sort_playlist(self, name=None):
 	if name is None:
 	    name = self.current
 	playlist = Playlist(name)
-	files = playlist.get_files()
-	if files is  None:
+	media_list = playlist.get_list()
+	if media_list is  None:
 	    return 0
-	files.sort()
-	return playlist.set_files(files)
+	media_list.sort()
+	return playlist.set_list(media_list)
 
     def shuffle_playlist(self, name=None):
 	if name is None:
 	    name = self.current
 	playlist = Playlist(name)
-	files = playlist.get_files()
-	if files is  None:
+	media_list = playlist.get_list()
+	if media_list is  None:
 	    return 0
-	random.shuffle(files)
-	return playlist.set_files(files)
+	random.shuffle(media_list)
+	return playlist.set_list(media_list)
 
     def get_media_info(self, media_list):
 	info = [ ]
@@ -252,6 +285,7 @@ class MediaUpdaterTask (nerve.Task):
 	    'genre' : meta.get('genre'),
 	    'tags' : '',
 	    'media_type' : 'audio',
+	    'duration' : meta.get('duration'),
 	    'file_size' : size,
 	    'file_last_modified' : mtime,
 	}
@@ -289,12 +323,17 @@ class MetaData (object):
     def __init__(self, filename):
 	self.filename = filename
 	self.meta = { }
+	self.info = None
 	try:
 	    self.meta = mutagen.File(filename, None, True)
+	    if filename.endswith('.mp3'):
+		self.info = mutagen.mp3.MP3(filename)
 	except ValueError:
 	    pass
 
     def get(self, name, default=None):
+	if name == 'duration' and self.info != None:
+	    return self.info.info.length
 	if self.meta and name in self.meta and len(self.meta[name]) > 0:
 	    return self.meta[name][0].encode('utf-8', 'replace')
 	return default
@@ -312,11 +351,6 @@ class YoutubePlaylistFetcher (nerve.Task):
 
     def hash_video(self, meta):
 	url = 'http://www.youtube.com/watch?v=%s' % (meta['encrypted_id'],)
-
-	rows = list(self.db.get('media', 'id,file_last_modified', self.db.inline_expr('filename', url)))
-	if len(rows) > 0 and rows[0][1] >= meta['time_created']:
-	    #nerve.log("Skipping " + url)
-	    return url
 
 	parts = meta['title'].split("-", 1)
 	if len(parts) < 2:
@@ -339,6 +373,11 @@ class YoutubePlaylistFetcher (nerve.Task):
 	    'file_last_modified' : meta['time_created'],
 	}
 
+	rows = list(self.db.get('media', 'id,file_last_modified', self.db.inline_expr('filename', url)))
+	if len(rows) > 0 and rows[0][1] >= meta['time_created']:
+	    #nerve.log("Skipping " + url)
+	    return data
+
 	if len(rows) <= 0:
 	    nerve.log("Adding " + url)
 	    self.db.insert('media', data)
@@ -346,7 +385,7 @@ class YoutubePlaylistFetcher (nerve.Task):
 	    nerve.log(u"Updating " + url)
 	    self.db.where('id', rows[0][0])
 	    self.db.update('media', data)
-	return url
+	return data
 
     def fetch_json(self, list_id):
 	url = 'http://www.youtube.com/list_ajax?action_get_list=1&style=json&list=%s' % (list_id,)
@@ -358,18 +397,18 @@ class YoutubePlaylistFetcher (nerve.Task):
     def update_all(self):
 	nerve.log("Starting youtube medialib update...")
 	for list_id in self.list_ids:
-	    data = self.fetch_json(list_id)
-	    if data is None or 'video' not in data:
+	    json_playlist = self.fetch_json(list_id)
+	    if json_playlist is None or 'video' not in json_playlist:
 		nerve.log("Unable to fetch youtube playlist " + list_id)
 	    else:
 		playlist = [ ]
-		for video in data['video']:
-		    if self.stopflag.isSet():
+		for video in json_playlist['video']:
+		    if self.stopflag.is_set():
 			return
-		    url = self.hash_video(video)
-		    playlist.append(url)
-		pl = Playlist(data['title'])
-		pl.set_files(playlist)
+		    data = self.hash_video(video)
+		    playlist.append({ 'artist' : data['artist'], 'title' : data['title'], 'duration' : data['duration'], 'filename' : data['filename'] })
+		pl = Playlist(json_playlist['title'])
+		pl.set_list(playlist)
 	nerve.log("Youtube medialib update complete")
 
     def run(self):

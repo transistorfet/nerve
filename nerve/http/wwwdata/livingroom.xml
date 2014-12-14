@@ -1,55 +1,41 @@
-<tab name="General" base="">
+<tab name="Living Room" base="lr">
 	<text tag="lr.player.getsong" />
 	<row>
 		<button name="Previous" tag="lr.player.previous" />
 		<button name="PlayPause" tag="lr.player.toggle" />
 		<button name="Next" tag="lr.player.next" />
 	</row>
-
-	<label text="" />
 	<row>
-		<button name="Stereo" tag="lr.stereo.power" />
+		<button name="Random" tag="lr.player.random" />
+		<button name="Fullscreen" tag="lr.player.fullscreen" />
 		<column>
-			<button name="Tape" tag="lr.stereo.tape" />
-			<button name="Tuner" tag="lr.stereo.tuner" />
+			<button name="Up" tag="lr.player.volup" />
+			<button name="Down" tag="lr.player.voldown" />
 		</column>
+	</row>
+	<seekbar tag="lr.player.volume" max="255" />
+	<row>
+		<button name="Power" tag="lr.stereo.power" />
+		<button name="Tape" tag="lr.stereo.tape" />
+		<button name="Tuner" tag="lr.stereo.tuner" />
 		<column>
 			<button name="Up" tag="lr.stereo.volup" />
 			<button name="Down" tag="lr.stereo.voldown" />
 		</column>
 	</row>
-
-	<label text="" />
 	<row>
-		<button name="TV" tag="lr.tv.power" />
-		<column>
-			<button name="Netbook" tag="lr.tv.netbook" />
-			<button name="PS3" tag="lr.tv.ps3" />
-		</column>
+		<button name="Power" tag="lr.tv.power" />
+		<button name="PS3" tag="lr.tv.ps3" />
+		<button name="Netbook" tag="lr.tv.netbook" />
 		<column>
 			<button name="Up" tag="lr.tv.volup" />
 			<button name="Down" tag="lr.tv.voldown" />
 		</column>
 	</row>
 	<row>
-		<button name="Sleep" tag="lr.sys.sleep" />
 		<button name="Wake Up" tag="lr.sys.wakeup" />
-		<button name="Fullscreen" tag="lr.player.fullscreen" />
+		<button name="Sleep" tag="lr.sys.sleep" />
 	</row>
-
-	<label text="" />
-	<row>
-		<column>
-			<button name="Lights On" tag="lr.rgb.power" />
-			<button name="Lights Off" tag="lr.rgb.power 0" />
-		</column>
-		<column>
-			<button name="Up" tag="lr.rgb.key 258" />
-			<button name="Down" tag="lr.rgb.key 258" />
-		</column>
-	</row>
-
-	<label text="" />
 	<row>
 		<button name="Lamp" tag="lr.rgb.relay_toggle" />
 	</row>
@@ -78,7 +64,7 @@
 	<label text="Intensity" />
 	<seekbar tag="lr.rgb.intensity" max="255" />
 	<label text="Delay" />
-	<seekbar tag="lr.rgb.delay" max="8000" />
+	<seekbar tag="lr.rgb.delay" max="30000" />
 	<row>
 		<column>
 			<button name="Channel Up" tag="lr.rgb.chanup" />
@@ -148,6 +134,4 @@
 		<button name="Disable Video" tag="lr.player.disable_video" />
 		<button name="Enable Video" tag="lr.player.enable_video" />
 	</row>
-	<button name="Random" tag="lr.player.random" />
 </tab>
-
