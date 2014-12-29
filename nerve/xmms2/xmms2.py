@@ -10,8 +10,8 @@ import xmmsclient
 import nerve
 
 class Xmms2 (nerve.Device):
-    def __init__(self):
-	nerve.Device.__init__(self)
+    def __init__(self, **config):
+	nerve.Device.__init__(self, **config)
 
 	self.xmms = None
 	self.artist = ""
@@ -32,7 +32,7 @@ class Xmms2 (nerve.Device):
 	self.xmms.playback_current_id(self._get_info)
 	self.xmms.broadcast_playback_current_id(self._get_info)
 
-	while not self.thread.stopflag.isSet():
+	while not self.thread.stopflag.is_set():
 	    fd = self.xmms.get_fd()
 
 	    if self.xmms.want_ioout():
@@ -50,7 +50,7 @@ class Xmms2 (nerve.Device):
 
     ### Resources ###
 
-    def toggle(self, msg):
+    def toggle(self):
 	self.xmms.playback_status(self._toggle)
 
     def _toggle(self, res):
@@ -59,26 +59,22 @@ class Xmms2 (nerve.Device):
 	else:
 	    self.xmms.playback_start()
 
-    def next(self, msg):
+    def next(self):
 	self.xmms.playlist_set_next_rel(1)
 	self.xmms.playback_tickle()
-	#song = self.winamp.getCurrentPlayingTitle()
-	#msg.server.send(msg.device_name() + ".getsong " + song, msg.addr)
-	# you need a way to say 'call function (playback_current_song
 
-    def previous(self, msg):
+    def previous(self):
 	self.xmms.playlist_set_next_rel(-1)
 	self.xmms.playback_tickle()
 
-    def sort(self, msg):
+    def sort(self):
 	self.xmms.playlist_sort([ 'url' ])
 
-    def shuffle(self, msg):
+    def shuffle(self):
 	self.xmms.playlist_shuffle()
 
-    def getsong(self, msg):
-	self.reply = msg
-	msg.from_port.send(msg.query + " " + self.artist + " - " + self.title)
+    def getsong(self):
+	return self.artist + " - " + self.title
 
     def update_info(self):
 	self.xmms.playback_current_id(self._get_info)
@@ -101,9 +97,11 @@ class Xmms2 (nerve.Device):
 	self.title = self.title.encode("ascii", "replace")
 	songname = self.artist + " - " + self.title
 
+	"""
 	msg = self.reply
 	if msg:
 	    msg.from_port.send(msg.query + " " + songname)
+	"""
 
 
 

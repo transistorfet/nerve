@@ -1,0 +1,63 @@
+{
+    "configdir": "config/kitty/",
+    "devices": {
+        "sys": {
+            "type": "linux/SysFiles"
+        },
+        "rgb": {
+            "baud": 19200,
+            "file": "/dev/ttyACM1",
+            "type": "serial/NerveSerialDevice"
+        },
+	"player": {
+	    "type": "xmms2/Xmms2"
+	}
+    },
+    "servers": {
+        "console": {
+            "controllers": {
+                "__default__": {
+                    "type": "base/QueryController"
+                }
+            },
+            "type": "base/Console"
+        },
+        "udp": {
+	    "port": 5959,
+            "controllers": {
+                "__default__": {
+                    "type": "base/QueryController"
+                }
+            },
+            "type": "base/UDPServer"
+        },
+        "http": {
+	    "username" : "dev",
+	    "password" : "dev",
+	    "port": 8889,
+            "controllers": {
+                "__default__": {
+                    "type": "base/FileController",
+		    "root" : "assets"
+                },
+                "assets": {
+                    "type": "base/FileController",
+		    "root" : "assets"
+                },
+                "query": {
+                    "type": "base/QueryController"
+                },
+                "config": {
+                    "type": "base/ConfigController"
+                },
+                "medialib": {
+                    "type": "medialib/MediaLibController"
+                },
+                "remote": {
+                    "type": "remote/RemoteController"
+                }
+            },
+            "type": "http/HTTPServer"
+        }
+    }
+}

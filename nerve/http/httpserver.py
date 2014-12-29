@@ -16,8 +16,6 @@ import cgi
 import json
 import mimetypes
 
-from nerve.http import pyhtml
-
 if sys.version.startswith('3'):
     from urllib.parse import parse_qs,urlparse
 else:
@@ -25,7 +23,7 @@ else:
 
 
 class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
-    server_version = "Nerve HTTP/0.1"
+    server_version = "Nerve HTTP/0.2"
 
     def log_message(self, format, *args):
         nerve.log(self.address_string() + ' ' + format % args)
@@ -53,12 +51,21 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
     def do_GET(self):
         if self.check_authorization() == False:
             return
-	url = urlparse(self.path)
-	return self.do_request("GET", url, parse_qs(url.query))
+
+	if not self.is_valid_path(self.path):
+	    self.send_404()
+
+	request = nerve.Request(self, 'GET', self.path, None)
+	#url = urlparse(self.path)
+	request.args = parse_qs(request.url.query)
+	self.do_request(request)
 
     def do_POST(self):
         if self.check_authorization() == False:
             return
+
+	if not self.is_valid_path(self.path):
+	    self.send_404()
 
 	# empty post doesn't provide a content-type.
 	ctype = None
@@ -75,61 +82,15 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
         else:
             postvars = {}
 
-	url = urlparse(self.path)
-	if url.path == '/query':
-	    print "Vars: " + repr(postvars)
-	    if 'tag' not in postvars:
-		self.send_400()
-		return
-	    self.send_json_headers()
-	    result = nerve.query(postvars['tag'][0])
-	    self.wfile.write(json.dumps(result))
-	else:
-	    return self.do_request("POST", url, postvars)
+	request = nerve.Request(self, 'POST', self.path, postvars)
+	self.do_request(request)
 
-	"""
-	elif path[0] == '/':
-	    devname, sep, cmdname = path.rpartition('/')
-	    devname = devname[1:].replace('/', '.')
-	    dev = nerve.get_device(devname)
-	    if dev is not None:
-		func = getattr(dev, 'html_' + cmdname)
-		return func(postvars)
-	    else:
-		return { 'error' : 1 }
-	"""
-
-    def do_request(self, reqtype, url, params=None):
-	if not self.is_valid_path(url.path):
-	    self.send_404()
-	    return
-
-	# TODO debugging: remove later
-	print "Vars: " + repr(params)
-
-	filename = os.path.join(self.server.root, url.path[1:])
-
-	# If the path resolves to a directory, then set the filename to the index.html file inside that directory
-	if os.path.isdir(filename):
-	    filename = filename.strip('/') + '/index.html'
-
-	# send error if nothing found
-	if not os.path.isfile(filename):
-	    self.send_404()
-	    return
-
-	# serve up the file
-	(self.mimetype, self.encoding) = mimetypes.guess_type(filename)
-	self.send_headers(200, self.mimetype)
-	(_, _, extension) = filename.rpartition('.')
-
-	with open(filename, 'r') as f:
-	    contents = f.read()
-
-	    if self.mimetype == 'text/html' or self.mimetype == 'text/xml' or extension == 'json':
-		interp = pyhtml.PyHTMLParser(contents, filename=filename, reqtype=reqtype, path=url.path, params=params)
-		contents = interp.evaluate()
-	    self.wfile.write(contents)
+    def do_request(self, request):
+	controller = self.server.find_controller(request)
+	success = controller.handle_request(request)
+	# TODO fetch the error from the controller
+	self.send_headers(200 if success else 404, controller.get_mimetype())
+	self.wfile.write(controller.get_output())
 	return
 
     def send_headers(self, errcode, mimetype, content=None):
@@ -145,9 +106,6 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
     def send_404(self):
         self.send_headers(404, 'text/plain', '404 Not Found')
 
-    def send_json_headers(self):
-        self.send_headers(200, 'application/json')
-
     @staticmethod
     def is_valid_path(path):
 	if not path[0] == '/':
@@ -158,20 +116,20 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
 	return True
 
 
-class HTTPServer (nerve.Portal, BaseHTTPServer.HTTPServer):
-
-    def __init__(self, port):
+class HTTPServer (nerve.Server, BaseHTTPServer.HTTPServer):
+    def __init__(self, **config):
+	nerve.Server.__init__(self, **config)
 	self.root = 'nerve/http/wwwdata'
 
-        self.username = None #obplayer.Config.setting('http_admin_username')
-        self.password = None #obplayer.Config.setting('http_admin_password')
+        self.username = self.get_setting("username")
+        self.password = self.get_setting("password")
 
         #sslenable = obplayer.Config.setting('http_admin_secure')
         #sslcert = obplayer.Config.setting('http_admin_sslcert')
 
         #server_address = ('', obplayer.Config.setting('http_admin_port'))  # (address, port)
 
-	BaseHTTPServer.HTTPServer.__init__(self, ('', port), HTTPRequestHandler)
+	BaseHTTPServer.HTTPServer.__init__(self, ('', config['port']), HTTPRequestHandler)
 	#if sslenable:
 	#    self.socket = ssl.wrap_socket(self.socket, certfile=sslcert, server_side=True)
 
@@ -181,5 +139,16 @@ class HTTPServer (nerve.Portal, BaseHTTPServer.HTTPServer):
 	self.thread = nerve.Task('HTTPServerTask', target=self.serve_forever)
 	self.thread.daemon = True
 	self.thread.start()
+
+    @staticmethod
+    def get_defaults():
+	defaults = nerve.Server.get_defaults()
+	defaults['port'] = 8888
+	defaults['controllers']['__default__'] = {
+	    'type' : 'base/ConfigController',
+	    'username' : 'admin',
+	    'password' : 'admin'
+	}
+	return defaults
 
 

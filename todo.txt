@@ -1,25 +1,38 @@
 
-* add and read extended m3u data
+* make a widgets system for the various "hmi-like" elements.  The nerve-button, nerve-query, nerve-query-block things are essentially widgets, but
+  it'd be nice to group everything together a bit better.  You could then have more advanced widgets for things like a player control
+* you could have a remote control app where you can configure which widgets or blocks of widgets should appear (kind of like how it used to be
+  in the android app).  You could have a 'customize' mode where it shows a button to remove widgets/panels, or add them using a list
+
+* i can tell that at some point you're going to need a user system of some kind.  Each user could have their own custom remote controls and themes
+
+* make it possible to do multiple queries at once, particularly with http, so that all data fetches on an html page can be updated at once
+* add a redirect function or something to controller, for example /config/ (which calls index()) redirects to /config/view
+* how do you get the propername of a setting, for display in the config page
+
+* you need a better way for controllers to return or control error message returns...
+
+* should you have a means of registering types (server, device, controller)?  You'd kind of have to import all the right modules first, and have them register
+
+* perhaps you could make it so that servers can be individually stopped and started
+
+* make all threads use the same method of invocation, if possible
+
+* make it as much like a generic hmi/plc/data disemination/control thing as possible.  Make it so that it's easy to have it automatically
+  query the server to fill in data fields.
+* make it easy to datalog certain points/tags/whatever i should call them.  You should be able to log to a database of some kind... perhaps
+  you'll have a common database for all datalogging, or maybe you'll have an individual one for each set of data to be logged...
+  (I'm thinking of logging temperature here, and then displaying a graph somehow, or calculating trends based on the data)
+
+* add fetching of remote uris during a query... so that local and remote data points can be accessed through the same mechanism
 
 * add voice commands somehow, possibly through android or google web api
 
-* change portals and devices to a common 'modules' thing, and then modules can have portals and devices, and other objects
-  nerve/<module>/..., the __init__.py file would contain exported devices, which could then be looked up using '<module>.<class>'
-
-* get a proper config system going
-* add a prefix to methods that can be dispatched to with a query
-* make it so that you can add a device by specifying the device name, and having the system look for the right file and import it
-
-* fix the message return... (xmms2 in particular just sends all song name updates to the last IP that it received a message from)
-
 * the server response could be the server name (cr, lr) which can then be used as the default namespace for the xml layouts
-* there could be some way of specifying the xml layout default namespace so that most of the stuff doesn't have to say specifically
-  what server to talk to
-
-* fix RGBNode to control daisy downstream device when receiving serial commands (is this done?)
 
 * get vlc scrobbling working
 * when vlc plays a youtube link, it converts the link to the direct link to the flv, but that link expires, and causes an error when played
+* with vlc, is there a way to not receive the json when sending a command (to speed up commands)
 
 STRUCTURAL:
 
@@ -30,21 +43,5 @@ POSSIBLE FEATURES:
 	* you could add a mechanism for registering for 'push notifications' by something like rgb.* <- wildcard so that all rgb
 	  messages would be automatically sent to that endpoint
 
-	* add webserver for large file transfers??  You could possibly also map the two together.  Perhaps you could still do
-	  lr.layout.livingroom, but then it would return lr.layout.livingroom http://192.168.1.180:8080/layout/livingroom
-	  and the remote would have to know to connect to the web to get the actual file.  It could then just assume to always get
-	  layouts through the web interface of course, but this general mechanism of passing back a link could be used for other
-	  bulk transfers.
-	* with the above, in the return, could you maybe do U:<link> or something, and also have F:<port> or something, where
-	  you can do a direct TCP transfer??
-	* could you add websocket feature to web server such that you could either connect to UDP, TCP to actually send commands, or
-	  connect to websocket, so that web pages from the server could directly control stuff without needing an additional socket
-	  connection?
-
 	* make it possible to paste a link (youtube video or playlist link) to play the link on the server end of things
-	* is there a way to write a playlist to disk from nerve and tell vlc to open it? instead of enqueueing everything
-	* is there a way to not receive the json when sending a command (to speed up commands)
-
-	* you can add a 'local' namespace to the android app, so that the xml layouts can have a button for 'local.settings' which will
-	  launch the settings dialog on the phone itself.  Also, there could be a local tab
 

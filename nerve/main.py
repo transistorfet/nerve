@@ -26,15 +26,13 @@ class Main (object):
 	parser.add_argument('-c', '--configdir', action='store', help='Use specified directory for configuration', default='~/.nerve/')
 	self.args = parser.parse_args()
 
-	self.root = nerve.Device()
-
-	self.config = nerve.Config(self.args.configdir)
-	if not self.config.load():
-	    self.shutdown()
-	if not self.config.run_init():
-	    self.shutdown()
+	#self.root = nerve.Device()
 
 	try:
+	    self.config = nerve.Config(self.args.configdir, nerve.Device())
+	    if not self.config.load() or not self.config.run_init():
+		self.shutdown()
+
 	    while not self.stopflag.wait(0.5):
 		pass
 	    nerve.log("exiting main loop")
@@ -72,35 +70,52 @@ def quit():
 
 def get_config(name):
     global mainloops
-    return mainloops[0].config.get(name)
+    #return mainloops[0].config.get(name)
+    return ""
 
 def set_config(name, value):
     global mainloops
-    return mainloops[0].config.set(name, value)
+    #return mainloops[0].config.set(name, value)
+
+def get_config_data():
+    global mainloops
+    return mainloops[0].config.get_config_data()
+    
+def save_config():
+    global mainloops
+    return mainloops[0].config.save()
 
 def configdir():
     global mainloops
     return mainloops[0].config.getdir()
 
-def add_portal(portal, *args):
+def add_server(name, servername, **config):
     global mainloops
-    return mainloops[0].config.create_object(portal, *args)
+    return mainloops[0].config.add_server(name, servername, **config)
 
-def add_device(name, dev, *args):
+def get_server(name):
     global mainloops
-    if not isinstance(dev, nerve.Device):
-	dev = mainloops[0].config.create_object(dev, *args)
-    return mainloops[0].root.add(name, dev)
+    return mainloops[0].config.get_server(name)
+    return None
+
+def add_device(name, dev, **config):
+    global mainloops
+    dev = mainloops[0].config.add_device(name, dev, **config)
+    #setattr(mainloops[0].root, name, dev)
+    return dev
 
 def get_device(name):
     global mainloops
-    return mainloops[0].root.get(name)
+    return mainloops[0].config.get_device(name)
 
-def query(line, addr=None, server=None):
+def query(ref, *args, **kwargs):
+    # TODO should this be ref or tag or point or what
     global mainloops
-    mainloops[0].root.query(line, addr, server)
+    return mainloops[0].config.root.query(ref, *args, **kwargs)
 
-def dispatch(msg):
-    global mainloops
-    mainloops[0].root.dispatch(msg)
+def query_string(text):
+    # TODO parse quotes
+    args = text.split()
+    ref = args.pop(0)
+    return query(ref, *args)
 

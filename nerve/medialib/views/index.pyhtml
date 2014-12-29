@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C/DTD HTML 4.01//EN">
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/widgets.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/medialib.css" />
+
+    <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/assets/js/widgets.js"></script>
+</head>
+<body>
+
+<a href="/remote/index">Remote</a> | <a href="/remote/player">Player</a> | <a href="/medialib/">Playlists</a> | <a href="/medialib/search">Search Medialib</a> | <a href="/medialib/search_youtube">Search YouTube</a>
+<hr>
+
+<div id="notice" style="display: none;"></div>
+<div id="error" style="display: none;"></div>
+
+<div>
+    <select id="select-playlist">
+	<% for name in list_of_playlists: %>
+	    <option value="<%= name %>"><%= name %></option>
+	<% end %>
+    </select>
+    <button type="submit" class="pl_add">+</button>
+    <button type="submit" class="pl_remove">-</button>
+</div>
+
+<form method="post" action="<%= py._PATH %>">
+<div class="nerve-medialist">
+    <button type="submit" class="pl_remove">Remove Selected</button>
+    <button type="submit" class="pl_sort">Sort</button>
+    <button type="submit" class="pl_shuffle">Shuffle</button>
+
+    <div id="playlist-contents">
+    </div>
+
+    <button type="submit" class="pl_remove">Remove Selected</button>
+    <button type="submit" class="pl_sort">Sort</button>
+    <button type="submit" class="pl_shuffle">Shuffle</button>
+</div>
+</form>
+
+<script type="text/javascript">
+
+function update_playlist()
+{
+    $.post('/medialib/get_playlist', { 'playlist' : $('#select-playlist').val() }, function (response) {
+	$('#playlist-contents').html(response);
+    }, 'html');
+}
+
+$(document).ready(function ()
+{
+    $('#select-playlist').change(function () {
+	update_playlist();
+    });
+
+    $('#select-playlist').val('default').trigger('change');
+
+    $('.pl_remove').click(function (e) {
+	var postvars = { 'playlist' : $('#select-playlist').val(), 'urls' : [ ] };
+	$("input[name='urls']:checked").each(function () {
+	    postvars['urls'].push($(this).val());
+	});
+	$.post('/medialib/remove_urls', postvars, update_playlist, 'html');
+    });
+
+    $('.pl_sort').click(function (e) {
+	$.post('/medialib/sort_playlist', { 'playlist' : $('#select-playlist').val() }, update_playlist, 'html');
+    });
+
+    $('.pl_shuffle').click(function (e) {
+	$.post('/medialib/shuffle_playlist', { 'playlist' : $('#select-playlist').val() }, update_playlist, 'html');
+    });
+});
+
+</script>
+
+</body>
+</html> 
+ 

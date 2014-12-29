@@ -1,116 +1,233 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import nerve
 
-class InvalidRequest (Exception):
+import json
+import traceback
+import cStringIO
+
+from urlparse import parse_qs,urlparse
+# TODO for python3
+#from urllib.parse import parse_qs,urlparse
+
+
+class Request (object):
+    def __init__(self, server, reqtype, urlstring, args):
+	self.server = server
+	self.reqtype = reqtype
+	# TODO you could do urlparse here
+	self.url = urlparse(urlstring)
+	self.segments = self.url.path.lstrip('/').split('/')
+	self.current_segment = 0
+	self.args = args
+
+    def next_segment(self):
+	if self.current_segment < len(self.segments):
+	    seg = self.segments[self.current_segment]
+	    self.current_segment += 1
+	    return seg
+	return ''
+
+    def back_segment(self):
+	if self.current_segment > 0:
+	    self.current_segment -= 1
+
+    def remaining_segments(self):
+	if self.current_segment < len(self.segments):
+	    seg = '/'.join(self.segments[self.current_segment:])
+	    self.current_segment = len(self.segments)
+	    return seg
+	return ''
+
+    def arg(self, name, default=None):
+	if name in self.args:
+	    if name.endswith("[]"):
+		return self.args[name]
+	    else:
+		return self.args[name][0]
+	return default
+
+
+class RedirectException (Exception):
     pass
 
 
-class Portal (object):
-    def __init__(self):
+class Controller (nerve.ConfigObject):
+    def __init__(self, **config):
+	nerve.ConfigObject.__init__(self, **config)
+	self.error = None
+	self.output = None
+
+    def initialize(self):
+	self.error = None
+	self.mimetype = 'text/plain'
+	self.output = cStringIO.StringIO()
+
+    def finalize(self):
 	pass
 
-    def send(self, text):
-	raise Exception("Error: send() function is not defined on this portal")
+    def set_mimetype(self, mimetype):
+	if len(self.output.getvalue()) > 0:
+	    raise Exception('mimetype', "in nerve.Controller, attempting to change mimetype after output has been written")
+	self.mimetype = mimetype
+
+    def get_mimetype(self):
+	return self.mimetype
+
+    def write_output(self, data):
+	self.output.write(data)
+
+    def write_json(self, data):
+	self.mimetype = 'application/json'
+	self.output.write(json.dumps(data, sort_keys=True, indent=4, separators=(',', ': ')))
+
+    def write_error(self, typename, message):
+	self.error = Exception(typename, message)
+
+    def get_output(self):
+	return self.output.getvalue()
+
+    def handle_request(self, request):
+	self.initialize()
+	try:
+	    self.do_request(request)
+	except RedirectException as redirect:
+	    self.error = redirect
+	except:
+	    nerve.log(traceback.format_exc())
+	    # TODO this should change when you get a better error reporting system
+	    self.write_error('internal', traceback.format_exc())
+	    self.write_output(traceback.format_exc())
+	finally:
+	    self.finalize()
+
+	if self.error is None:
+	    return True
+	return False
+
+    def do_request(self, request):
+	name = request.next_segment()
+	if not name:
+	    name = 'index'
+	func = getattr(self, name)
+	return func(request)
 
 
-class CallbackPortal (Portal):
-    def __init__(self, func):
-	self.callback = func
-
-    def send(self, msg):
-	return self.callback(msg)
-
-
-class Message (object):
-    def __init__(self, line, from_port, to_port):
-	self.from_port = from_port
-	self.to_port = to_port
-	self.line = line
-	self.args = line.split()
-	self.query = self.args.pop(0)
-	self.names = self.query.split('.')
-
-    def reply(self, line):
-	self.from_port.send(line)
-
-    def device_name(self):
-	return '.'.join(self.names[:-1])
-
-    def checkargs(self, min, max=None):
-	length = len(self.args)
-	if max is None:
-	    if length == min:
-		return True
-	    return False
+class Server (nerve.ConfigObject):
+    def __init__(self, **config):
+	nerve.ConfigObject.__init__(self, **config)
+	if 'controllers' not in config:
+	    self.controllers = { }
 	else:
-	    if length >= min and length <= max:
-		return True
-	    return False
+	    self.controllers = self.make_object_table(config['controllers'])
 
+    @staticmethod
+    def get_defaults():
+	defaults = nerve.ConfigObject.get_defaults()
+	defaults['controllers'] = { }
+	return defaults
 
-class Device (object):
-    def __init__(self):
-	self.name = None
-	self.parent = None
-	self.subdevices = { }
+    def get_config_data(self):
+	config = nerve.ConfigObject.get_config_data(self)
+	config['controllers'] = self.save_object_table(self.controllers)
+	return config
 
-    def device_name(self):
-	if self.name is None:
-	    return '(root)'
-	name = self.name
-	parent = self.parent
-	while parent is not None and parent.name is not None:
-	    name = parent.name + '.' + name
-	    parent = parent.parent
-	return name
+    def add_controller(self, name, controller):
+	self.controllers[name] = controller
 
-    def add(self, name, dev, *args):
-	names = name.split('.', 1)
-	if len(names) > 1:
-	    if names[0] not in self.subdevices:
-		self.subdevices[names[0]] = Device()
-	    subdev = self.subdevices[names[0]]
-	    return subdev.add(names[1], dev)
+    def start_server(self):
+	pass
 
+    def stop_server(self):
+	pass
+
+    def find_controller(self, request):
+	basename = request.next_segment()
+	if basename in self.controllers:
+	    controller = self.controllers[basename]
 	else:
-	    self.subdevices[names[0]] = dev
-	    dev.name = names[0]
-	    dev.parent = self
-	    return dev
+	    request.back_segment();
+	    controller = self.controllers['__default__']
+	return controller
 
-    def get(self, name):
-	devname, sep, rest = name.partition('.')
-	# we want to make sure we don't get internal python objects accidentally
-	if devname.startswith('__'):
-	    return None
 
-	if devname in self.subdevices:
-	    if rest:
-		return self.subdevices[name].get(rest)
-	    else:
-		return self.subdevices[name]
-	return None
+class Device (nerve.ConfigObject):
+    device_types = { }
 
-    def get_local(self, name):
-	if name in self.subdevices:
-	    return self.subdevices[name]
-	return None
+    def __init__(self, **config):
+	nerve.ConfigObject.__init__(self, **config)
 
-    def query(self, line, from_port=None, to_port=None):
-	msg = Message(line, from_port, to_port)
-	self.dispatch(msg)
-
-    def dispatch(self, msg, index=0):
-	if index + 1 >= len(msg.names):
-	    func = getattr(self, msg.names[index])
-	    #func = getattr(self, 'query_' + msg.names[index])
-	    return func(msg)
+    def query(self, ref, *args, **kwargs):
+	(name, sep, remain) = ref.partition('.')
+	if name and name[0] == '_':
+	    raise AttributeError("cannot access underscore attributes through a query: '" + name + "'")
+	if remain:
+	    dev = getattr(self, name)
+	    return dev.query(remain, *args, **kwargs)
 	else:
-	    dev = self.get_local(msg.names[index])
-	    if dev is None:
-		raise InvalidRequest("No subdevice named " + msg.names[index] + " in device " + self.device_name())
-	    return dev.dispatch(msg, index + 1)
+	    func = getattr(self, name)
+	    return func(*args, **kwargs)
+
+    @staticmethod
+    def register_device_type(name, device_class, description):
+	Device.device_types[name] = { 'class' : device_class, 'description' : description }
+	# TODO you could call a static method on the class to get config data...
+
+
+
+#def query(ref, **kwargs):
+#    return root.query(ref, **kwargs)
+
+#root = NewDevice()
+
+"""
+
+root = NewDevice()
+root.medialib = MediaLib()
+root.rgb = NerveSerialDevice("/dev/ttyACM1", 19200)
+root.stereo = Stereo(root.rgb)
+
+media_list = medialib.get_media_list(...)
+
+class Player (object):
+    def play(self, **kwargs):
+	# play the thing
+
+    def get_song(self, **kwargs):
+	return song_name	# this would get encoded to json if it was going back to webside
+
+    def play_song(self, **kwargs):
+	if len(kwargs) != 1 or 'url' not in kwargs:
+	    return { 'error' : "method takes 1 argument: url" }
+	# play song specified in kwargs['url']
+
+# so you can totally do
+songname = player.get_song()
+# or
+player.play_song(url='afile.mp3')
+
+# but you can't do
+player.play_song('afile.mp3')		# (unless you do some trickery...)
+
+# you should also have a method of doing...
+nerve.query('player.play_song', { 'url' : 'afile.mp3' })
+# which should be identical
+
+
+portals = something
+portals.http = nerve.http.HTTPServer(8888)
+portals.console = nerve.Console()
+
+# sortof, but there maybe should be a list of devices and portals so they aren't confused (like the existing stuff)
+
+
+"""
+
+
+
+
+
 
 import Queue
 import time

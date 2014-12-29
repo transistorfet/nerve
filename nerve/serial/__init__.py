@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from serialdev import SerialDevice
-from serialdev import NerveSerialDevice
+from serialdev import SerialDevice, NerveSerialDevice
 

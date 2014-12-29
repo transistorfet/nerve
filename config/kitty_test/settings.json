@@ -1,0 +1,65 @@
+{
+    "configdir": "config/kitty_test/",
+    "devices": {
+        "medialib": {
+            "type": "medialib/MediaLib",
+	    "medialib_dirs": [
+		"/media/media/Music", 
+		"/media/media/Torrents"
+	    ],
+	    "youtube_playlists": [
+		"PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4",
+		"FL_VkJGWFV9ZEIv87E-0NM5w",
+		"PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0"
+	    ]
+        },
+        "sys": {
+            "type": "linux/SysFiles"
+        },
+        "rgb": {
+            "baud": 19200,
+            "file": "/dev/ttyACM1",
+            "type": "serial/NerveSerialDevice"
+        },
+	"player": {
+	    "type": "xmms2/Xmms2"
+	}
+    },
+    "servers": {
+        "console": {
+            "controllers": {
+                "__default__": {
+                    "type": "base/QueryController"
+                }
+            },
+            "type": "base/Console"
+        },
+        "http": {
+	    "username" : "dev",
+	    "password" : "dev",
+            "controllers": {
+                "__default__": {
+                    "type": "base/FileController",
+		    "root" : "assets"
+                },
+                "assets": {
+                    "type": "base/FileController",
+		    "root" : "assets"
+                },
+                "query": {
+                    "type": "base/QueryController"
+                },
+                "config": {
+                    "type": "base/ConfigController"
+                },
+                "medialib": {
+                    "type": "medialib/MediaLibController"
+                },
+                "remote": {
+                    "type": "remote/RemoteController"
+                }
+            },
+            "type": "http/HTTPServer"
+        }
+    }
+}

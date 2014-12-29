@@ -1,0 +1,100 @@
+
+html {
+    font-family: sans-serif;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+}
+
+body {
+}
+
+table {
+    width: 100%;
+}
+
+td {
+    /* width: 100%; */
+    text-align: center;
+}
+
+.nerve-button {
+    width: 100%;
+    margin-left: 2px;
+    margin-right: 2px;
+    padding: 2px;
+    font-size: 1.25em;
+}
+
+
+/* Medialib Style */
+.nerve-medialist table {
+    border-collapse: collapse;
+}
+.nerve-medialist th,
+.medialist td {
+    text-align: left;
+}
+.nerve-medialist table,
+.nerve-medialist th,
+.nerve-medialist td {
+    border: 1px solid lightgrey;
+}
+
+.nerve-medialist a {
+    color: black;
+}
+
+
+/* Settings Menu Style */
+
+.nerve-setting {
+}
+
+.nerve-setting-list {
+    border: 1px solid #70B008;
+    margin: 0.5em;
+    padding: 0.5em;
+    width: 30em;
+}
+
+.nerve-setting-list h4 {
+    display: inline;
+}
+
+.nerve-setting-item {
+    margin-bottom: 0.5em;
+}
+
+.nerve-setting-add-item {
+    display: inline-block;
+}
+
+.nerve-settings label {
+    width: 10em;
+    margin-right: 0.5em;
+    text-align: right;
+    display: block;
+    float: left;
+    font: 12px sans-serif;
+    color: black;
+}
+
+.nerve-settings input[type='text'] {
+    margin-left: 2em;
+}
+
+.nerve-settings button {
+    color: #000;
+    background: #f7f7f7;
+    border-top: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+    border-bottom: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+}
+
+.nerve-settings button:hover {
+    background: #80C008;
+    color: #fff;
+}
+

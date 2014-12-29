@@ -17,8 +17,8 @@ import requests
 import json
 
 class VLCHTTP (nerve.Device):
-    def __init__(self):
-	nerve.Device.__init__(self)
+    def __init__(self, **config):
+	nerve.Device.__init__(self, **config)
 	self.proc = None
 	self.status = None
 	self.lastplid = 0
@@ -31,35 +31,31 @@ class VLCHTTP (nerve.Device):
 	self.thread = nerve.Task('VLCTask', self.run)
 	self.thread.start()
 
-    def next(self, msg):
+    def next(self):
 	self._send_command('pl_next')
-	self.lastmsg = msg
 	self.next_update = time.time() + 2
 
-    def previous(self, msg):
+    def previous(self):
 	self._send_command('pl_previous')
-	self.lastmsg = msg
 	self.next_update = time.time() + 2
 
-    def toggle(self, msg):
+    def toggle(self):
 	self._send_command('pl_pause')
-	self.lastmsg = msg
 
-    def getvolume(self, msg):
+    def getvolume(self):
 	if self.status is not None:
-	    msg.reply(msg.query + " " + str(self.status['volume']))
+	    return self.status['volume']
+	return 0
 
-    def setvolume(self, msg):
-	if not msg.checkargs(1):
-	    raise Exception("Invalid arguments to setvolume")
-	self._send_command('volume', msg.args[0])
+    def setvolume(self, volume):
+	self._send_command('volume', volume)
 
-    def volume(self, msg):
-	if msg.checkargs(1):
-	    self._send_command('volume', msg.args[0])
-	msg.reply(msg.query + " " + str(self.status['volume']))
+    def volume(self, volume=None):
+	if volume:
+	    self._send_command('volume', volume)
+	return self.getvolume()
 
-    def volup(self, msg):
+    def volup(self):
 	if not self.status:
 	    return
 	volume = int(self.status['volume']) + 5
@@ -67,7 +63,7 @@ class VLCHTTP (nerve.Device):
 	    volume = 256
 	self._send_command('volume', volume)
 
-    def voldown(self, msg):
+    def voldown(self):
 	if not self.status:
 	    return
 	volume = int(self.status['volume']) - 5
@@ -75,24 +71,24 @@ class VLCHTTP (nerve.Device):
 	    volume = 0
 	self._send_command('volume', volume)
 
-    def random(self, msg):
+    def random(self):
 	self._send_command('pl_random')
 
-    def fullscreen(self, msg):
+    def fullscreen(self):
 	self._send_command('fullscreen')
 
-    def enable_video(self, msg):
+    def enable_video(self):
 	self._send_command('video_track', 0)
 
-    def disable_video(self, msg):
+    def disable_video(self):
 	self._send_command('video_track', -1)
 
-    def getsong(self, msg):
+    def getsong(self):
 	if self.status is not None:
-	    msg.reply(msg.query + " " + self._get_title())
-	self.lastmsg = msg
+	    return self._get_title()
+	return ""
 
-    def html_status(self, postvars):
+    def html_status(self, **postvars):
 	if self.status is not None:
 	    return {
 		'song' : self._get_title(),
@@ -114,10 +110,10 @@ class VLCHTTP (nerve.Device):
 		'fullscreen' : False
 	    }
 
-    def clear_playlist(self, msg):
+    def clear_playlist(self):
 	self._send_command('pl_empty')
 
-    def getplaylist(self, msg):
+    def getplaylist(self):
 	r = requests.get('http://%s/requests/playlist.json' % (self.server,), auth=('', 'test'))
 	self.playlist = json.loads(r.text)
 	return self.read_playlist(self.playlist)
@@ -137,29 +133,27 @@ class VLCHTTP (nerve.Device):
 	url = 'http://%s/requests/status.json?command=pl_play&id=%s' % (self.server, id)
 	r = requests.get(url, auth=('', 'test'))
 
-    def play(self, msg):
-	if len(msg.args) != 1:
-	    return
-	self._send_command_and_uri('in_play', urllib.quote(msg.args[0]))
+    def play(self, url):
+	self._send_command_and_uri('in_play', urllib.quote(url))
 
-    def load_playlist(self, msg):
-	if len(msg.args) != 1:
-	    return
+    def load_playlist(self, url):
 	self._send_command('pl_empty')
-	self._send_command_and_uri('in_play', urllib.quote(msg.args[0]))
+	self._send_command_and_uri('in_play', urllib.quote(url))
 
-    def kill_instance(self, msg):
+    def kill_instance(self):
 	if self.proc is not None:
 	    self.proc.kill()
 	    self.proc = None
 	    self.next_update = time.time()
 
+    """
     def command(self, msg):
 	#self.client.send(' '.join(msg.args))
 	if len(msg.args) == 1:
 	    self._send_command(msg.args[0])
 	else:
 	    self._send_command(msg.args[0], msg.args[1])
+    """
 
     def _send_command(self, cmd, val=None):
 	url = 'http://%s/requests/status.json?command=%s' % (self.server, cmd)
@@ -222,7 +216,7 @@ class VLCHTTP (nerve.Device):
 	    self.proc.terminate()
 
     def launch_vlc_instance(self):
-	while not self.thread.stopflag.isSet():
+	while not self.thread.stopflag.is_set():
 	    try:
 		nerve.log("Starting new instance of VLC")
 		# TODO make this more robust

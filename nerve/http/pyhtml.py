@@ -16,33 +16,33 @@ import mimetypes
 
 import urllib
 
-def utf8(data):
-    if isinstance(data, unicode):
-	return data.encode('utf-8')
-    return str(data)
 
-class PyHTMLParser (object):
-    version = '0.1'
+class PyHTML (object):
+    version = '0.2'
 
-    def __init__(self, contents, filename=None, reqtype=None, path=None, params=None):
+    def __init__(self, filename, request, data=None):
 	self.segments = None
+	self.contents = ''
 	self.pycode = ''
-	self.contents = contents
+
+	if data is None:
+	    data = { }
+	self.data = data
 
 	self._FILENAME = filename
-	self._REQTYPE = reqtype
-	self._PATH = path
-	self._ARGS = params
+	self._PATH = request.url.path if request else ''
+	self._REQUEST = request
 
-	if reqtype == "GET":
-	    self._GET = params
-	    self._POST = { }
-	elif reqtype == "POST":
-	    self._GET = { }
-	    self._POST = params
+	self._POST = { }
+	self._GET = { }
+	if request:
+	    if request.reqtype == "GET":
+		self._GET = request.args
+	    elif reqtype == "POST":
+		self._POST = request.args
 
     def ARGS(self, name, default='', as_array=False):
-	if name not in self._ARGS:
+	if not self._REQUEST or name not in self._REQUEST.args:
 	    return default
 	if as_array is False:
 	    return self._ARGS[name][0]
@@ -75,6 +75,9 @@ class PyHTMLParser (object):
 	return self.execute_python()
 
     def generate_python(self):
+	with open(self._FILENAME, 'r') as f:
+	    self.contents = f.read()
+
 	self.segments = self._parse_segments()
 	lines = [ ]
 	for i, seg in enumerate(self.segments):
@@ -141,7 +144,7 @@ class PyHTMLParser (object):
 	    self.output = cStringIO.StringIO()
 	    sys.stdout = self.output
 
-	    self.globals = { }
+	    self.globals = self.data
 	    self.globals['nerve'] = nerve
 	    self.globals['py'] = self
 	    self.globals['json'] = json
@@ -177,4 +180,10 @@ class PyHTMLParser (object):
 
 	print "<pre>\n" + self.htmlspecialchars(self.pycode) + "\n</pre>\n"
 	
+
+def utf8(data):
+    if isinstance(data, unicode):
+	return data.encode('utf-8')
+    return str(data)
+
 
