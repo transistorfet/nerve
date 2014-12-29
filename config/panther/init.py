@@ -9,19 +9,19 @@ class Stereo (nerve.Device):
 	nerve.Device.__init__(self, **config)
 	self.serial = serial
 
-    def power(self, msg):
+    def power(self):
 	self.serial.send("ir S A81")
 
-    def volup(self, msg):
+    def volup(self):
 	self.serial.send("ir S 481")
 
-    def voldown(self, msg):
+    def voldown(self):
 	self.serial.send("ir S C81")
 
-    def tape(self, msg):
+    def tape(self):
 	self.serial.send("ir S C41")
 
-    def tuner(self, msg):
+    def tuner(self):
 	self.serial.send("ir S 841")
 
 
@@ -30,33 +30,33 @@ class Television (nerve.Device):
 	nerve.Device.__init__(self, **config)
 	self.serial = serial
 
-    def power(self, msg):
+    def power(self):
 	self.serial.send("ir P 4004 100BCBD")
 
-    def volup(self, msg):
+    def volup(self):
 	self.serial.send("ir P 4004 1000405")
 
-    def voldown(self, msg):
+    def voldown(self):
 	self.serial.send("ir P 4004 1008485")
 
-    def ps3(self, msg):
+    def ps3(self):
 	self.serial.send("ir P 4004 100A0A1")
 	self.serial.send("ir P 4004 1008889")
 
-    def netbook(self, msg):
+    def netbook(self):
 	self.serial.send("ir P 4004 100A0A1")
 	self.serial.send("ir P 4004 1004849")
 
-    def computer(self, msg):
+    def computer(self):
 	self.serial.send("ir P 4004 100A0A1")
 	self.serial.send("ir P 4004 1004849")
 
 
 class Sys (nerve.Device):
-    def sleep(self, msg):
+    def sleep(self):
 	os.system("xscreensaver-command -activate")
 
-    def wakeup(self, msg):
+    def wakeup(self):
 	os.system("xscreensaver-command -deactivate")
 
 

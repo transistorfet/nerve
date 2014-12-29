@@ -95,19 +95,6 @@
 
 <hr>
 
-<div class="nerve-query-block" data-query="player.html_status" data-time="5000">
-    <span class="song"></span><br/>
-    <span class="volume"></span><br/>
-    <span class="state"></span><br/>
-    <span class="position"></span><br/>
-    <span class="loop"></span><br/>
-    <span class="random"></span><br/>
-    <span class="fullscreen"></span><br/>
-</div>
-
-
-<hr>
-
 
 <h5>RGB Node</h5>
 <div class="nerve-slider" data-query="rgb.intensity" data-max="256"></div>
@@ -170,6 +157,16 @@
 	<td><a class="nerve-button" href="#" data-query="rgb.index 25"><div style="width:50px; height:50px; border: 1px solid #000; background: #ffffff;"></div></a></td>
     </tr>
 </table>
+
+<div class="disabled-nerve-query-block" data-query="player.html_status" data-time="5000">
+    <span class="song"></span><br/>
+    <span class="volume"></span><br/>
+    <span class="state"></span><br/>
+    <span class="position"></span><br/>
+    <span class="loop"></span><br/>
+    <span class="random"></span><br/>
+    <span class="fullscreen"></span><br/>
+</div>
 
 </body>
 </html> 
