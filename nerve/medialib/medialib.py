@@ -162,6 +162,9 @@ class Playlist (object):
 	if not os.path.isdir(plroot):
 	    os.mkdir(plroot)
 	self.filename = plroot + '/' + name + '.m3u'
+	if not os.path.isfile(self.filename):
+	    with open(self.filename, 'w') as f:
+		pass
 	self.media_list = [ ]
 
     def load(self):

@@ -152,3 +152,8 @@ class HTTPServer (nerve.Server, BaseHTTPServer.HTTPServer):
 	return defaults
 
 
+    @staticmethod
+    def register_config():
+	self.register_server('http/HTTPServer', HTTPServer)
+	self.register_setting('port', 'Port', 8888)
+

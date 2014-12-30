@@ -1,18 +1,16 @@
 
-- requests
- 
-Serial Devices:
-- pyserial
+The following is a list of Debian packages that are needed to run each module:
 
-MediaLib:
-- apsw
-- mutagen
+everything:
+    python-apsw
+    python-requests
 
+serial:
+    python-serial
 
-Debian Packages:
-python-apsw
-python-requests
-python-serial
-python-mutagen
-python-xmmsclient
+medialib:
+    python-mutagen
+
+xmms2:
+    python-xmmsclient
 

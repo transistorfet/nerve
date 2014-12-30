@@ -4,70 +4,99 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 
+    <link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/theme.css" />
     <link rel="stylesheet" type="text/css" href="/assets/css/widgets.css" />
 
     <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/assets/js/theme.js"></script>
     <script type="text/javascript" src="/assets/js/widgets.js"></script>
 </head>
 <body>
 
 <h2>Nerve Settings</h2>
-<hr>
 
-<h3>Devices</h3>
-<div id="devices" class="nerve-settings">
-    <% for device_name in sorted(config_data['devices'].keys()): %>
-    <div class="nerve-setting-list">
-	<h4><%= device_name %></h4>
-	<% device = config_data['devices'][device_name] %>
-	<% for setting_name in sorted(device.keys()): %>
-	    <% if type(device[setting_name]) in [ int, float, str, unicode ]: %>
-	    <div class="nerve-setting-item">
-		<label><%= setting_name.capitalize() %></label>
-		<span><input type="text" name="<%= setting_name %>" value="<%= device[setting_name] %>" /></span>
-	    </div>
-	    <% end %>
-	<% end %>
-    </div>
-    <% end %>
-    <div class="nerve-setting-add">
-	<div class="nerve-setting-add-item">
-	    <label>Device Name:</label>
-	    <input type="text" id="devname" />
-	</div>
-	<div class="nerve-setting-add-item">
-	    <label>Type:</label>
-	    <input type="text" id="device_type" />
-	    <button type="button" id="add_device">Add Device</button>
-	</div>
-    </div>
+<div id="tabs">
+    <div class="tab selected" data-content="home">Home</div>
+    <div class="tab" data-content="devices">Devices</div>
+    <div class="tab" data-content="servers">Servers</div>
+    <div class="tab" data-content="log">Log</div>
+    <div style="clear: both;"></div>
 </div>
 
-<h3>Servers</h3>
-<div id="servers">
-    <% for server_name in config_data['servers']: %>
-    <div class="nerve-setting-list">
-	<h4><%= server_name %></h4>
-	<% server = config_data['servers'][server_name] %>
-	<% for setting_name in sorted(server.keys()): %>
-	    <% if type(server[setting_name]) in [ int, float, str, unicode ]: %>
-	    <div class="nerve-setting-item">
-		<label><%= setting_name.capitalize() %></label>
-		<input type="text" name="<%= setting_name %>" value="<%= server[setting_name] %>" />
+<div id="content">
+
+    <div id="nerve-notice" style="display: none;"></div>
+    <div id="nerve-error" style="display: none;"></div>
+
+    <div id="content-home">
+	<p>Configury Configurations</p>
+    </div>
+    <div id="content-devices" style="display: none;">
+
+	<h3>Devices</h3>
+	<div id="devices" class="nerve-form">
+	    <% for device_name in sorted(config_data['devices'].keys()): %>
+	    <div class="nerve-form-list">
+		<h4><%= device_name %></h4>
+		<% device = config_data['devices'][device_name] %>
+		<% for setting_name in sorted(device.keys()): %>
+		    <% if type(device[setting_name]) in [ int, float, str, unicode ]: %>
+		    <div class="nerve-form-item">
+			<label><%= setting_name.capitalize() %></label>
+			<span><input type="text" name="<%= setting_name %>" value="<%= device[setting_name] %>" /></span>
+		    </div>
+		    <% end %>
+		<% end %>
 	    </div>
 	    <% end %>
-	<% end %>
+	    <div class="nerve-form">
+		<div class="nerve-form-item-row">
+		    <label>Device Name:</label>
+		    <input type="text" id="devname" />
+		</div>
+		<div class="nerve-form-item-row">
+		    <label>Type:</label>
+		    <input type="text" id="device_type" />
+		    <button type="button" id="add_device">Add Device</button>
+		</div>
+	    </div>
+	</div>
+	<div class="nerve-form">
+	    <button type="button" id="save_devices">Save</button>
+	</div>
     </div>
-    <% end %>
-    <form method="post" action="<%= py._PATH %>">
-	<label>Server Name:</label><input type="text" name="servname" />
-	<label>Type:</label><input type="text" name="typename" />
-	<button type="button" name="st_servadd">Add Server</button>
-    </form>
-</div>
+    <div id="content-servers" style="display: none;">
 
-<div class="nerve-settings">
-    <button type="button" id="save_devices">Save</button>
+	<h3>Servers</h3>
+	<div id="servers" class="nerve-form">
+	    <% for server_name in config_data['servers']: %>
+	    <div class="nerve-form-list">
+		<h4><%= server_name %></h4>
+		<% server = config_data['servers'][server_name] %>
+		<% for setting_name in sorted(server.keys()): %>
+		    <% if type(server[setting_name]) in [ int, float, str, unicode ]: %>
+		    <div class="nerve-form-item">
+			<label><%= setting_name.capitalize() %></label>
+			<input type="text" name="<%= setting_name %>" value="<%= server[setting_name] %>" />
+		    </div>
+		    <% end %>
+		<% end %>
+	    </div>
+	    <% end %>
+	    <form method="post" action="<%= py._PATH %>">
+		<label>Server Name:</label><input type="text" name="servname" />
+		<label>Type:</label><input type="text" name="typename" />
+		<button type="button" name="st_servadd">Add Server</button>
+	    </form>
+	</div>
+	<div class="nerve-form">
+	    <button type="button" id="save_devices">Save</button>
+	</div>
+    </div>
+    <div id="content-logs" style="display: none;">
+
+    </div>
 </div>
 
 <script>

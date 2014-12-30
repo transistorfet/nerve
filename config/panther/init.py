@@ -52,14 +52,6 @@ class Television (nerve.Device):
 	self.serial.send("ir P 4004 1004849")
 
 
-class Sys (nerve.Device):
-    def sleep(self):
-	os.system("xscreensaver-command -activate")
-
-    def wakeup(self):
-	os.system("xscreensaver-command -deactivate")
-
-
 #nerve.add_portal('raw.UDPServer', 5959)
 
 #rgb = nerve.add_device('rgb', 'serial.NerveSerialDevice', '/dev/ttyACM0', 19200)
@@ -67,7 +59,7 @@ rgb = nerve.get_device('rgb')
 nerve.add_device("stereo", Stereo(rgb))
 nerve.add_device("tv", Television(rgb))
 
-nerve.add_device("sys", Sys())
+#nerve.add_device("sys", Sys())
 #nerve.add_device("player", 'vlc.VLCHTTP')
 
 #nerve.add_device('medialib', 'medialib.MediaLib')

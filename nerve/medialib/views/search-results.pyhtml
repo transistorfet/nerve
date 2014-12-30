@@ -7,7 +7,7 @@
     has_track_num = True if 'track_num' in media_list[0] else False
     %>
 
-    <div class="nerve-medialist">
+    <div class="medialib-list">
 	<table>
 	<thead><tr>
 	    <th></th>

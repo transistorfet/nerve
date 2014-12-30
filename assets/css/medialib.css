@@ -1,34 +1,21 @@
 
-#notice
-{
-    border: 1px solid #333;
-    padding: 5px;
-    background-color: #9f9;
-    margin-bottom: 20px;
-}
 
-#error
-{
-    border: 1px solid #333;
-    padding: 5px;
-    background-color: #f99;
-    margin-bottom: 20px;
-}
 
-.nerve-medialist table {
+.medialib-list table {
+    width: 100%;
     border-collapse: collapse;
 }
-.nerve-medialist th,
-.nerve-medialist td {
+.medialib-list th,
+.medialib-list td {
     text-align: left;
 }
-.nerve-medialist table,
-.nerve-medialist th,
-.nerve-medialist td {
+.medialib-list table,
+.medialib-list th,
+.medialib-list td {
     border: 1px solid lightgrey;
 }
 
-.nerve-medialist a {
+.medialib-list a {
     color: black;
 }
 

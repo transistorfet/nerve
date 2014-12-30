@@ -1,24 +1,9 @@
 
-html {
-    font-family: sans-serif;
-    -webkit-text-size-adjust: 100%;
-    -moz-text-size-adjust: 100%;
-    -ms-text-size-adjust: 100%;
-}
-
-body {
-}
-
-table {
+table.nerve-container {
     width: 100%;
 }
 
-td {
-    /* width: 100%; */
-    text-align: center;
-}
-
-.nerve-button {
+button.nerve-button {
     width: 100%;
     margin-left: 2px;
     margin-right: 2px;
@@ -26,75 +11,69 @@ td {
     font-size: 1.25em;
 }
 
-
-/* Medialib Style */
-.nerve-medialist table {
-    border-collapse: collapse;
-}
-.nerve-medialist th,
-.medialist td {
-    text-align: left;
-}
-.nerve-medialist table,
-.nerve-medialist th,
-.nerve-medialist td {
-    border: 1px solid lightgrey;
+div.nerve-editor {
+    padding: 4px;
+    width: 80%;
+    margin-top: 2em;
+    margin-bottom: 2em;
 }
 
-.nerve-medialist a {
-    color: black;
+div.nerve-editor > #editor-area {
+    width: 100%;
+    height: 10em;
 }
 
-
-/* Settings Menu Style */
-
-.nerve-setting {
+div.nerve-editor > #editor-save {
+    float: right;
 }
 
-.nerve-setting-list {
+/* Forms Style */
+
+.nerve-form {
+}
+
+.nerve-form-list {
     border: 1px solid #70B008;
     margin: 0.5em;
     padding: 0.5em;
     width: 30em;
 }
 
-.nerve-setting-list h4 {
+.nerve-form-list h4 {
     display: inline;
 }
 
-.nerve-setting-item {
+.nerve-form-item {
     margin-bottom: 0.5em;
 }
 
-.nerve-setting-add-item {
+.nerve-form-item-row {
     display: inline-block;
 }
 
-.nerve-settings label {
+.nerve-form-item label {
+    display: block;
     width: 10em;
     margin-right: 0.5em;
     text-align: right;
-    display: block;
     float: left;
     font: 12px sans-serif;
     color: black;
 }
 
-.nerve-settings input[type='text'] {
+.nerve-form-item input[type='text'] {
     margin-left: 2em;
 }
 
-.nerve-settings button {
-    color: #000;
-    background: #f7f7f7;
-    border-top: 1px solid #ddd;
-    border-left: 1px solid #ddd;
-    border-bottom: 1px solid #ccc;
-    border-right: 1px solid #ccc;
+.nerve-form-item-row label {
+    display: inline;
+    margin-right: 0.5em;
+    font: 12px sans-serif;
+    color: black;
 }
 
-.nerve-settings button:hover {
-    background: #80C008;
-    color: #fff;
+.nerve-form-item-row input[type='text'] {
+    margin-left: 0.5em;
+    width: 10em;
 }
 

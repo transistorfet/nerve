@@ -13,8 +13,8 @@
 		"PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0"
 	    ]
         },
-        "linux": {
-            "type": "linux/SysFiles"
+        "computer": {
+            "type": "computer/SystemDevice"
         },
         "rgb": {
             "baud": 19200,

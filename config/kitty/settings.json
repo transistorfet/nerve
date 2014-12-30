@@ -1,8 +1,8 @@
 {
     "configdir": "config/kitty/",
     "devices": {
-        "sys": {
-            "type": "linux/SysFiles"
+        "computer": {
+            "type": "computer/SystemDevice"
         },
         "rgb": {
             "baud": 19200,

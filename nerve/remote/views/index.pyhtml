@@ -4,10 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 
+    <link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/theme.css" />
     <link rel="stylesheet" type="text/css" href="/assets/css/widgets.css" />
     <link rel="stylesheet" type="text/css" href="/assets/css/remote.css" />
 
     <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/assets/js/theme.js"></script>
     <script type="text/javascript" src="/assets/js/widgets.js"></script>
 </head>
 <body>
@@ -20,7 +23,11 @@
 </div>
 
 
-<table>
+<div class="contents">
+    <%= contents %>
+</div>
+
+<table class="nerve-container">
     <tr>
 	<td><button data-query="player.previous" class="nerve-button">Previous</button></td>
 	<td><button data-query="player.toggle" class="nerve-button">PlayPause</button></td>
@@ -34,7 +41,7 @@
 
 <hr>
 
-<table>
+<table class="nerve-container">
     <tr>
 	<td><button data-query="stereo.power" class="nerve-button">Stereo</button></td>
 	<td><button data-query="tv.power" class="nerve-button">TV</button></td>
@@ -53,7 +60,7 @@
     </tr>
 </table>
 
-<table>
+<table class="nerve-container">
     <tr>
 	<td><button data-query="tv.ps3" class="nerve-button">PS3</button></td>
 	<td><button data-query="stereo.tape" class="nerve-button">Tape</button></td>
@@ -63,9 +70,8 @@
 	<td><button data-query="stereo.tuner" class="nerve-button">Tuner</button></td>
     </tr>
     <tr>
-	<td><button data-query="tv.computer" class="nerve-button">Computer</button></td>
-	<td><button data-query="sys.wakeup" class="nerve-button">Wake Up</button></td>
-	<td><button data-query="sys.sleep" class="nerve-button">Sleep</button></td>
+	<td><button data-query="computer.wakeup" class="nerve-button">Wake Up</button></td>
+	<td><button data-query="computer.sleep" class="nerve-button">Sleep</button></td>
     </tr>
 </table>
 
@@ -76,17 +82,17 @@
 </div>
 <hr>
 
-<table>
+<table class="nerve-container">
     <tr>
 	<td><button data-query="player.load_playlist http://www.youtube.com/playlist?list=FL_VkJGWFV9ZEIv87E-0NM5w" class="nerve-button">Favorites</button></td>
     </tr>
 </table>
-<table>
+<table class="nerve-container">
     <tr>
 	<td><button data-query="player.load_playlist file:///media/work/nerve/config/panther/playlists/Default.m3u" class="nerve-button">Medialib Playlist</button></td>
     </tr>
 </table>
-<table>
+<table class="nerve-container">
     <tr>
 	<td><button data-query="player.clear_playlist" class="nerve-button">Clear Playlist</button></td>
 	<td><button data-query="player.kill_instance" class="nerve-button">Kill VLC</button></td>
@@ -98,7 +104,7 @@
 
 <h5>RGB Node</h5>
 <div class="nerve-slider" data-query="rgb.intensity" data-max="256"></div>
-<table>
+<table class="nerve-container">
     <tr>
 	<td><button data-query="rgb.power" class="nerve-button">Power</button></td>
 	<td><button data-query="rgb.key 258" class="nerve-button">Vol Up</button></td>
@@ -106,7 +112,7 @@
     </tr>
 </table>
 
-<table>
+<table class="nerve-container">
     <tr>
 	<td><button data-query="rgb.channel 1" class="nerve-button">1</button></td>
 	<td><button data-query="rgb.channel 2" class="nerve-button">2</button></td>
@@ -120,7 +126,7 @@
     </tr>
 </table>
 
-<table>
+<table class="nerve-container">
     <tr>
 	<td><a class="nerve-button" href="#" data-query="rgb.index 1"><div style="width:50px; height:50px; border: 1px solid #000; background: #ff0000;"></div></a></td>
 	<td><a class="nerve-button" href="#" data-query="rgb.index 2"><div style="width:50px; height:50px; border: 1px solid #000; background: #ff2000;"></div></a></td>

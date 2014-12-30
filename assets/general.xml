@@ -32,8 +32,8 @@
 		</column>
 	</row>
 	<row>
-		<button name="Sleep" tag="lr.sys.sleep" />
-		<button name="Wake Up" tag="lr.sys.wakeup" />
+		<button name="Sleep" tag="lr.computer.sleep" />
+		<button name="Wake Up" tag="lr.computer.wakeup" />
 		<button name="Fullscreen" tag="lr.player.fullscreen" />
 	</row>
 

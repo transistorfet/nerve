@@ -48,7 +48,7 @@ class DeskClock (nerve.serial.SerialDevice):
 	    rgb = nerve.get_device("rgb")
 	    rgb.send('key 248')
 	elif line == "B3=0" or line == 'I0=A207':
-	    nerve.query(self.name + ".relay_toggle")
+	    self.relay_toggle()
 	    #self.relay_toggle(msg)
 	elif line == "B0=0":
 	    nerve.query("player.shuffle")

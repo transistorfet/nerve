@@ -1,32 +1,41 @@
 
+* make generalized config file functions somehow someway (kinda preferably on ConfigObject)
+* get medialib stuff working again
+* modify rgbnode to always return data, so the delay doesn't happen, or else have some way of telling the device to not wait (which kinda breaks device agnosticism...)
+
+* you need a way to have a header and footer for html, possible the idea of a template... or perhaps the header and footer can be generated on
+  the fly... possibly even part of the themeing system, so what gets sent back has all the theme specific info, as well as the stuff needed for the specific page
 * make a widgets system for the various "hmi-like" elements.  The nerve-button, nerve-query, nerve-query-block things are essentially widgets, but
   it'd be nice to group everything together a bit better.  You could then have more advanced widgets for things like a player control
 * you could have a remote control app where you can configure which widgets or blocks of widgets should appear (kind of like how it used to be
   in the android app).  You could have a 'customize' mode where it shows a button to remove widgets/panels, or add them using a list
+* or maybe for now, you can just have the html middle editable using a text area through the config system somehow... or maybe even through the
+  remote's controller, and save it to the config dir, so it's editable at least, but you still have to know html
 
-* i can tell that at some point you're going to need a user system of some kind.  Each user could have their own custom remote controls and themes
-
-* make it possible to do multiple queries at once, particularly with http, so that all data fetches on an html page can be updated at once
 * add a redirect function or something to controller, for example /config/ (which calls index()) redirects to /config/view
-* how do you get the propername of a setting, for display in the config page
-
+  You've already sort of implemented a RedirectException...
 * you need a better way for controllers to return or control error message returns...
+* make it possible to do multiple queries at once, particularly with http, so that all data fetches on an html page can be updated at once
 
+* how do you get the propername of a setting, for display in the config page (as well as display order)
+* you could have a register_setting() function on ConfigObject that stores the info in different tables, so that the get_defaults() function will just
+  be on ConfigObject, and this other function (register_type() or something like that), would have the object-specific info. But how would it get called?
+  It could be called as part of init (and be a static method)...
 * should you have a means of registering types (server, device, controller)?  You'd kind of have to import all the right modules first, and have them register
+* make the config webpage use jquery tabs for different sub sections (devices, servers, modules?) and then each could have their own save button
 
-* perhaps you could make it so that servers can be individually stopped and started
+* add a theme system
+* add a user system.  Users can have their own themes, remote control layouts, and so on
 
+* add fetching of remote uris during a query... so that local and remote data points can be accessed through the same mechanism
 * make all threads use the same method of invocation, if possible
+* perhaps you could make it so that servers can be individually stopped and started
 
 * make it as much like a generic hmi/plc/data disemination/control thing as possible.  Make it so that it's easy to have it automatically
   query the server to fill in data fields.
 * make it easy to datalog certain points/tags/whatever i should call them.  You should be able to log to a database of some kind... perhaps
   you'll have a common database for all datalogging, or maybe you'll have an individual one for each set of data to be logged...
   (I'm thinking of logging temperature here, and then displaying a graph somehow, or calculating trends based on the data)
-
-* add fetching of remote uris during a query... so that local and remote data points can be accessed through the same mechanism
-
-* add voice commands somehow, possibly through android or google web api
 
 * the server response could be the server name (cr, lr) which can then be used as the default namespace for the xml layouts
 
@@ -37,11 +46,12 @@
 STRUCTURAL:
 
 POSSIBLE FEATURES:
-	* you could add an auto discovery feature where the phone sends a broadcast message to the default port number and all the
-	  servers respond.  It could be used for some normal operations even, and the server would just send a message back like
-	  it normally would, in response to the request.  It could also be for config though, to know what servers are around
-	* you could add a mechanism for registering for 'push notifications' by something like rgb.* <- wildcard so that all rgb
-	  messages would be automatically sent to that endpoint
+    * you could add an auto discovery feature where the phone sends a broadcast message to the default port number and all the
+      servers respond.  It could be used for some normal operations even, and the server would just send a message back like
+      it normally would, in response to the request.  It could also be for config though, to know what servers are around
+    * you could add a mechanism for registering for 'push notifications' by something like rgb.* <- wildcard so that all rgb
+      messages would be automatically sent to that endpoint
 
-	* make it possible to paste a link (youtube video or playlist link) to play the link on the server end of things
+    * make it possible to paste a link (youtube video or playlist link) to play the link on the server end of things
+    * add voice commands somehow, possibly through android or google web api
 
