@@ -1,3 +1,5 @@
 .*.swp
 *.pyc
 junk/
+config/*/*.sqlite
+config/*/playlists

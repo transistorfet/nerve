@@ -1,5 +1,10 @@
 
-* make generalized config file functions somehow someway (kinda preferably on ConfigObject)
+* fix the whole global functions thing... there should be a more generic way of calling functions on Main
+* resolve the issue of config_info, and whether you call it once or call it all the time... whether you have to do it for each object individually, or if you can make
+  that function recursive
+* should you have a means of registering types (server, device, controller)?  You'd kind of have to import all the right modules first, and have them register
+  you could maybe even add them automatically, by searching through every module to see if there are any classes of type Controller, Server, or Device
+
 * modify rgbnode to always return data, so the delay doesn't happen, or else have some way of telling the device to not wait (which kinda breaks device agnosticism...)
 
 * you need a way to have a header and footer for html, possible the idea of a template... or perhaps the header and footer can be generated on
@@ -15,8 +20,6 @@
 * make it possible to do multiple queries at once, particularly with http, so that all data fetches on an html page can be updated at once
 
 * make ajax requests stop when the window isn't visible
-
-* should you have a means of registering types (server, device, controller)?  You'd kind of have to import all the right modules first, and have them register
 
 * add a theme system
 * add a user system.  Users can have their own themes, remote control layouts, and so on

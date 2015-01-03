@@ -6,12 +6,12 @@ import nerve
 import readline
 import traceback
 
-class Console (nerve.Server, nerve.Task):
+class Console (nerve.Server):
     def __init__(self, **config):
 	nerve.Server.__init__(self, **config)
-	nerve.Task.__init__(self, 'ConsoleTask')
-	#self.daemon = True
-	self.start()
+	self.thread = nerve.Task('ConsoleTask', target=self.run)
+	self.thread.daemon = True
+	self.thread.start()
 
     @staticmethod
     def get_config_info():
@@ -27,8 +27,8 @@ class Console (nerve.Server, nerve.Task):
 	print text
 
     def run(self):
-        #while True:
-        while not self.stopflag.is_set():
+        while True:
+        #while not self.thread.stopflag.is_set():
 	    try:
 		line = raw_input(">> ")
 		if line == 'quit':

@@ -178,58 +178,8 @@ class Device (nerve.ConfigObject):
 
 
 
-#def query(ref, **kwargs):
-#    return root.query(ref, **kwargs)
-
-#root = NewDevice()
 
 """
-
-root = NewDevice()
-root.medialib = MediaLib()
-root.rgb = NerveSerialDevice("/dev/ttyACM1", 19200)
-root.stereo = Stereo(root.rgb)
-
-media_list = medialib.get_media_list(...)
-
-class Player (object):
-    def play(self, **kwargs):
-	# play the thing
-
-    def get_song(self, **kwargs):
-	return song_name	# this would get encoded to json if it was going back to webside
-
-    def play_song(self, **kwargs):
-	if len(kwargs) != 1 or 'url' not in kwargs:
-	    return { 'error' : "method takes 1 argument: url" }
-	# play song specified in kwargs['url']
-
-# so you can totally do
-songname = player.get_song()
-# or
-player.play_song(url='afile.mp3')
-
-# but you can't do
-player.play_song('afile.mp3')		# (unless you do some trickery...)
-
-# you should also have a method of doing...
-nerve.query('player.play_song', { 'url' : 'afile.mp3' })
-# which should be identical
-
-
-portals = something
-portals.http = nerve.http.HTTPServer(8888)
-portals.console = nerve.Console()
-
-# sortof, but there maybe should be a list of devices and portals so they aren't confused (like the existing stuff)
-
-
-"""
-
-
-
-
-
 
 import Queue
 import time
@@ -267,11 +217,14 @@ class Something (object):
 		Something.dispatch_queue.task_done()
 	    except queue.Empty as e:
 		pass
+"""
+
 
 class AliasDevice (Device):
-    def __init__(self, portal, uri):
+    def __init__(self, **config):
+	Device.__init__(self, **config)
+
+    def __getattr__(self, name):
 	pass
 
-    def dispatch(self, msg, index=0):
-	pass
 

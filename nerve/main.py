@@ -3,9 +3,10 @@
 
 import nerve
 
+import os
 import sys
-import signal
 import time
+import signal
 import os.path
 import argparse
 import traceback
@@ -77,6 +78,7 @@ class Main (nerve.ConfigObject):
 	nerve.log("shutting down all threads")
 	nerve.Task.stop_all()
 	nerve.Task.join_all()
+	os.system('stty sane')
 	sys.exit(0)
 
     def run_init(self):
