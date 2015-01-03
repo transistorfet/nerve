@@ -24,25 +24,6 @@ class Test (nerve.Device):
 nerve.mainloops[0].root.player = Test()
 """
 
-"""
-class Change (nerve.Device):
-    def test(self, **kwargs):
-	server = nerve.get_server('base/Console')
-	server.config['poop'] = "a thing"
-	print server.config
-	return nerve.get_config('base/Console')
-
-    def test2(self, **kwargs):
-	server = nerve.get_server('base/Console')
-	server.config['poop2'] = "a thing"
-	return nerve.get_config('base/Console')
-
-    def save(self):
-	nerve.save_config()
-
-nerve.add_device('change', Change())
-"""
-
 
 """
 nerve.add_server('http', 'http.HTTPServer', 8888)

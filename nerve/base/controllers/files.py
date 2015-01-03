@@ -13,10 +13,10 @@ class FileController (nerve.Controller):
 	self.root = config['root']
 
     @staticmethod
-    def get_defaults():
-	defaults = nerve.Controller.get_defaults()
-	defaults['root'] = 'nerve/http/wwwdata'
-	return defaults
+    def get_config_info():
+	config_info = nerve.Controller.get_config_info()
+	config_info.add_setting('root', "Root Directory", default='nerve/http/wwwdata')
+	return config_info
 
     def do_request(self, request):
 	filename = os.path.join(self.root, request.remaining_segments())

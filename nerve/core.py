@@ -4,20 +4,16 @@
 import nerve
 
 import json
+import urlparse
 import traceback
 import cStringIO
-
-from urlparse import parse_qs,urlparse
-# TODO for python3
-#from urllib.parse import parse_qs,urlparse
 
 
 class Request (object):
     def __init__(self, server, reqtype, urlstring, args):
 	self.server = server
 	self.reqtype = reqtype
-	# TODO you could do urlparse here
-	self.url = urlparse(urlstring)
+	self.url = urlparse.urlparse(urlstring)
 	self.segments = self.url.path.lstrip('/').split('/')
 	self.current_segment = 0
 	self.args = args
@@ -123,10 +119,16 @@ class Server (nerve.ConfigObject):
 	    self.controllers = self.make_object_table(config['controllers'])
 
     @staticmethod
-    def get_defaults():
-	defaults = nerve.ConfigObject.get_defaults()
-	defaults['controllers'] = { }
-	return defaults
+    def get_config_info():
+	config_info = nerve.ConfigObject.get_config_info()
+	"""
+	controllers = { }
+	for name in self.controllers.keys():
+	    controllers[name] = self.controllers[name].get_config_info()
+	config_info.add_setting('controllers', "Controllers", default=controllers)
+	"""
+	config_info.add_setting('controllers', "Controllers", default=dict())
+	return config_info
 
     def get_config_data(self):
 	config = nerve.ConfigObject.get_config_data(self)

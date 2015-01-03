@@ -1,5 +1,4 @@
 {
-    "configdir": "config/kitty_test/",
     "devices": {
         "medialib": {
             "type": "medialib/MediaLib",

@@ -61,7 +61,7 @@ div.nerve-editor > #editor-save {
     color: black;
 }
 
-.nerve-form-item input[type='text'] {
+.nerve-form-item span {
     margin-left: 2em;
 }
 

@@ -1,5 +1,4 @@
 {
-    "configdir": "config/kitty/",
     "devices": {
         "computer": {
             "type": "computer/SystemDevice"

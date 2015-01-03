@@ -141,19 +141,20 @@ class HTTPServer (nerve.Server, BaseHTTPServer.HTTPServer):
 	self.thread.start()
 
     @staticmethod
-    def get_defaults():
-	defaults = nerve.Server.get_defaults()
-	defaults['port'] = 8888
-	defaults['controllers']['__default__'] = {
-	    'type' : 'base/ConfigController',
-	    'username' : 'admin',
-	    'password' : 'admin'
-	}
-	return defaults
+    def get_config_info():
+	config_info = nerve.Server.get_config_info()
+	config_info.add_setting('port', "Port", default=8888)
+	config_info.add_setting('username', "Username", default='')
+	config_info.add_setting('password', "Password", default='')
+	"""
+	config_info.add_setting('controllers', "Controllers", default={
+	    '__default__' : {
+		'type' : 'base/ConfigController',
+		'username' : 'admin',
+		'password' : 'admin'
+	    }
+	})
+	"""
+	return config_info
 
-
-    @staticmethod
-    def register_config():
-	self.register_server('http/HTTPServer', HTTPServer)
-	self.register_setting('port', 'Port', 8888)
 

@@ -40,11 +40,16 @@
 	    <div class="nerve-form-list">
 		<h4><%= device_name %></h4>
 		<% device = config_data['devices'][device_name] %>
-		<% for setting_name in sorted(device.keys()): %>
-		    <% if type(device[setting_name]) in [ int, float, str, unicode ]: %>
+		<% config_info = nerve.ConfigObject.get_class_config_info(device['type']) %>
 		    <div class="nerve-form-item">
-			<label><%= setting_name.capitalize() %></label>
-			<span><input type="text" name="<%= setting_name %>" value="<%= device[setting_name] %>" /></span>
+			<label>Type</label>
+			<span><%= device['type'] %></span>
+		    </div>
+		<% for setting in config_info.get_proper_names(): %>
+		    <% if type(device[setting[0]]) in [ int, float, str, unicode ]: %>
+		    <div class="nerve-form-item">
+			<label><%= setting[1] %></label>
+			<span><input type="text" name="<%= setting[0] %>" value="<%= device[setting[0]] %>" /></span>
 		    </div>
 		    <% end %>
 		<% end %>
@@ -70,17 +75,43 @@
 
 	<h3>Servers</h3>
 	<div id="servers" class="nerve-form">
-	    <% for server_name in config_data['servers']: %>
+	    <% for server_name in sorted(config_data['servers'].keys()): %>
 	    <div class="nerve-form-list">
 		<h4><%= server_name %></h4>
 		<% server = config_data['servers'][server_name] %>
-		<% for setting_name in sorted(server.keys()): %>
-		    <% if type(server[setting_name]) in [ int, float, str, unicode ]: %>
+		<% config_info = nerve.ConfigObject.get_class_config_info(server['type']) %>
 		    <div class="nerve-form-item">
-			<label><%= setting_name.capitalize() %></label>
-			<input type="text" name="<%= setting_name %>" value="<%= server[setting_name] %>" />
+			<label>Type</label>
+			<span><%= server['type'] %></span>
+		    </div>
+		<% for setting in config_info.get_proper_names(): %>
+		    <% if type(server[setting[0]]) in [ int, float, str, unicode ]: %>
+		    <div class="nerve-form-item">
+			<label><%= setting[1] %></label>
+			<span><input type="text" name="<%= setting[0] %>" value="<%= server[setting[0]] %>" /></span>
 		    </div>
 		    <% end %>
+		<% end %>
+
+		<h5>Controllers</h5>
+		<% for controller_name in sorted(server['controllers'].keys()): %>
+		<div class="nerve-form-list">
+		    <h4><%= controller_name %></h4>
+		    <% controller = server['controllers'][controller_name] %>
+		    <% config_info = nerve.ConfigObject.get_class_config_info(controller['type']) %>
+			<div class="nerve-form-item">
+			    <label>Type</label>
+			    <span><%= controller['type'] %></span>
+			</div>
+		    <% for setting in config_info.get_proper_names(): %>
+			<% if type(controller[setting[0]]) in [ int, float, str, unicode ]: %>
+			<div class="nerve-form-item">
+			    <label><%= setting[1] %></label>
+			    <span><input type="text" name="<%= setting[0] %>" value="<%= controller[setting[0]] %>" /></span>
+			</div>
+			<% end %>
+		    <% end %>
+		</div>
 		<% end %>
 	    </div>
 	    <% end %>

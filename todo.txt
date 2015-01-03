@@ -1,31 +1,30 @@
 
 * make generalized config file functions somehow someway (kinda preferably on ConfigObject)
-* get medialib stuff working again
 * modify rgbnode to always return data, so the delay doesn't happen, or else have some way of telling the device to not wait (which kinda breaks device agnosticism...)
 
 * you need a way to have a header and footer for html, possible the idea of a template... or perhaps the header and footer can be generated on
   the fly... possibly even part of the themeing system, so what gets sent back has all the theme specific info, as well as the stuff needed for the specific page
-* make a widgets system for the various "hmi-like" elements.  The nerve-button, nerve-query, nerve-query-block things are essentially widgets, but
-  it'd be nice to group everything together a bit better.  You could then have more advanced widgets for things like a player control
+* make more advanced widgets for various things (ideas?)
+* possibly have more specific widgets like one for a player, etc
 * you could have a remote control app where you can configure which widgets or blocks of widgets should appear (kind of like how it used to be
   in the android app).  You could have a 'customize' mode where it shows a button to remove widgets/panels, or add them using a list
-* or maybe for now, you can just have the html middle editable using a text area through the config system somehow... or maybe even through the
-  remote's controller, and save it to the config dir, so it's editable at least, but you still have to know html
 
 * add a redirect function or something to controller, for example /config/ (which calls index()) redirects to /config/view
   You've already sort of implemented a RedirectException...
 * you need a better way for controllers to return or control error message returns...
 * make it possible to do multiple queries at once, particularly with http, so that all data fetches on an html page can be updated at once
 
-* how do you get the propername of a setting, for display in the config page (as well as display order)
-* you could have a register_setting() function on ConfigObject that stores the info in different tables, so that the get_defaults() function will just
-  be on ConfigObject, and this other function (register_type() or something like that), would have the object-specific info. But how would it get called?
-  It could be called as part of init (and be a static method)...
+* make ajax requests stop when the window isn't visible
+
 * should you have a means of registering types (server, device, controller)?  You'd kind of have to import all the right modules first, and have them register
-* make the config webpage use jquery tabs for different sub sections (devices, servers, modules?) and then each could have their own save button
 
 * add a theme system
 * add a user system.  Users can have their own themes, remote control layouts, and so on
+
+* android app: see if you can't get rid of the help text under the preferences (it's not needed and most things don't have them), but could you put the
+  current value in there even??
+* change the theme of the preferences to be the dark android theme
+* try to move settings button/action bar into bottom bar, or something... maybe you can make it hide itself
 
 * add fetching of remote uris during a query... so that local and remote data points can be accessed through the same mechanism
 * make all threads use the same method of invocation, if possible

@@ -13,20 +13,10 @@ import urlparse
 
 
 class RemoteController (nerve.http.Controller):
-    def __init__(self, **config):
-	nerve.http.Controller.__init__(self, **config)
-	htmlroot = nerve.configdir() + '/html'
-	if not os.path.isdir(htmlroot):
-	    os.mkdir(htmlroot)
-	self.filename = htmlroot + "/remote.html"
-	if not os.path.isfile(self.filename):
-	    with open(self.filename, 'w'):
-		pass
 
     def index(self, request):
 	data = { }
-	with open(self.filename, 'r') as f:
-	    data['contents'] = f.read()
+	data['contents'] = nerve.get_config_file('html/remote.html')
 	self.load_view('nerve/remote/views/index.pyhtml', data)
 
     def player(self, request):
@@ -36,7 +26,7 @@ class RemoteController (nerve.http.Controller):
 		player.playlist_seek(request.arg('play'))
 	else:
 	    data = { }
-	    data['playlist'] = player.getplaylist(None)
+	    data['playlist'] = player.getplaylist()
 	    self.load_view('nerve/remote/views/player.pyhtml', data)
 
     def edit_layout(self, request):
@@ -44,14 +34,12 @@ class RemoteController (nerve.http.Controller):
 	self.load_view('nerve/remote/views/editor.pyhtml', data)
 
     def get_layout(self, request):
-	with open(self.filename, 'r') as f:
-	    self.write_output(f.read())
+	contents = nerve.get_config_file('html/remote.html')
+	self.write_output(contents)
 
     def save_layout(self, request):
 	try:
-	    data = request.arg('data')
-	    with open(self.filename, 'w') as f:
-		f.write(data)
+	    nerve.write_config_file('html/remote.html', request.arg('data', default=''))
 	except:
 	    result = { 'status' : 'error', 'message' : traceback.format_exc() }
 	else:

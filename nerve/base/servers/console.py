@@ -14,12 +14,14 @@ class Console (nerve.Server, nerve.Task):
 	self.start()
 
     @staticmethod
-    def get_defaults():
-	defaults = nerve.Server.get_defaults()
-	defaults['controllers']['__default__'] = {
-	    'type' : 'base/QueryController'
-	}
-	return defaults
+    def get_config_info():
+	config_info = nerve.Server.get_config_info()
+	config_info.add_setting('controllers', "Controllers", default={
+	    '__default__' : {
+		'type' : 'base/QueryController'
+	    }
+	})
+	return config_info
 
     def send(self, text):
 	print text

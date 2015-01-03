@@ -25,6 +25,11 @@ button:hover {
     color: #fff;
 }
 
+input, textarea {
+    background: #EFFFDF;
+    font: 14px sans-serif;
+}
+
 #tabs {
     border-top: 5px solid #80C008;
 }
@@ -35,7 +40,7 @@ button:hover {
     border-right: 1px solid #80C008;
     padding: 8px;
     font-size: 14px;
-    background-color: #F8F8F8;
+    background-color: #EFFFDF;
 }
 
 #tabs .selected {

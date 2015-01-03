@@ -26,11 +26,11 @@ class SerialDevice (nerve.Device):
 	self.thread.start()
 
     @staticmethod
-    def get_defaults():
-	defaults = nerve.Device.get_defaults()
-	defaults['file'] = ''
-	defaults['baud'] = 19200
-	return defaults
+    def get_config_info():
+	config_info = nerve.Device.get_config_info()
+	config_info.add_setting('file', "Device File", default='/dev/ttyS0')
+	config_info.add_setting('baud', "Baud Rate", default=19200)
+	return config_info
 
     def send(self, data):
 	nerve.log("SEND -> " + str(self.file) + ": " + data)

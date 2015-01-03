@@ -11,17 +11,40 @@ import traceback
 
 import json
 
+class ConfigInfo (object):
+    def __init__(self):
+	self.settings = [ ]
+
+    def add_setting(self, name, propername, default=None):
+	for i in xrange(len(self.settings)):
+	    if self.settings[i][0] == name:
+		del self.settings[i]
+		break
+	self.settings.append([ name, propername, default ])
+
+    def get_defaults(self):
+	defaults = { }
+	for setting in self.settings:
+	    defaults[setting[0]] = setting[2]
+	return defaults
+
+    def get_proper_names(self):
+	return [ [ setting[0], setting[1] ] for setting in self.settings ]
+
 
 class ConfigObject (object):
     def __init__(self, **config):
 	self.config = config
 
     @staticmethod
-    def get_defaults():
-	return { }
+    def get_config_info():
+	return ConfigInfo()
 
     def get_config_data(self):
 	return self.config
+
+    def set_config_data(self, config):
+	self.config = config
 
     def get_setting(self, name, typename=None):
 	if name in self.config:
@@ -34,31 +57,24 @@ class ConfigObject (object):
 	except:
 	    print traceback.format_exc()
 
-    @staticmethod
-    def make_object_table(config):
-	objects = { }
-	for objname in config.keys():
-	    obj = Config.make_object(config[objname]['type'], config[objname])
-	    objects[objname] = obj
-	return objects
+    def load_config(self, filename):
+	config = self.get_config_info().get_defaults()
 
-    @staticmethod
-    def save_object_table(objects):
-	config = { }
-	for objname in objects.keys():
-	    config[objname] = objects[objname].get_config_data()
-	return config
+	if os.path.exists(filename):
+	    try:
+		with open(filename, 'r') as f:
+		    config = json.load(f)
+		    nerve.log("config loaded from " + filename)
+	    except:
+		nerve.log("error loading config from " + filename + "\n\n" + traceback.format_exc())
+		return False
+	self.set_config_data(config)
+	return True
 
-    @staticmethod
-    def make_object(typeinfo, config):
-	(modulename, _, classname) = typeinfo.partition('/')
-	# TODO should you have this? I guess the module wont be reloaded, but you don't want init called again either  It should only import once
-	module = Config.import_module(modulename)
-	classtype = getattr(module, classname)
-	config_data = classtype.get_defaults()
-	config_data.update(config)
-	obj = classtype(**config_data)
-	return obj
+    def save_config(self, filename):
+	config = self.get_config_data()
+	with open(filename, 'w') as f:
+	    json.dump(config, f, sort_keys=True, indent=4, separators=(',', ': '))
 
     @staticmethod
     def import_module(modulename):
@@ -72,111 +88,37 @@ class ConfigObject (object):
 	    raise e
 
     @staticmethod
-    def get_object_defaults(typeinfo):
+    def make_object(typeinfo, config):
 	(modulename, _, classname) = typeinfo.partition('/')
-	module = Config.import_module(modulename)
+	# TODO should you have this? I guess the module wont be reloaded, but you don't want init called again either  It should only import once
+	module = ConfigObject.import_module(modulename)
 	classtype = getattr(module, classname)
-	return classtype.get_defaults()
-
-
-class Config (ConfigObject):
-    def __init__(self, configdir, root):
-	ConfigObject.__init__(self)
-	self.configdir = configdir.strip('/')
-	self.root = root
-
-    def set_config_data(self, config):
-	self.config = config
-	self.servers = self.make_object_table(config['servers'])
-	self.devices = self.make_object_table(config['devices'])
-	for name in self.devices.keys():
-	    setattr(self.root, name, self.devices[name])
-
-    def getdir(self):
-	return self.configdir
+	config_data = classtype.get_config_info().get_defaults()
+	config_data.update(config)
+	obj = classtype(**config_data)
+	return obj
 
     @staticmethod
-    def get_defaults():
-	defaults = ConfigObject.get_defaults()
-	defaults['servers'] = { }
-	defaults['devices'] = { }
-	return defaults
+    def make_object_table(config):
+	objects = { }
+	for objname in config.keys():
+	    obj = ConfigObject.make_object(config[objname]['type'], config[objname])
+	    objects[objname] = obj
+	return objects
 
-    def get_config_data(self):
-	config = ConfigObject.get_config_data(self)
-	config['servers'] = self.save_object_table(self.servers)
-	config['devices'] = self.save_object_table(self.devices)
+    @staticmethod
+    def save_object_table(objects):
+	config = { }
+	for objname in objects.keys():
+	    config[objname] = objects[objname].get_config_data()
 	return config
 
-    def load(self):
-	config = self.get_defaults()
+    @staticmethod
+    def get_class_config_info(typeinfo):
+	(modulename, _, classname) = typeinfo.partition('/')
+	module = ConfigObject.import_module(modulename)
+	classtype = getattr(module, classname)
+	return classtype.get_config_info()
 
-	filename = os.path.join(self.configdir, 'settings.json')
-	if os.path.exists(filename):
-	    try:
-		with open(filename, 'r') as f:
-		    config = json.load(f)
-		    nerve.log("config loaded from " + filename)
-	    except:
-		nerve.log("error loading config from " + filename + "\n\n" + traceback.format_exc())
-		return False
-	self.set_config_data(config)
-	return True
-
-    def save(self):
-	filename = os.path.join(self.configdir, 'settings.json')
-	config = self.get_config_data()
-	with open(filename, 'w') as f:
-	    json.dump(config, f, sort_keys=True, indent=4, separators=(',', ': '))
-
-    def run_init(self):
-	filename = os.path.join(self.configdir, 'init.py')
-	if not os.path.exists(filename):
-	    return True
-
-	nerve.log("running init script located at " + filename)
-	try:
-	    with open(filename, 'r') as f:
-		code = f.read()
-	    self.init = { 'nerve' : nerve }
-	    exec(code, self.init)
-	    nerve.log(filename + " has completed sucessfully")
-	    return True
-	except:
-	    nerve.log("error running init from " + filename + "\n\n" + traceback.format_exc())
-	    return False
-
-    def add_server(self, name, server, **config):
-	if not isinstance(server, nerve.Server):
-	    server = self.make_object(server, config)
-	if not server:
-	    nerve.log("error creating server object " + name + " of type " + typeinfo)
-	    return
-	self.servers[name] = server
-	return server
-
-    def get_server(self, name):
-	if name in self.servers:
-	    return self.servers[name]
-	return None
-
-    def add_device(self, name, dev, **config):
-	if not isinstance(dev, nerve.Device):
-	    dev = self.make_object(dev, config)
-	if not dev:
-	    nerve.log("error creating server object " + name + " of type " + typeinfo)
-	    return
-	self.devices[name] = dev
-	setattr(self.root, name, dev)
-	return dev
-
-    def get_device(self, name):
-	(name, sep, remain) = name.partition('.')
-	if remain:
-	    # TODO support dotnames
-	    return "POOP"
-	if name in self.devices:
-	    return self.devices[name]
-	return None
 
 
