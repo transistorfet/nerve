@@ -130,7 +130,7 @@ class Main (nerve.ConfigObject):
 	return None
 
     def get_config_file(self, filename):
-	filename = os.path.join(self.configdir(), filename)
+	filename = os.path.join(self.configdir, filename)
 	(path, _, _) = filename.rpartition('/')
 	if not os.path.isdir(path):
 	    os.makedirs(path)
@@ -142,7 +142,7 @@ class Main (nerve.ConfigObject):
 	return contents
 
     def write_config_file(self, filename, contents):
-	filename = os.path.join(self.configdir(), filename)
+	filename = os.path.join(self.configdir, filename)
 	(path, _, _) = filename.rpartition('/')
 	if not os.path.isdir(path):
 	    os.makedirs(path)
