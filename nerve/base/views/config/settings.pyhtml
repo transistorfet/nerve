@@ -31,6 +31,71 @@
 
     <div id="content-home">
 	<p>Configury Configurations</p>
+
+
+	<%
+	last_label = 0
+	def output_object_treeview(object):
+	    global last_label
+	    config_info = nerve.ConfigObject.get_class_config_info(object['type'])
+
+	    %>
+	    <li><div class="nerve-form-item">
+		    <label>Type</label>
+		    <span><%= object['type'] %></span>
+	    </div></li>
+	    <%
+
+	    for setting in config_info.get_proper_names():
+		if type(object[setting[0]]) in [ int, float, str, unicode ]:
+		    %>
+		    <li><div class="nerve-form-item">
+			<label><%= setting[1] %></label>
+			<span><input type="text" name="<%= setting[0] %>" value="<%= object[setting[0]] %>" /></span>
+		    </div></li>
+		    <%
+		end
+	    end
+
+	    for setting in config_info.get_proper_names():
+		if type(object[setting[0]]) == dict:
+		    %>
+		    <li><input type="checkbox" id="<%= 'item-' + str(last_label) %>" checked /><label for="<%= 'item-' + str(last_label) %>" class="nerve-treeview alt-label"><%= setting[0] %></label>
+		    <ul>
+		    <%
+		    last_label += 1
+
+		    for i, name in enumerate(sorted(object[setting[0]].keys())):
+			%>
+			<li><input type="checkbox" id="<%= 'item-' + str(last_label) %>" checked /><label for="<%= 'item-' + str(last_label) %>"><%= name %></label>
+			<ul>
+			<%
+
+			last_label += 1
+			output_object_treeview(object[setting[0]][name])
+
+			%>
+			</ul></li>
+			<%
+		    end
+
+		    %>
+		    </ul></li>
+		    <%
+		end
+	    end
+	end
+	%>
+
+	<% config_data['type'] = 'main/Main' %>
+	<div class="nerve-treeview">
+	    <ul>
+	    <% output_object_treeview(config_data) %>
+	    </ul>
+	</div>
+	<div style="clear: both;"></div>
+
+
     </div>
     <div id="content-devices" style="display: none;">
 

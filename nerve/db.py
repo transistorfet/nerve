@@ -8,9 +8,17 @@ import os.path
 
 
 class Database (object):
+    databases = { }
+
     def __init__(self, filename):
 	self.filename = filename
 	self.dbcon = apsw.Connection(os.path.join(nerve.configdir(), filename))
+
+    @staticmethod
+    def get_db(filename):
+	if filename not in Database.databases:
+	    Database.databases[filename] = Database(filename)
+	return DatabaseCursor(Database.databases[filename])
 
 
 class DatabaseCursor (object):
@@ -39,7 +47,7 @@ class DatabaseCursor (object):
 	self.dbcursor.execute(u"CREATE TABLE IF NOT EXISTS %s (%s)" % (table, columns))
 
     def add_column(self, table, column, datatype, default=None):
-	self.dbcurser.execute(u"ALTER TABLE %s ADD COLUMN %s %s" % (table, column, datatype)
+	self.dbcursor.execute(u"ALTER TABLE %s ADD COLUMN %s %s" % (table, column, datatype))
 
     def escape(self, text):
 	if text is None:

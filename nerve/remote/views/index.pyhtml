@@ -15,6 +15,12 @@
 </head>
 <body>
 
+<div id="tabs">
+    <div class="tab selected"><a href="/remote">Remote</a></div>
+    <div class="tab"><a href="/medialib/">MediaLib Playlists</a></div>
+    <div style="clear: both;"></div>
+</div>
+
 <a href="/remote/index">Remote</a> | <a href="/remote/player">Player</a> | <a href="/medialib/">Playlists</a> | <a href="/medialib/search">Search Medialib</a> | <a href="/medialib/search_youtube">Search YouTube</a>
 <hr>
 

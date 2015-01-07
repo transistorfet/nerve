@@ -22,13 +22,25 @@
         },
 	"player": {
 	    "type": "xmms2/Xmms2"
+	},
+	"datalog": {
+	    "type": "datalog/DatalogManager",
+	    "datalogs": {
+		"testlog": {
+		    "type": "datalog/DatalogDevice",
+		    "name": "testlog",
+		    "datapoints": [
+			[ "kitty_temp", "computer.cputemp" ]
+		    ]
+		}
+	    }
 	}
     },
     "servers": {
         "console": {
             "controllers": {
                 "__default__": {
-                    "type": "base/QueryController"
+                    "type": "base/PyExecController"
                 }
             },
             "type": "base/Console"

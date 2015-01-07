@@ -1,4 +1,10 @@
 
+* make references more regular (by using / instead of . as the separator)
+* add graphing support to datalog
+* it'd be nice if you could make the subdevices thing like in datalogs be better... like it's not simple and easy enough to have
+  a device path reference, because of that, so for devices at least, you could have a subdevices thing on Device
+* should there be a way to list subdevices, or subobjects of some kind? like the ls command
+
 * fix the whole global functions thing... there should be a more generic way of calling functions on Main
 * resolve the issue of config_info, and whether you call it once or call it all the time... whether you have to do it for each object individually, or if you can make
   that function recursive

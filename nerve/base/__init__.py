@@ -4,6 +4,7 @@
 from controllers.config import ConfigController
 from controllers.files import FileController
 from controllers.query import QueryController
+from controllers.pyexec import PyExecController
 
 from servers.console import Console
 from servers.tcpserver import TCPServer

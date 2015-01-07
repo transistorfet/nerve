@@ -36,8 +36,7 @@ class Console (nerve.Server):
 		elif (line):
 		    #result = nerve.query_string(line)
 		    #print repr(result)
-		    args = line.split()
-		    request = nerve.Request(self, 'QUERY', args[0], { })
+		    request = nerve.Request(self, 'QUERY', "", { 'queries[]' : [ line ] })
 		    controller = self.find_controller(request)
 		    controller.handle_request(request)
 		    print controller.get_output()
