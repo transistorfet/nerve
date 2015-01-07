@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C/DTD HTML 4.01//EN">
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/theme.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/widgets.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/remote.css" />
+
+    <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/assets/js/theme.js"></script>
+    <script type="text/javascript" src="/assets/js/widgets.js"></script>
+</head>
+<body>
+
+<a href="/remote/index">Remote</a> | <a href="/remote/player">Player</a> | <a href="/medialib/">Playlists</a> | <a href="/medialib/search">Search Medialib</a> | <a href="/medialib/search_youtube">Search YouTube</a>
+<hr>
+
+<h3>Datalog Data Display</h3>
+
+<div id="nerve-notice" style="display: none;"></div>
+<div id="nerve-error" style="display: none;"></div>
+
+<canvas id="graph" width="600" height="400" style="border: 1px solid #000000;">
+</canvas> 
+
+</body>
+</html> 
