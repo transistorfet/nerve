@@ -9,40 +9,53 @@
     <link rel="stylesheet" type="text/css" href="/assets/css/widgets.css" />
 
     <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
-    <script type="text/javascript" src="/assets/js/theme.js"></script>
     <script type="text/javascript" src="/assets/js/widgets.js"></script>
 </head>
 <body>
 
-<h2>Nerve Settings</h2>
 
-<div id="tabs">
-    <div class="tab selected" data-content="home">Home</div>
-    <div class="tab" data-content="devices">Devices</div>
-    <div class="tab" data-content="servers">Servers</div>
-    <div class="tab" data-content="log">Log</div>
+<div class="nerve-tabs">
+    <div class="tab" data-content="/remote">Remote</div>
+    <div class="tab" data-content="/medialib">Playlists</div>
+    <div class="tab" data-content="/medialib/search">MediaLib Search</div>
+    <div class="tab" data-content="/datalog/graph">Datalogs</div>
+    <div class="tab selected" data-content="/config">Config</div>
     <div style="clear: both;"></div>
 </div>
 
+<hr>
+
+<div id="nerve-notice" style="display: none;"></div>
+<div id="nerve-error" style="display: none;"></div>
+
 <div id="content">
+    <%
+    last_label = 0
+    def output_object_treeview(object):
+	global last_label
 
-    <div id="nerve-notice" style="display: none;"></div>
-    <div id="nerve-error" style="display: none;"></div>
+	if '__type__' not in object:
+	    for i, name in enumerate(sorted(object.keys())):
+		%>
+		<li><input type="checkbox" id="<%= 'item-' + str(last_label) %>" checked /><label for="<%= 'item-' + str(last_label) %>"><%= name %></label>
+		<ul>
+		<%
 
-    <div id="content-home">
-	<p>Configury Configurations</p>
+		last_label += 1
+		output_object_treeview(object[name])
 
+		%>
+		</ul></li>
+		<%
+	    end
 
-	<%
-	last_label = 0
-	def output_object_treeview(object):
-	    global last_label
-	    config_info = nerve.ConfigObject.get_class_config_info(object['type'])
+	else:
+	    config_info = nerve.ConfigObject.get_class_config_info(object['__type__'])
 
 	    %>
 	    <li><div class="nerve-form-item">
 		    <label>Type</label>
-		    <span><%= object['type'] %></span>
+		    <span><%= object['__type__'] %></span>
 	    </div></li>
 	    <%
 
@@ -60,24 +73,12 @@
 	    for setting in config_info.get_proper_names():
 		if type(object[setting[0]]) == dict:
 		    %>
-		    <li><input type="checkbox" id="<%= 'item-' + str(last_label) %>" checked /><label for="<%= 'item-' + str(last_label) %>" class="nerve-treeview alt-label"><%= setting[0] %></label>
+		    <li><input type="checkbox" id="<%= 'item-' + str(last_label) %>" checked /><label class="nerve-treeview alt-label" for="<%= 'item-' + str(last_label) %>"><%= setting[0] %></label>
 		    <ul>
 		    <%
+
 		    last_label += 1
-
-		    for i, name in enumerate(sorted(object[setting[0]].keys())):
-			%>
-			<li><input type="checkbox" id="<%= 'item-' + str(last_label) %>" checked /><label for="<%= 'item-' + str(last_label) %>"><%= name %></label>
-			<ul>
-			<%
-
-			last_label += 1
-			output_object_treeview(object[setting[0]][name])
-
-			%>
-			</ul></li>
-			<%
-		    end
+		    output_dict_treeview(object[setting[0]])
 
 		    %>
 		    </ul></li>
@@ -85,125 +86,79 @@
 		end
 	    end
 	end
-	%>
+    end
 
-	<% config_data['type'] = 'main/Main' %>
-	<div class="nerve-treeview">
-	    <ul>
-	    <% output_object_treeview(config_data) %>
-	    </ul>
-	</div>
-	<div style="clear: both;"></div>
+    def output_dict_treeview(object):
+	global last_label
 
+	for name in object.keys():
+	    if type(object[name]) in [ int, float, str, unicode ]:
+		%>
+		<li><div class="nerve-form-item">
+		    <label><%= name.capitalize() %></label>
+		    <span><input type="text" name="<%= name %>" value="<%= object[name] %>" /></span>
+		</div></li>
+		<%
+	    elif type(object[name]) == dict:
+		%>
+		<li><input type="checkbox" id="<%= 'item-' + str(last_label) %>" checked /><label class="nerve-treeview alt-label" for="<%= 'item-' + str(last_label) %>"><%= name %></label>
+		<ul>
+		<%
 
+		last_label += 1
+		output_dict_treeview(object[name])
+
+		%>
+		</ul></li>
+		<%
+	    end
+	end
+    end
+
+    def output_list_treeview(objectlist):
+	global last_label
+
+	for index, object in enumerate(objectlist):
+	    if type(object) in [ int, float, str, unicode ]:
+		%>
+		<li><div class="nerve-form-item">
+		    <label><%= name.capitalize() %></label>
+		    <span><input type="text" name="<%= index %>" value="<%= object %>" /></span>
+		</div></li>
+		<%
+	    elif type(object[name]) == dict:
+		%>
+		<li><input type="checkbox" id="<%= 'item-' + str(last_label) %>" checked /><label for="<%= 'item-' + str(last_label) %>"><%= index %></label>
+		<ul>
+		<%
+
+		last_label += 1
+		output_dict_treeview(object[name])
+
+		%>
+		</ul></li>
+		<%
+	    end
+	end
+
+    end
+    %>
+
+    <div class="nerve-treeview">
+	<ul>
+	<% output_object_treeview(config_data) %>
+	</ul>
     </div>
-    <div id="content-devices" style="display: none;">
+    <div style="clear: both;"></div>
 
-	<h3>Devices</h3>
-	<div id="devices" class="nerve-form">
-	    <% for device_name in sorted(config_data['devices'].keys()): %>
-	    <div class="nerve-form-list">
-		<h4><%= device_name %></h4>
-		<% device = config_data['devices'][device_name] %>
-		<% config_info = nerve.ConfigObject.get_class_config_info(device['type']) %>
-		    <div class="nerve-form-item">
-			<label>Type</label>
-			<span><%= device['type'] %></span>
-		    </div>
-		<% for setting in config_info.get_proper_names(): %>
-		    <% if type(device[setting[0]]) in [ int, float, str, unicode ]: %>
-		    <div class="nerve-form-item">
-			<label><%= setting[1] %></label>
-			<span><input type="text" name="<%= setting[0] %>" value="<%= device[setting[0]] %>" /></span>
-		    </div>
-		    <% end %>
-		<% end %>
-	    </div>
-	    <% end %>
-	    <div class="nerve-form">
-		<div class="nerve-form-item-row">
-		    <label>Device Name:</label>
-		    <input type="text" id="devname" />
-		</div>
-		<div class="nerve-form-item-row">
-		    <label>Type:</label>
-		    <input type="text" id="device_type" />
-		    <button type="button" id="add_device">Add Device</button>
-		</div>
-	    </div>
-	</div>
-	<div class="nerve-form">
-	    <button type="button" id="save_devices">Save</button>
-	</div>
-    </div>
-    <div id="content-servers" style="display: none;">
-
-	<h3>Servers</h3>
-	<div id="servers" class="nerve-form">
-	    <% for server_name in sorted(config_data['servers'].keys()): %>
-	    <div class="nerve-form-list">
-		<h4><%= server_name %></h4>
-		<% server = config_data['servers'][server_name] %>
-		<% config_info = nerve.ConfigObject.get_class_config_info(server['type']) %>
-		    <div class="nerve-form-item">
-			<label>Type</label>
-			<span><%= server['type'] %></span>
-		    </div>
-		<% for setting in config_info.get_proper_names(): %>
-		    <% if type(server[setting[0]]) in [ int, float, str, unicode ]: %>
-		    <div class="nerve-form-item">
-			<label><%= setting[1] %></label>
-			<span><input type="text" name="<%= setting[0] %>" value="<%= server[setting[0]] %>" /></span>
-		    </div>
-		    <% end %>
-		<% end %>
-
-		<h5>Controllers</h5>
-		<% for controller_name in sorted(server['controllers'].keys()): %>
-		<div class="nerve-form-list">
-		    <h4><%= controller_name %></h4>
-		    <% controller = server['controllers'][controller_name] %>
-		    <% config_info = nerve.ConfigObject.get_class_config_info(controller['type']) %>
-			<div class="nerve-form-item">
-			    <label>Type</label>
-			    <span><%= controller['type'] %></span>
-			</div>
-		    <% for setting in config_info.get_proper_names(): %>
-			<% if type(controller[setting[0]]) in [ int, float, str, unicode ]: %>
-			<div class="nerve-form-item">
-			    <label><%= setting[1] %></label>
-			    <span><input type="text" name="<%= setting[0] %>" value="<%= controller[setting[0]] %>" /></span>
-			</div>
-			<% end %>
-		    <% end %>
-		</div>
-		<% end %>
-	    </div>
-	    <% end %>
-	    <form method="post" action="<%= py._PATH %>">
-		<label>Server Name:</label><input type="text" name="servname" />
-		<label>Type:</label><input type="text" name="typename" />
-		<button type="button" name="st_servadd">Add Server</button>
-	    </form>
-	</div>
-	<div class="nerve-form">
-	    <button type="button" id="save_devices">Save</button>
-	</div>
-    </div>
-    <div id="content-logs" style="display: none;">
-
-    </div>
+    <button type="button" id="save">Save</button>
 </div>
 
 <script>
 
 $(document).ready(function () {
-//    $('#st_add').click(function (e) {
-//	$('#devices').append('<
-//    });
-
-    $('#add_device').click(function (e) {
-	$.post('/config/defaults', { 'type' : $('#device_type').val() }, function (response) {
+    $('#save').click(function (e) {
+	$.post('/config/save', { }, function (response) {
 	    alert(response);
 	}, 'json');
     });

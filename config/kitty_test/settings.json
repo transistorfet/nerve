@@ -1,76 +1,111 @@
 {
     "devices": {
-        "medialib": {
-            "type": "medialib/MediaLib",
-	    "medialib_dirs": [
-		"/media/media/Music", 
-		"/media/media/Torrents"
-	    ],
-	    "youtube_playlists": [
-		"PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4",
-		"FL_VkJGWFV9ZEIv87E-0NM5w",
-		"PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0"
-	    ]
-        },
+	"test": {
+	    "__type__": "config/SymbolicLink",
+	    "link": "devices/datalogs"
+	},
         "computer": {
-            "type": "computer/SystemDevice"
+            "__type__": "computer/SystemDevice"
+        },
+        "datalogs": {
+            "manager": {
+                "__type__": "datalog/DatalogManager"
+            },
+            "testlog": {
+                "__type__": "datalog/DatalogDevice",
+                "datapoints": [
+                    {
+                        "datatype": "NUMERIC",
+                        "label": "kitty CPU Temperature",
+                        "max": 100,
+                        "min": 0,
+                        "name": "kitty_temp",
+                        "ref": "computer.cputemp",
+                        "units": "C"
+                    },
+                    {
+                        "datatype": "NUMERIC",
+                        "label": "kitty System Temperature #1",
+                        "max": 100,
+                        "min": 0,
+                        "name": "kitty_systemp1",
+                        "ref": "computer.systemp1",
+                        "units": "C"
+                    },
+                    {
+                        "datatype": "NUMERIC",
+                        "label": "kitty System Temperature #2",
+                        "max": 100,
+                        "min": 0,
+                        "name": "kitty_systemp2",
+                        "ref": "computer.systemp2",
+                        "units": "C"
+                    }
+                ],
+                "name": "testlog",
+                "update_time": 60
+            }
+        },
+        "medialib": {
+            "__type__": "medialib/MediaLib",
+            "medialib_dirs": [
+                "/media/media/Music",
+                "/media/media/Torrents"
+            ],
+            "youtube_playlists": [
+                "PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4",
+                "FL_VkJGWFV9ZEIv87E-0NM5w",
+                "PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0"
+            ]
+        },
+        "player": {
+            "__type__": "xmms2/Xmms2"
         },
         "rgb": {
+            "__type__": "serial/NerveSerialDevice",
             "baud": 19200,
-            "file": "/dev/ttyACM1",
-            "type": "serial/NerveSerialDevice"
-        },
-	"player": {
-	    "type": "xmms2/Xmms2"
-	},
-	"datalog": {
-	    "type": "datalog/DatalogManager",
-	    "datalogs": {
-		"testlog": {
-		    "type": "datalog/DatalogDevice",
-		    "name": "testlog",
-		    "datapoints": [
-			[ "kitty_temp", "computer.cputemp" ]
-		    ]
-		}
-	    }
-	}
+            "file": "/dev/ttyACM1"
+        }
     },
     "servers": {
         "console": {
+            "__type__": "base/Console",
             "controllers": {
                 "__default__": {
-                    "type": "base/PyExecController"
+                    "__type__": "base/PyExecController"
                 }
-            },
-            "type": "base/Console"
+            }
         },
         "http": {
-	    "username" : "dev",
-	    "password" : "dev",
+            "__type__": "http/HTTPServer",
             "controllers": {
                 "__default__": {
-                    "type": "base/FileController",
-		    "root" : "assets"
+                    "__type__": "base/FileController",
+                    "root": "assets"
                 },
                 "assets": {
-                    "type": "base/FileController",
-		    "root" : "assets"
-                },
-                "query": {
-                    "type": "base/QueryController"
+                    "__type__": "base/FileController",
+                    "root": "assets"
                 },
                 "config": {
-                    "type": "base/ConfigController"
+                    "__type__": "base/ConfigController"
+                },
+                "datalog": {
+                    "__type__": "datalog/DatalogController"
                 },
                 "medialib": {
-                    "type": "medialib/MediaLibController"
+                    "__type__": "medialib/MediaLibController"
+                },
+                "query": {
+                    "__type__": "base/QueryController"
                 },
                 "remote": {
-                    "type": "remote/RemoteController"
+                    "__type__": "remote/RemoteController"
                 }
             },
-            "type": "http/HTTPServer"
+            "password": "dev",
+            "port": 8888,
+            "username": "dev"
         }
     }
 }

@@ -12,14 +12,17 @@ import argparse
 import traceback
 import threading
 
+import json
+import urlparse
+import requests
+
 mainloops = [ ]
 stdout = sys.stdout
 
 
-class Main (nerve.ConfigObject):
+class Main (nerve.ConfigObjectTable):
     def __init__(self):
-	nerve.ConfigObject.__init__(self)
-	self.root = None
+	nerve.ConfigObjectTable.__init__(self)
 	self.stopflag = threading.Event()
 
 	parser = argparse.ArgumentParser(prog='nerve', formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='Nerve Control Server')
@@ -30,31 +33,16 @@ class Main (nerve.ConfigObject):
 
     @staticmethod
     def get_config_info():
-	config_info = nerve.ConfigObject.get_config_info()
-	config_info.add_setting('servers', "Servers", default=dict())
-	config_info.add_setting('devices', "Devices", default=dict())
+	config_info = nerve.ConfigObjectTable.get_config_info()
+	config_info.add_setting('servers', "Servers", default=nerve.ConfigObjectTable())
+	config_info.add_setting('devices', "Devices", default=nerve.ConfigObjectTable())
 	return config_info
-
-    def get_config_data(self):
-	config = nerve.ConfigObject.get_config_data(self)
-	config['servers'] = self.save_object_table(self.servers)
-	config['devices'] = self.save_object_table(self.devices)
-	return config
-
-    def set_config_data(self, config):
-	nerve.ConfigObject.set_config_data(self, config)
-	self.servers = self.make_object_table(config['servers'])
-	self.devices = self.make_object_table(config['devices'])
-	for name in self.devices.keys():
-	    setattr(self.root, name, self.devices[name])
 
     def getdir(self):
 	return self.configdir
 
     def start(self):
 	signal.signal(signal.SIGINT, self.signal_handler)
-
-	self.root = nerve.Device()
 
 	try:
 	    if not self.load_config(os.path.join(self.configdir, 'settings.json')):
@@ -97,39 +85,6 @@ class Main (nerve.ConfigObject):
 	except:
 	    nerve.log("error running init from " + filename + "\n\n" + traceback.format_exc())
 	    return False
-
-    def add_server(self, name, server, **config):
-	if not isinstance(server, nerve.Server):
-	    server = self.make_object(server, config)
-	if not server:
-	    nerve.log("error creating server object " + name + " of type " + typeinfo)
-	    return
-	self.servers[name] = server
-	return server
-
-    def get_server(self, name):
-	if name in self.servers:
-	    return self.servers[name]
-	return None
-
-    def add_device(self, name, dev, **config):
-	if not isinstance(dev, nerve.Device):
-	    dev = self.make_object(dev, config)
-	if not dev:
-	    nerve.log("error creating server object " + name + " of type " + typeinfo)
-	    return
-	self.devices[name] = dev
-	setattr(self.root, name, dev)
-	return dev
-
-    def get_device(self, name):
-	(name, sep, remain) = name.partition('.')
-	if remain:
-	    # TODO support dotnames
-	    return "POOP"
-	if name in self.devices:
-	    return self.devices[name]
-	return None
 
     def get_config_file(self, filename):
 	filename = os.path.join(self.configdir, filename)
@@ -180,36 +135,57 @@ def get_config_data():
     global mainloops
     return mainloops[0].get_config_data()
 
-def save_config():
-    global mainloops
-    return mainloops[0].save_config()
-
 def configdir():
     global mainloops
     return mainloops[0].getdir()
 
-def add_server(name, servername, **config):
+def save_config():
     global mainloops
-    return mainloops[0].add_server(name, servername, **config)
+    return mainloops[0].save_config(os.path.join(nerve.configdir(), 'settings.json'))
+
+def set_object(name, obj, **config):
+    global mainloops
+    if type(obj) == str:
+	obj = nerve.ConfigObject.make_object(obj, config)
+    if not obj:
+	nerve.log("error creating object " + name)
+	return None
+    return mainloops[0].set_object(name, obj)
+
+def get_object(name):
+    global mainloops
+    return mainloops[0].get_object(name)
+
+def add_server(name, obj, **config):
+    return nerve.set_object('servers/' + name, obj, **config)
 
 def get_server(name):
     global mainloops
-    return mainloops[0].get_server(name)
-    return None
+    return mainloops[0].server.get_object(name)
 
-def add_device(name, dev, **config):
-    global mainloops
-    dev = mainloops[0].add_device(name, dev, **config)
-    return dev
+def add_device(name, obj, **config):
+    return nerve.set_object('devices/' + name, obj, **config)
 
 def get_device(name):
     global mainloops
-    return mainloops[0].get_device(name)
+    return mainloops[0].devices.get_object(name)
 
-def query(ref, *args, **kwargs):
-    # TODO should this be ref or tag or point or what
+def query(urlstring, *args, **kwargs):
     global mainloops
-    return mainloops[0].root.query(ref, *args, **kwargs)
+    url = urlparse.urlparse(urlstring)
+    if url.netloc:
+	if url.scheme == 'http':
+	    nerve.log("remote query to " + urlstring)
+	    r = requests.get(urlstring)
+	    if r.status_code == 200:
+		return json.loads(r.text)
+	    else:
+		return "request to " + urlstring + " failed. " + str(r.status_code) + " returned"
+    else:
+	(objname, sep, funcname) = url.path.replace('.', '/').lstrip('/').rpartition('/')
+	obj = mainloops[0].devices.get_object(objname)
+	func = getattr(obj, funcname)
+	return func(*args, **kwargs)
 
 def query_string(text):
     # TODO parse quotes

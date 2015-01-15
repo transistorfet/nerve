@@ -137,16 +137,16 @@ class DatabaseCursor (object):
 	result = self.dbcursor.execute(query)
 	#result = self.dbcursor.execute(query.decode('utf-8'))
 
-	# TODO this doesn't work with SELECT *
-	keys = [ key.strip() for key in self.cache_select.split(',') ]
+	keys = self.dbcursor.getdescription()
 	rows = [ ]
 	for row in result:
 	    assoc = { }
-	    for i in range(len(keys)):
+	    for i, key in enumerate(keys):
+		(column, datatype) = key
 		if isinstance(row[i], unicode):
-		    assoc[keys[i]] = row[i].encode('utf-8')
+		    assoc[column] = row[i].encode('utf-8')
 		else:
-		    assoc[keys[i]] = row[i]
+		    assoc[column] = row[i]
 	    rows.append(assoc)
 
 	self.reset_cache()
@@ -158,6 +158,9 @@ class DatabaseCursor (object):
 	    return result[0]
 	else:
 	    return None
+
+    def get_columns(self):
+	return self.dbcursor.getdescription()
 
     def insert(self, table, data, replace=False):
 	columns = data.keys()

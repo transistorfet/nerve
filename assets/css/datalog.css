@@ -1,0 +1,39 @@
+
+
+.nerve-graph .column
+{
+    float: left;
+}
+
+.nerve-graph .controls
+{
+    display: flex;
+}
+
+.nerve-graph .controls > button
+{
+    flex: 1;
+}
+
+.nerve-graph .legend
+{
+    margin-top: 2em;
+    margin-left: 2em;
+}
+
+.nerve-graph .legend-colour
+{
+    display: inline-block;
+    vertical-align: 1px;
+    height: 0.5em;
+    width: 0.5em;
+    border: 1px solid black;
+    margin-left: 4px;
+    margin-right: 2px;
+}
+
+#select-datalog {
+    width: 16em;
+}
+
+

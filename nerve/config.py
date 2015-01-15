@@ -57,6 +57,9 @@ class ConfigObject (object):
 	except:
 	    print traceback.format_exc()
 
+    def __getattr__(self, name):
+	return self.config[name]
+
     def load_config(self, filename):
 	config = self.get_config_info().get_defaults()
 
@@ -99,10 +102,68 @@ class ConfigObject (object):
 	return obj
 
     @staticmethod
+    def get_class_config_info(typeinfo):
+	(modulename, _, classname) = typeinfo.partition('/')
+	module = ConfigObject.import_module(modulename)
+	classtype = getattr(module, classname)
+	return classtype.get_config_info()
+
+
+class ConfigObjectTable (ConfigObject):
+    def __init__(self, **config):
+	ConfigObject.__init__(self, **config)
+	self.set_config_data(config)
+
+    @staticmethod
+    def get_config_info():
+	config_info = nerve.ConfigObject.get_config_info()
+	return config_info
+
+    def get_config_data(self):
+	#config = nerve.ConfigObject.get_config_data(self)
+	config = self.save_object_table(self.objects)
+	return config
+
+    def set_config_data(self, config):
+	self.objects = self.make_object_table(config)
+
+    def __getattr__(self, name):
+	if name in self.objects:
+	    return self.objects[name]
+	return getattr(self.objects, name)
+
+    def __iter__(self):
+	return iter(self.objects)
+
+    def __len__(self):
+	return len(self.objects)
+
+    def get_object(self, ref):
+	(name, sep, remain) = ref.partition('/')
+	obj = getattr(self, name)
+	if remain:
+	    return obj.get_object(remain)
+	else:
+	    return obj
+
+    def set_object(self, name, obj):
+	if not isinstance(obj, ConfigObject):
+	    raise TypeError("attempting to assign an object that is not of type ConfigObject")
+	(name, sep, remain) = ref.partition('/')
+	if remain:
+	    self.objects[name].set_object(remain, obj)
+	else:
+	    self.objects[name] = obj
+
+    @staticmethod
     def make_object_table(config):
 	objects = { }
 	for objname in config.keys():
-	    obj = ConfigObject.make_object(config[objname]['type'], config[objname])
+	    if '__type__' not in config[objname]:
+		typeinfo = "config/ConfigObjectTable"
+	    else:
+		typeinfo = config[objname]['__type__']
+	    obj = ConfigObject.make_object(typeinfo, config[objname])
 	    objects[objname] = obj
 	return objects
 
@@ -113,12 +174,12 @@ class ConfigObject (object):
 	    config[objname] = objects[objname].get_config_data()
 	return config
 
-    @staticmethod
-    def get_class_config_info(typeinfo):
-	(modulename, _, classname) = typeinfo.partition('/')
-	module = ConfigObject.import_module(modulename)
-	classtype = getattr(module, classname)
-	return classtype.get_config_info()
 
+class SymbolicLink (ConfigObject):
+    @staticmethod
+    def get_config_info():
+	config_info = nerve.ConfigObject.get_config_info()
+	config_info.add_setting('link', "Link", default="")
+	return config_info
 
 

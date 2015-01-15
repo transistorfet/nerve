@@ -9,6 +9,7 @@ class ConfigController (nerve.http.Controller):
     def index(self, request):
 	data = { }
 	data['config_data'] = nerve.get_config_data()
+	#data['config_info'] = nerve.get_config_info()
 	self.load_view("nerve/base/views/config/settings.pyhtml", data)
 
     def save(self, request):

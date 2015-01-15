@@ -11,6 +11,8 @@ button.nerve-button {
     font-size: 1.25em;
 }
 
+/*** Nerve Editor Widget ***/
+
 div.nerve-editor {
     padding: 4px;
     width: 80%;
@@ -27,7 +29,7 @@ div.nerve-editor > #editor-save {
     float: right;
 }
 
-/* Forms Style */
+/*** Nerve Forms ***/
 
 .nerve-form {
 }
@@ -77,7 +79,7 @@ div.nerve-editor > #editor-save {
     width: 10em;
 }
 
-/* TreeView Styles */
+/*** Nerve Treeview Widget ***/
 
 .nerve-treeview {
     /* float: left; */
@@ -141,11 +143,31 @@ div.nerve-editor > #editor-save {
 }
 
 .nerve-treeview .alt-label {
-    background: #80C008;
-    /* background: #EFFFDF; */
+    /* background: #80C008; */
+    background: #EFFFDF;
 }
 
 div.nerve-treeview > ul > li {
     margin-bottom: 6px;
+}
+
+/*** Nerve Tabs Widget ***/
+
+.nerve-tabs {
+    border-top: 5px solid #80C008;
+}
+
+.nerve-tabs .tab {
+    cursor: pointer;
+    float: left;
+    border-right: 1px solid #80C008;
+    padding: 8px;
+    font-size: 14px;
+    background-color: #EFFFDF;
+}
+
+.nerve-tabs .selected {
+    background-color: #80C008;
+    color: #fff;
 }
 

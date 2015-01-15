@@ -11,6 +11,16 @@ class SystemDevice (nerve.Device):
 	    contents = f.read()
 	return float(contents) / 1000.0
 
+    def systemp1(self):
+	with open("/sys/class/thermal/thermal_zone0/temp", 'r') as f:
+	    contents = f.read()
+	return float(contents) / 1000.0
+
+    def systemp2(self):
+	with open("/sys/class/thermal/thermal_zone1/temp", 'r') as f:
+	    contents = f.read()
+	return float(contents) / 1000.0
+
     def sleep(self):
 	os.system("xscreensaver-command -activate")
 

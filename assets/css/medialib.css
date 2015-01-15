@@ -1,21 +1,27 @@
 
 
 
-.medialib-list table {
+.medialib-list table
+{
     width: 100%;
     border-collapse: collapse;
 }
+
 .medialib-list th,
-.medialib-list td {
+.medialib-list td
+{
     text-align: left;
 }
+
 .medialib-list table,
 .medialib-list th,
-.medialib-list td {
+.medialib-list td
+{
     border: 1px solid lightgrey;
 }
 
-.medialib-list a {
+.medialib-list a
+{
     color: black;
 }
 

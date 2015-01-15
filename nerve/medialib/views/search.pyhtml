@@ -10,14 +10,21 @@
     <link rel="stylesheet" type="text/css" href="/assets/css/medialib.css" />
 
     <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
-    <script type="text/javascript" src="/assets/js/theme.js"></script>
     <script type="text/javascript" src="/assets/js/widgets.js"></script>
     <script type="text/javascript" src="/assets/js/medialib.js"></script>
 </head>
 <body>
 
+<div class="nerve-tabs">
+    <div class="tab" data-content="/remote">Remote</div>
+    <div class="tab" data-content="/medialib">Playlists</div>
+    <div class="tab selected" data-content="/medialib/search">MediaLib Search</div>
+    <div class="tab" data-content="/datalog/graph">Datalogs</div>
+    <div class="tab" data-content="/config">Config</div>
+    <div style="clear: both;"></div>
+</div>
+
 <a name="top"></a>
-<a href="/remote/index">Remote</a> | <a href="/remote/player">Player</a> | <a href="/medialib/">Playlists</a> | <a href="/medialib/search">Search Medialib</a> | <a href="/medialib/search_youtube">Search YouTube</a>
 <hr>
 
 <div id="nerve-notice" style="display: none;"></div>

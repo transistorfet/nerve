@@ -9,6 +9,7 @@ import sys
 import signal
 import traceback
 
+import SocketServer
 import BaseHTTPServer
 import ssl
 
@@ -23,6 +24,7 @@ else:
 
 
 class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
+    protocol_version = 'HTTP/1.1'
     server_version = "Nerve HTTP/0.2"
 
     def log_message(self, format, *args):
@@ -41,11 +43,13 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
             if username == self.server.username and password == self.server.password:
                 return True
 
+	content = 'Authorization required.'
 	self.send_response(401)
 	self.send_header('WWW-Authenticate', 'Basic realm="Secure Area"')
-	self.send_header('Content-type', 'text/html')
+	self.send_header('Content-Type', 'text/html')
+	self.send_header('Content-Length', len(content))
 	self.end_headers()
-	self.wfile.write('Authorization required.')
+	self.wfile.write(content)
         return False
 
     def do_GET(self):
@@ -89,22 +93,21 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
 	controller = self.server.find_controller(request)
 	success = controller.handle_request(request)
 	# TODO fetch the error from the controller
-	self.send_headers(200 if success else 404, controller.get_mimetype())
-	self.wfile.write(controller.get_output())
+	self.send_content(200 if success else 404, controller.get_mimetype(), controller.get_output())
 	return
 
-    def send_headers(self, errcode, mimetype, content=None):
+    def send_content(self, errcode, mimetype, content):
 	self.send_response(errcode)
-	self.send_header('Content-type', mimetype)
+	self.send_header('Content-Type', mimetype)
+	self.send_header('Content-Length', len(content))
 	self.end_headers()
-        if content is not None:
-	    self.wfile.write(content)
+	self.wfile.write(content)
 
     def send_400(self):
-        self.send_headers(400, 'text/plain', '400 Bad Request')
+        self.send_content(400, 'text/plain', '400 Bad Request')
 
     def send_404(self):
-        self.send_headers(404, 'text/plain', '404 Not Found')
+        self.send_content(404, 'text/plain', '404 Not Found')
 
     @staticmethod
     def is_valid_path(path):
@@ -116,7 +119,9 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
 	return True
 
 
-class HTTPServer (nerve.Server, BaseHTTPServer.HTTPServer):
+class HTTPServer (nerve.Server, SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):  #, SocketServer.ThreadingMixIn
+    daemon_threads = True
+
     def __init__(self, **config):
 	nerve.Server.__init__(self, **config)
 	self.root = 'nerve/http/wwwdata'
@@ -146,15 +151,6 @@ class HTTPServer (nerve.Server, BaseHTTPServer.HTTPServer):
 	config_info.add_setting('port', "Port", default=8888)
 	config_info.add_setting('username', "Username", default='')
 	config_info.add_setting('password', "Password", default='')
-	"""
-	config_info.add_setting('controllers', "Controllers", default={
-	    '__default__' : {
-		'type' : 'base/ConfigController',
-		'username' : 'admin',
-		'password' : 'admin'
-	    }
-	})
-	"""
 	return config_info
 
 

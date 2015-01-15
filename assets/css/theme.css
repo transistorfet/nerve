@@ -25,27 +25,9 @@ button:hover {
     color: #fff;
 }
 
-input, textarea {
+input, textarea, select {
     background: #EFFFDF;
     font: 14px sans-serif;
-}
-
-#tabs {
-    border-top: 5px solid #80C008;
-}
-
-#tabs .tab {
-    cursor: pointer;
-    float: left;
-    border-right: 1px solid #80C008;
-    padding: 8px;
-    font-size: 14px;
-    background-color: #EFFFDF;
-}
-
-#tabs .selected {
-    background-color: #80C008;
-    color: #fff;
 }
 
 #nerve-notice {

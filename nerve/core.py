@@ -113,27 +113,12 @@ class Controller (nerve.ConfigObject):
 class Server (nerve.ConfigObject):
     def __init__(self, **config):
 	nerve.ConfigObject.__init__(self, **config)
-	if 'controllers' not in config:
-	    self.controllers = { }
-	else:
-	    self.controllers = self.make_object_table(config['controllers'])
 
     @staticmethod
     def get_config_info():
 	config_info = nerve.ConfigObject.get_config_info()
-	"""
-	controllers = { }
-	for name in self.controllers.keys():
-	    controllers[name] = self.controllers[name].get_config_info()
-	config_info.add_setting('controllers', "Controllers", default=controllers)
-	"""
 	config_info.add_setting('controllers', "Controllers", default=dict())
 	return config_info
-
-    def get_config_data(self):
-	config = nerve.ConfigObject.get_config_data(self)
-	config['controllers'] = self.save_object_table(self.controllers)
-	return config
 
     def add_controller(self, name, controller):
 	self.controllers[name] = controller
@@ -151,7 +136,7 @@ class Server (nerve.ConfigObject):
 	else:
 	    request.back_segment();
 	    controller = self.controllers['__default__']
-	return controller
+	return nerve.ConfigObject.make_object(controller['__type__'], controller)
 
 
 class Device (nerve.ConfigObject):
@@ -160,6 +145,7 @@ class Device (nerve.ConfigObject):
     def __init__(self, **config):
 	nerve.ConfigObject.__init__(self, **config)
 
+    """
     def query(self, ref, *args, **kwargs):
 	(name, sep, remain) = ref.partition('.')
 	if name and name[0] == '_':
@@ -170,12 +156,12 @@ class Device (nerve.ConfigObject):
 	else:
 	    func = getattr(self, name)
 	    return func(*args, **kwargs)
+    """
 
     @staticmethod
     def register_device_type(name, device_class, description):
 	Device.device_types[name] = { 'class' : device_class, 'description' : description }
 	# TODO you could call a static method on the class to get config data...
-
 
 
 

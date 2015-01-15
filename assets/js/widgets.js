@@ -91,6 +91,26 @@ function NerveEditor(element)
     this.load();
 }
 
+function NerveTabs(element)
+{
+    var container = $(element).attr('data-container');
+
+    $(element).find('.tab').click(function() {
+	var data_content = $(this).attr('data-content');
+
+	if (data_content[0] == '/') {
+	    document.location = data_content;
+	}
+	else {
+	    $('#' + container + ' > div').hide();
+	    $('#' + container + '-' + data_content).show();
+
+	    $(element).find('.tab').removeClass('selected');
+	    $(this).addClass('selected');
+	}
+    }); 
+}
+
 $(document).ready(function()
 {
     $('.nerve-button').each(function () {
@@ -111,6 +131,10 @@ $(document).ready(function()
 
     $('.nerve-editor').each(function () {
 	new NerveEditor(this);
+    });
+
+    $('.nerve-tabs').each(function () {
+	new NerveTabs(this);
     });
 });
 

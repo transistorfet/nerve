@@ -26,6 +26,7 @@ class FileController (nerve.Controller):
 
 	if not os.path.isfile(filename):
 	    self.write_output("Error file not found: " + filename)
+	    raise Exception("Error file not found: " + filename)
 	    return False
 
 	(_, _, extension) = filename.rpartition('.')
