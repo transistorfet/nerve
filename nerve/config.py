@@ -146,7 +146,7 @@ class ConfigObjectTable (ConfigObject):
 	else:
 	    return obj
 
-    def set_object(self, name, obj):
+    def set_object(self, ref, obj):
 	if not isinstance(obj, ConfigObject):
 	    raise TypeError("attempting to assign an object that is not of type ConfigObject")
 	(name, sep, remain) = ref.partition('/')
