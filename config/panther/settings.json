@@ -1,7 +1,7 @@
 {
     "devices": {
         "medialib": {
-            "type": "medialib/MediaLib",
+            "__type__": "medialib/MediaLib",
 	    "medialib_dirs": [
 		"/media/media/Music", 
 		"/media/media/Torrents"
@@ -13,34 +13,34 @@
 	    ]
         },
         "computer": {
-            "type": "computer/SystemDevice"
+            "__type__": "computer/SystemDevice"
         },
         "rgb": {
             "baud": 19200,
             "file": "/dev/ttyACM0",
-            "type": "serial/NerveSerialDevice"
+            "__type__": "serial/NerveSerialDevice"
         },
 	"player": {
-	    "type": "vlc/VLCHTTP"
+	    "__type__": "vlc/VLCHTTP"
 	}
     },
     "servers": {
         "console": {
             "controllers": {
                 "__default__": {
-                    "type": "base/QueryController"
+                    "__type__": "base/QueryController"
                 }
             },
-            "type": "base/Console"
+            "__type__": "base/Console"
         },
         "udp": {
 	    "port": 5959,
             "controllers": {
                 "__default__": {
-                    "type": "base/QueryController"
+                    "__type__": "base/QueryController"
                 }
             },
-            "type": "base/UDPServer"
+            "__type__": "base/UDPServer"
         },
         "http": {
 	    "username": "",
@@ -48,27 +48,27 @@
 	    "port": 8888,
             "controllers": {
                 "__default__": {
-                    "type": "base/FileController",
+                    "__type__": "base/FileController",
 		    "root" : "assets"
                 },
                 "assets": {
-                    "type": "base/FileController",
+                    "__type__": "base/FileController",
 		    "root" : "assets"
                 },
                 "query": {
-                    "type": "base/QueryController"
+                    "__type__": "base/QueryController"
                 },
                 "config": {
-                    "type": "base/ConfigController"
+                    "__type__": "base/ConfigController"
                 },
                 "medialib": {
-                    "type": "medialib/MediaLibController"
+                    "__type__": "medialib/MediaLibController"
                 },
                 "remote": {
-                    "type": "remote/RemoteController"
+                    "__type__": "remote/RemoteController"
                 }
             },
-            "type": "http/HTTPServer"
+            "__type__": "http/HTTPServer"
         }
     }
 }
