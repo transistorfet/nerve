@@ -57,14 +57,10 @@ div.nerve-editor > #editor-save {
     display: block;
     width: 8em;
     margin-right: 0.5em;
-    text-align: right;
+    text-align: left;
     float: left;
     font: 12px sans-serif;
     color: black;
-}
-
-.nerve-form-item span {
-    margin-left: 2em;
 }
 
 .nerve-form-item-row label {
@@ -83,7 +79,7 @@ div.nerve-editor > #editor-save {
 
 .nerve-treeview {
     /* float: left; */
-    width: 35em;
+    width: 30em;
 }
 
 .nerve-treeview ul,
@@ -138,13 +134,16 @@ div.nerve-editor > #editor-save {
 .nerve-treeview li > label {
     width: 100%;
     background: #80C008;
-    border: 1px solid #222;
+    /* border: 1px solid #222; */
+    color: #fff;
     margin-bottom: 4px;
 }
 
 .nerve-treeview .alt-label {
     /* background: #80C008; */
     background: #EFFFDF;
+    border: 1px solid #222;
+    color: #000;
 }
 
 div.nerve-treeview > ul > li {

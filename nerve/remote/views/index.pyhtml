@@ -17,7 +17,7 @@
 <div class="nerve-tabs">
     <div class="tab selected" data-content="/remote">Remote</div>
     <div class="tab" data-content="/medialib">Playlists</div>
-    <div class="tab" data-content="/medialib/search">MediaLib Search</div>
+    <div class="tab" data-content="/medialib/search">Media Search</div>
     <div class="tab" data-content="/datalog/graph">Datalogs</div>
     <div class="tab" data-content="/config">Config</div>
     <div style="clear: both;"></div>
