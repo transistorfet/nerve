@@ -3,53 +3,68 @@
     <div class="nerve-query" data-query="player.getsong" data-time="15000">(no connection)</div>
 </div>
 
-<table class="nerve-container">
-    <tr>
-    <td><button data-query="player.previous" class="nerve-button">Previous</button></td>
-    <td><button data-query="player.toggle" class="nerve-button">PlayPause</button></td>
-    <td><button data-query="player.next" class="nerve-button">Next</button></td>
-    </tr>
-    <tr>
-    <td><button data-query="player.random" class="nerve-button">Random</button></td>
-    <td><button data-query="player.fullscreen" class="nerve-button">Fullscreen</button></td>
-    </tr>
-</table>
+<div class="nerve-row">
+    <button data-query="player.previous" class="nerve-button">Previous</button>
+    <button data-query="player.toggle" class="nerve-button">PlayPause</button>
+    <button data-query="player.next" class="nerve-button">Next</button>
+</div>
+<div class="nerve-row">
+    <button data-query="player.random" class="nerve-button">Random</button>
+    <button data-query="player.fullscreen" class="nerve-button">Fullscreen</button>
+</div>
 
 <hr>
 
-<table class="nerve-container">
-    <tr>
-    <td><button data-query="stereo.power" class="nerve-button">Stereo</button></td>
-    <td><button data-query="tv.power" class="nerve-button">TV</button></td>
-    <td><button data-query="rgb.power 0" class="nerve-button">Lights Off</button></td>
-    <td><button data-query="rgb.power" class="nerve-button">Lights</button></td>
-    </tr>
-    <tr>
-    <td><button data-query="stereo.volup" class="nerve-button">Up</button></td>
-    <td><button data-query="tv.volup" class="nerve-button">Up</button></td>
-    <td><button data-query="rgb.key 258" class="nerve-button">Up</button></td>
-    </tr>
-    <tr>
-    <td><button data-query="stereo.voldown" class="nerve-button">Down</button></td>
-    <td><button data-query="tv.voldown" class="nerve-button">Down</button></td>
-    <td><button data-query="rgb.key 278" class="nerve-button">Down</button></td>
-    </tr>
-</table>
+<div class="nerve-row">
+    <button data-query="stereo.power" class="nerve-button">Stereo</button>
+    <div>
+        <button data-query="stereo.tape" class="nerve-button">Tape</button>
+        <button data-query="stereo.tuner" class="nerve-button">Tuner</button>
+    </div>
+    <div>
+        <button data-query="stereo.volup" class="nerve-button">Up</button>
+        <button data-query="stereo.voldown" class="nerve-button">Down</button>
+    </div>
+</div>
 
-<table class="nerve-container">
-    <tr>
-    <td><button data-query="tv.ps3" class="nerve-button">PS3</button></td>
-    <td><button data-query="stereo.tape" class="nerve-button">Tape</button></td>
-    </tr>
-    <tr>
-    <td><button data-query="tv.netbook" class="nerve-button">Netbook</button></td>
-    <td><button data-query="stereo.tuner" class="nerve-button">Tuner</button></td>
-    </tr>
-    <tr>
-    <td><button data-query="computer.wakeup" class="nerve-button">Wake Up</button></td>
-    <td><button data-query="computer.sleep" class="nerve-button">Sleep</button></td>
-    </tr>
-</table>
+<hr>
+
+<div class="nerve-row">
+    <button data-query="tv.power" class="nerve-button">TV</button>
+    <div>
+        <button data-query="tv.ps3" class="nerve-button">PS3</button>
+        <button data-query="tv.netbook" class="nerve-button">Netbook</button>
+    </div>
+    <div>
+        <button data-query="tv.volup" class="nerve-button">Up</button>
+        <button data-query="tv.voldown" class="nerve-button">Down</button>
+    </div>
+</div>
+
+<hr>
+
+<div class="nerve-row">
+    <div>
+        <button data-query="rgb.power 0" class="nerve-button">Lights Off</button>
+        <button data-query="rgb.power" class="nerve-button">Lights</button>
+    </div>
+    <div>
+        <button data-query="rgb.key 291" class="nerve-button">Inc</button>
+        <button data-query="rgb.key 241" class="nerve-button">Dec</button>
+    </div>
+    <div>
+        <button data-query="rgb.key 258" class="nerve-button">Up</button>
+        <button data-query="rgb.key 278" class="nerve-button">Down</button>
+    </div>
+</div>
+
+<hr>
+
+<div class="nerve-row">
+    <button data-query="computer.wakeup" class="nerve-button">Wake Up</button>
+    <button data-query="computer.sleep" class="nerve-button">Sleep</button>
+</div>
+
 
 <hr>
 <div class="row">
@@ -58,87 +73,84 @@
 </div>
 <hr>
 
-<table class="nerve-container">
-    <tr>
-    <td><button data-query="player.load_playlist http://www.youtube.com/playlist?list=FL_VkJGWFV9ZEIv87E-0NM5w" class="nerve-button">Favorites</button></td>
-    </tr>
-</table>
-<table class="nerve-container">
-    <tr>
-    <td><button data-query="player.load_playlist file:///media/work/nerve/config/panther/playlists/default.m3u" class="nerve-button">Medialib Playlist</button></td>
-    </tr>
-</table>
-<table class="nerve-container">
-    <tr>
-    <td><button data-query="player.clear_playlist" class="nerve-button">Clear Playlist</button></td>
-    <td><button data-query="player.kill_instance" class="nerve-button">Kill VLC</button></td>
-    </tr>
-</table>
+<div class="nerve-row">
+    <button data-query="player.load_playlist http://www.youtube.com/playlist?list=FL_VkJGWFV9ZEIv87E-0NM5w" class="nerve-button">Favorites</button>
+</div>
+<div class="nerve-row">
+    <button data-query="player.load_playlist file:///media/work/nerve/config/panther/playlists/Default.m3u" class="nerve-button">Medialib Playlist</button>
+</div>
+<div class="nerve-row">
+    <button data-query="player.clear_playlist" class="nerve-button">Clear Playlist</button>
+    <button data-query="player.kill_instance" class="nerve-button">Kill VLC</button>
+</div>
 
 <hr>
 
 
 <h5>RGB Node</h5>
 <div class="nerve-slider" data-query="rgb.intensity" data-max="256"></div>
-<table class="nerve-container">
-    <tr>
-    <td><button data-query="rgb.power" class="nerve-button">Power</button></td>
-    <td><button data-query="rgb.key 258" class="nerve-button">Vol Up</button></td>
-    <td><button data-query="rgb.key 278" class="nerve-button">Vol Down</button></td>
-    </tr>
+<div class="nerve-row">
+    <button data-query="rgb.power" class="nerve-button">Power</button>
+    <button data-query="rgb.key 258" class="nerve-button">Intensity Up</button>
+    <button data-query="rgb.key 278" class="nerve-button">Intensity Down</button>
+</div>
 </table>
 
-<table class="nerve-container">
-    <tr>
-    <td><button data-query="rgb.channel 1" class="nerve-button">1</button></td>
-    <td><button data-query="rgb.channel 2" class="nerve-button">2</button></td>
-    <td><button data-query="rgb.channel 3" class="nerve-button">3</button></td>
-    <td><button data-query="rgb.channel 4" class="nerve-button">4</button></td>
-    <td><button data-query="rgb.channel 5" class="nerve-button">5</button></td>
-    <td><button data-query="rgb.channel 6" class="nerve-button">6</button></td>
-    <td><button data-query="rgb.channel 7" class="nerve-button">7</button></td>
-    <td><button data-query="rgb.channel 8" class="nerve-button">8</button></td>
-    <td><button data-query="rgb.channel 9" class="nerve-button">9</button></td>
-    </tr>
-</table>
+<div class="nerve-row">
+    <button data-query="rgb.channel 1" class="nerve-button">1</button>
+    <button data-query="rgb.channel 2" class="nerve-button">2</button>
+    <button data-query="rgb.channel 3" class="nerve-button">3</button>
+    <button data-query="rgb.channel 4" class="nerve-button">4</button>
+    <button data-query="rgb.channel 5" class="nerve-button">5</button>
+    <button data-query="rgb.channel 6" class="nerve-button">6</button>
+    <button data-query="rgb.channel 7" class="nerve-button">7</button>
+    <button data-query="rgb.channel 8" class="nerve-button">8</button>
+    <button data-query="rgb.channel 9" class="nerve-button">9</button>
+</div>
 
-<table class="nerve-container">
-    <tr>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 1"><div style="width:50px; height:50px; border: 1px solid #000; background: #ff0000;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 2"><div style="width:50px; height:50px; border: 1px solid #000; background: #ff2000;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 3"><div style="width:50px; height:50px; border: 1px solid #000; background: #ff4000;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 4"><div style="width:50px; height:50px; border: 1px solid #000; background: #ff8000;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 5"><div style="width:50px; height:50px; border: 1px solid #000; background: #ffff00;"></div></a></td>
-    </tr>
-    <tr>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 6"><div style="width:50px; height:50px; border: 1px solid #000; background: #80ff00;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 7"><div style="width:50px; height:50px; border: 1px solid #000; background: #40ff00;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 8"><div style="width:50px; height:50px; border: 1px solid #000; background: #20ff00;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 9"><div style="width:50px; height:50px; border: 1px solid #000; background: #00ff00;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 10"><div style="width:50px; height:50px; border: 1px solid #000; background: #00ff20;"></div></a></td>
-    </tr>
-    <tr>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 11"><div style="width:50px; height:50px; border: 1px solid #000; background: #00ff40;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 12"><div style="width:50px; height:50px; border: 1px solid #000; background: #00ff80;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 13"><div style="width:50px; height:50px; border: 1px solid #000; background: #00ffff;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 14"><div style="width:50px; height:50px; border: 1px solid #000; background: #0080ff;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 15"><div style="width:50px; height:50px; border: 1px solid #000; background: #0040ff;"></div></a></td>
-    </tr>
-    <tr>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 16"><div style="width:50px; height:50px; border: 1px solid #000; background: #0020ff;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 17"><div style="width:50px; height:50px; border: 1px solid #000; background: #0000ff;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 18"><div style="width:50px; height:50px; border: 1px solid #000; background: #2000ff;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 19"><div style="width:50px; height:50px; border: 1px solid #000; background: #4000ff;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 20"><div style="width:50px; height:50px; border: 1px solid #000; background: #8000ff;"></div></a></td>
-    </tr>
-    <tr>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 21"><div style="width:50px; height:50px; border: 1px solid #000; background: #ff00ff;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 22"><div style="width:50px; height:50px; border: 1px solid #000; background: #ff0080;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 23"><div style="width:50px; height:50px; border: 1px solid #000; background: #ff0040;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 24"><div style="width:50px; height:50px; border: 1px solid #000; background: #ff0020;"></div></a></td>
-    <td><a class="nerve-button" href="#" data-query="rgb.index 25"><div style="width:50px; height:50px; border: 1px solid #000; background: #ffffff;"></div></a></td>
-    </tr>
-</table>
+<div class="nerve-row">
+    <button class="nerve-button" data-query="rgb.index 1"><div style="height:50px; border: 1px solid #000; background: #ff0000;"></div></button>
+    <button class="nerve-button" data-query="rgb.index 2"><div style="height:50px; border: 1px solid #000; background: #ff4200;"></div></button>
+    <button class="nerve-button" data-query="rgb.index 3"><div style="height:50px; border: 1px solid #000; background: #ff7000;"></div></button>
+    <button class="nerve-button" data-query="rgb.index 4"><div style="height:50px; border: 1px solid #000; background: #ffc000;"></div></button>
+    <button class="nerve-button" data-query="rgb.index 5"><div style="height:50px; border: 1px solid #000; background: #e0ff00;"></div></button>
+</div>
+<div class="nerve-row">
+    <button class="nerve-button" data-query="rgb.index 6"><div style="height:50px; border: 1px solid #000; background: #80ff00;"></div></button>
+    <button class="nerve-button" data-query="rgb.index 7"><div style="height:50px; border: 1px solid #000; background: #40ff00;"></div></button>
+    <button class="nerve-button" data-query="rgb.index 8"><div style="height:50px; border: 1px solid #000; background: #20ff00;"></div></button>
+    <button class="nerve-button" data-query="rgb.index 9"><div style="height:50px; border: 1px solid #000; background: #00ff00;"></div></button>
+    <button class="nerve-button" data-query="rgb.index a"><div style="height:50px; border: 1px solid #000; background: #00ff20;"></div></button>
+</div>
+<div class="nerve-row">
+    <button class="nerve-button" data-query="rgb.index b"><div style="height:50px; border: 1px solid #000; background: #00ff40;"></div></button>
+    <button class="nerve-button" data-query="rgb.index c"><div style="height:50px; border: 1px solid #000; background: #00ff80;"></div></button>
+    <button class="nerve-button" data-query="rgb.index d"><div style="height:50px; border: 1px solid #000; background: #00ffff;"></div></button>
+    <button class="nerve-button" data-query="rgb.index e"><div style="height:50px; border: 1px solid #000; background: #0080ff;"></div></button>
+    <button class="nerve-button" data-query="rgb.index f"><div style="height:50px; border: 1px solid #000; background: #0040ff;"></div></button>
+</div>
+<div class="nerve-row">
+    <button class="nerve-button" data-query="rgb.index 10"><div style="height:50px; border: 1px solid #000; background: #0020ff;"></div></button>
+    <button class="nerve-button" data-query="rgb.index 11"><div style="height:50px; border: 1px solid #000; background: #0000ff;"></div></button>
+    <button class="nerve-button" data-query="rgb.index 12"><div style="height:50px; border: 1px solid #000; background: #2000ff;"></div></button>
+    <button class="nerve-button" data-query="rgb.index 13"><div style="height:50px; border: 1px solid #000; background: #4000ff;"></div></button>
+    <button class="nerve-button" data-query="rgb.index 14"><div style="height:50px; border: 1px solid #000; background: #8000ff;"></div></button>
+</div>
+<div class="nerve-row">
+    <button class="nerve-button" data-query="rgb.index 15"><div style="height:50px; border: 1px solid #000; background: #ff00ff;"></div></button>
+    <button class="nerve-button" data-query="rgb.index 16"><div style="height:50px; border: 1px solid #000; background: #ff0080;"></div></button>
+    <button class="nerve-button" data-query="rgb.index 17"><div style="height:50px; border: 1px solid #000; background: #ff0040;"></div></button>
+    <button class="nerve-button" data-query="rgb.index 18"><div style="height:50px; border: 1px solid #000; background: #ff0020;"></div></button>
+    <button class="nerve-button" data-query="rgb.index 19"><div style="height:50px; border: 1px solid #000; background: #e0ffff;"></div></button>
+</div>
+<div class="nerve-row">
+    <button class="nerve-button" data-query="rgb.index 1a"><div style="height:50px; border: 1px solid #000; background: #e0ffd0;"></div></button>
+    <button class="nerve-button" data-query="rgb.index 1b"><div style="height:50px; border: 1px solid #000; background: #ffffc0;"></div></button>
+    <button class="nerve-button" data-query="rgb.index 1c"><div style="height:50px; border: 1px solid #000; background: #ffff80;"></div></button>
+    <button class="nerve-button" data-query="rgb.index 1d"><div style="height:50px; border: 1px solid #000; background: #40ff00;"></div></button>
+    <button class="nerve-button" data-query="rgb.index 1e"><div style="height:50px; border: 1px solid #000; background: #4000ff;"></div></button>
+</div>
+
 
 <div class="disabled-nerve-query-block" data-query="player.html_status" data-time="5000">
     <span class="song"></span><br/>

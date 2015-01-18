@@ -1,6 +1,11 @@
 
-table.nerve-container {
+.nerve-row {
     width: 100%;
+    display: flex;
+}
+
+.nerve-row * {
+    flex: 1;
 }
 
 /*** Nerve Editor Widget ***/

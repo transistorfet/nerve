@@ -76,11 +76,11 @@ class NerveSerialDevice (SerialDevice):
 
     def __getattr__(self, name):
 	def serial_getter(*args, **kwargs):
-	    querystr = name
+	    query_string = name
 	    if len(args) > 0:
 		query_string += ' ' + ' '.join(args)
 	    self.received.clear()
-	    self.send(querystr)
+	    self.send(query_string)
 	    if self.received.wait(2) is True:
 		result = self.data
 		self.data = None

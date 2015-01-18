@@ -26,13 +26,11 @@
 
 <hr>
 
-<table class="nerve-container">
-    <tr>
-    <td><button data-query="player.previous" class="nerve-button">Previous</button></td>
-    <td><button data-query="player.toggle" class="nerve-button">PlayPause</button></td>
-    <td><button data-query="player.next" class="nerve-button">Next</button></td>
-    </tr>
-</table>
+<div class="nerve-container">
+    <button data-query="player.previous" class="nerve-button">Previous</button>
+    <button data-query="player.toggle" class="nerve-button">PlayPause</button>
+    <button data-query="player.next" class="nerve-button">Next</button>
+</div>
 
 <hr>
 
