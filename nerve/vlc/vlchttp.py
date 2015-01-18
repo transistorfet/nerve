@@ -138,6 +138,8 @@ class VLCHTTP (nerve.Device):
 
     def load_playlist(self, url):
 	self._send_command('pl_empty')
+        if url.find('/') < 0:
+            url = nerve.configdir() + '/playlists/' + url + '.m3u'
 	self._send_command_and_uri('in_play', urllib.quote(url))
 
     def kill_instance(self):

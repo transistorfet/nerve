@@ -172,6 +172,7 @@ def get_device(name):
 
 def query(urlstring, *args, **kwargs):
     global mainloops
+    nerve.log("executing query: " + urlstring + " " + ' '.join(args) + " " + repr(kwargs))
     url = urlparse.urlparse(urlstring)
     if url.netloc:
 	if url.scheme == 'http':

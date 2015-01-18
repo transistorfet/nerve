@@ -59,7 +59,7 @@
             ]
         },
         "player": {
-            "__type__": "xmms2/Xmms2"
+            "__type__": "vlc/VLCHTTP"
         },
         "rgb": {
             "__type__": "serial/NerveSerialDevice",

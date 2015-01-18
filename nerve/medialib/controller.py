@@ -67,6 +67,26 @@ class MediaLibController (nerve.http.Controller):
 	playlist = request.args['playlist'][0]
 	medialib.sort_playlist(playlist)
 
+    def create_playlist(self, request):
+	medialib = nerve.get_device('medialib')
+	playlist_name = request.args['playlist'][0]
+        for name in medialib.get_playlist_list():
+            if name == playlist_name:
+                self.write_json({ 'error' : "A playlist by that name already exists" })
+                return
+        playlist = nerve.medialib.Playlist(playlist_name)
+        self.write_json({ 'notice' : "Playlist created successfully" })
+
+    def delete_playlist(self, request):
+	medialib = nerve.get_device('medialib')
+	playlist_name = request.args['playlist'][0]
+        for name in medialib.get_playlist_list():
+            if name == playlist_name:
+                self.write_json({ 'notice' : "Playlist deleted successfully" })
+                nerve.medialib.Playlist.delete(playlist_name)
+                return
+        self.write_json({ 'error' : "That playlist no longer exists" })
+
     def add_tracks(self, request):
 	medialib = nerve.get_device('medialib')
 	result = dict(count=0)

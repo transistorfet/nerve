@@ -12,6 +12,8 @@ function MediaLibPlaylist(element)
 
     this.remove_selected = function ()
     {
+	$('#nerve-error').hide();
+	$('#nerve-notice').hide();
 	var postvars = { 'playlist' : $('#select-playlist').val(), 'urls' : [ ] };
 	$("input[name='urls']:checked").each(function () {
 	    postvars['urls'].push($(this).val());
@@ -37,6 +39,43 @@ function MediaLibPlaylist(element)
 
     $('.pl_shuffle').click(function (e) {
 	$.post('/medialib/shuffle_playlist', { 'playlist' : $('#select-playlist').val() }, medialib.update, 'html');
+    });
+
+    $('.pl_create').click(function (e) {
+	$('#nerve-error').hide();
+	$('#nerve-notice').hide();
+
+        var playlist = $('#pl_name').val();
+	$.post('/medialib/create_playlist', { 'playlist' : playlist }, function (response) {
+            $('#pl_name').val('');
+            if (response.error)
+                $('#nerve-error').html(response.error).show();
+            else if (response.notice) {
+                $('#nerve-notice').html(response.notice).show();
+                $('#select-playlist').append('<option value="'+playlist+'">'+playlist+'</option>');
+                $('#select-playlist').val(playlist);
+                medialib.update();
+            }
+        }, 'json');
+    });
+
+    $('.pl_delete').click(function (e) {
+        var playlist = $('#select-playlist').val();
+        if (confirm("Are you sure you want to delete the playlist: " + playlist)) {
+	    $.post('/medialib/delete_playlist', { 'playlist' : playlist }, function (response) {
+                if (response.error)
+                    $('#nerve-error').html(response.error).show();
+                else if (response.notice) {
+                    $('#nerve-notice').html(response.notice).show();
+                    $('#select-playlist option[value="'+playlist+'"]').remove();
+                    medialib.update();
+                }
+            });
+        }
+    });
+
+    $('.pl_load').click(function (e) {
+	$.post('/query', { 'queries[]' : "player.load_playlist " + $('#select-playlist').val() }, function (response) { }, 'json');
     });
 }
 

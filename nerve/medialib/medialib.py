@@ -229,4 +229,11 @@ class Playlist (object):
 	self.media_list = [ ]
 	self.save()
 
+    @staticmethod
+    def delete(name):
+	plroot = nerve.configdir() + '/playlists'
+	filename = plroot + '/' + name + '.m3u'
+	if os.path.isdir(plroot) and os.path.isfile(filename):
+            os.remove(filename)
+
 

@@ -15,11 +15,11 @@ function NerveButton(element)
 function NerveInputSubmit(element)
 {
     this.submit = function () {
-	var textid = $(element).attr('data-id');
-	var query = $('#'+textid).attr('data-query');
-	var text = $('#'+textid).val();
-	if (text) {
-	    $.post('/query', { 'queries[]': query + ' ' + text }, function(response) {
+	var sourceid = $(element).attr('data-source');
+	var query = $(element).attr('data-query');
+	var data = $('#'+sourceid).val();
+	if (data) {
+	    $.post('/query', { 'queries[]': query + ' ' + data }, function(response) {
 	    }, 'json');
 	}
     }
