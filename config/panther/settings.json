@@ -7,9 +7,7 @@
 		"/media/media/Torrents"
 	    ],
 	    "youtube_playlists": [
-		"PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4",
 		"FL_VkJGWFV9ZEIv87E-0NM5w",
-		"PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0"
 	    ]
         },
         "computer": {
@@ -20,15 +18,51 @@
             "file": "/dev/ttyACM0",
             "__type__": "serial/NerveSerialDevice"
         },
+        "sensors": {
+            "baud": 19200,
+            "file": "/dev/ttyACM1",
+            "__type__": "serial/NerveSerialDevice"
+        },
 	"player": {
 	    "__type__": "vlc/VLCHTTP"
-	}
+	},
+        "datalogs": {
+            "manager": {
+                "__type__": "datalog/DatalogManager"
+            },
+            "testlog": {
+                "__type__": "datalog/DatalogDevice",
+                "datapoints": [
+                    {
+                        "datatype": "NUMERIC",
+                        "label": "Inside Temperature",
+                        "max": 100,
+                        "min": 0,
+                        "name": "inside_temp",
+                        "ref": "sensors.temp0",
+                        "units": "C"
+                    },
+                    {
+                        "datatype": "NUMERIC",
+                        "label": "Window Temperature",
+                        "max": 100,
+                        "min": 0,
+                        "name": "window_temp",
+                        "ref": "sensors.temp1",
+                        "units": "C"
+                    }
+                ],
+                "name": "temperatures",
+                "update_time": 60
+            }
+        }
+
     },
     "servers": {
         "console": {
             "controllers": {
                 "__default__": {
-                    "__type__": "base/QueryController"
+                    "__type__": "base/ShellController"
                 }
             },
             "__type__": "base/Console"
@@ -63,6 +97,9 @@
                 },
                 "medialib": {
                     "__type__": "medialib/MediaLibController"
+                },
+                "datalog": {
+                    "__type__": "datalog/DatalogController"
                 },
                 "remote": {
                     "__type__": "remote/RemoteController"

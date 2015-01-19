@@ -43,7 +43,7 @@ class RemoteController (nerve.http.Controller):
 	except:
 	    result = { 'status' : 'error', 'message' : traceback.format_exc() }
 	else:
-	    result = { 'status' : 'success', 'message' : self.filename + ' saved successfully' }
+	    result = { 'status' : 'success', 'message' : 'Remote layout saved successfully' }
 	self.write_json(result)
 
 

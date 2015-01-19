@@ -8,6 +8,10 @@
     flex: 1;
 }
 
+.nerve-row div {
+    margin-right: 4px;
+}
+
 /*** Nerve Editor Widget ***/
 
 div.nerve-editor {

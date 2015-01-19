@@ -18,7 +18,7 @@ class Console (nerve.Server):
 	config_info = nerve.Server.get_config_info()
 	config_info.add_setting('controllers', "Controllers", default={
 	    '__default__' : {
-		'type' : 'base/QueryController'
+		'type' : 'base/ShellController'
 	    }
 	})
 	return config_info

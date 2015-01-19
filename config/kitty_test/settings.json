@@ -72,7 +72,7 @@
             "__type__": "base/Console",
             "controllers": {
                 "__default__": {
-                    "__type__": "base/PyExecController"
+                    "__type__": "base/ShellController"
                 }
             }
         },

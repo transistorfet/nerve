@@ -185,8 +185,11 @@ def query(urlstring, *args, **kwargs):
     else:
 	(objname, sep, funcname) = url.path.replace('.', '/').lstrip('/').rpartition('/')
 	obj = mainloops[0].devices.get_object(objname)
-	func = getattr(obj, funcname)
-	return func(*args, **kwargs)
+	if funcname:
+	    func = getattr(obj, funcname)
+	    return func(*args, **kwargs)
+	else:
+	    return obj
 
 def query_string(text):
     # TODO parse quotes

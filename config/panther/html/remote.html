@@ -1,16 +1,16 @@
 
-<div class="remote-playerinfo">
-    <div class="nerve-query" data-query="player.getsong" data-time="15000">(no connection)</div>
+<div class="nerve-row">
+    <button data-query="sensors.relay_toggle" class="nerve-button">Lamp</button>
 </div>
 
 <div class="nerve-row">
-    <button data-query="player.previous" class="nerve-button">Previous</button>
-    <button data-query="player.toggle" class="nerve-button">PlayPause</button>
-    <button data-query="player.next" class="nerve-button">Next</button>
-</div>
-<div class="nerve-row">
-    <button data-query="player.random" class="nerve-button">Random</button>
-    <button data-query="player.fullscreen" class="nerve-button">Fullscreen</button>
+    <div>
+        <button data-query="rgb.power" class="nerve-button">Accent</button>
+    </div>
+    <div>
+        <button data-query="rgb.key 258" class="nerve-button">Up</button>
+        <button data-query="rgb.key 278" class="nerve-button">Down</button>
+    </div>
 </div>
 
 <hr>
@@ -25,6 +25,22 @@
         <button data-query="stereo.volup" class="nerve-button">Up</button>
         <button data-query="stereo.voldown" class="nerve-button">Down</button>
     </div>
+</div>
+
+<hr>
+
+<div class="nerve-display remote-playerinfo">
+    <div class="nerve-query" data-query="player.getsong" data-time="15000">(no connection)</div>
+</div>
+
+<div class="nerve-row">
+    <button data-query="player.previous" class="nerve-button">Previous</button>
+    <button data-query="player.toggle" class="nerve-button">PlayPause</button>
+    <button data-query="player.next" class="nerve-button">Next</button>
+</div>
+<div class="nerve-row">
+    <button data-query="player.random" class="nerve-button">Random</button>
+    <button data-query="player.fullscreen" class="nerve-button">Fullscreen</button>
 </div>
 
 <hr>
@@ -44,33 +60,17 @@
 <hr>
 
 <div class="nerve-row">
-    <div>
-        <button data-query="rgb.power 0" class="nerve-button">Lights Off</button>
-        <button data-query="rgb.power" class="nerve-button">Lights</button>
-    </div>
-    <div>
-        <button data-query="rgb.key 291" class="nerve-button">Inc</button>
-        <button data-query="rgb.key 241" class="nerve-button">Dec</button>
-    </div>
-    <div>
-        <button data-query="rgb.key 258" class="nerve-button">Up</button>
-        <button data-query="rgb.key 278" class="nerve-button">Down</button>
-    </div>
-</div>
-
-<hr>
-
-<div class="nerve-row">
     <button data-query="computer.wakeup" class="nerve-button">Wake Up</button>
     <button data-query="computer.sleep" class="nerve-button">Sleep</button>
 </div>
 
-
 <hr>
+
 <div class="row">
     <input id="playurl" type="text" />
     <button class="nerve-input-submit" data-query="player.play" data-source="playurl">Add</button>
 </div>
+
 <hr>
 
 <div class="nerve-row">
@@ -91,10 +91,24 @@
 <div class="nerve-slider" data-query="rgb.intensity" data-max="256"></div>
 <div class="nerve-row">
     <button data-query="rgb.power" class="nerve-button">Power</button>
-    <button data-query="rgb.key 258" class="nerve-button">Intensity Up</button>
-    <button data-query="rgb.key 278" class="nerve-button">Intensity Down</button>
+    <button data-query="rgb.power 3" class="nerve-button">All</button>
+    <button data-query="rgb.power 0" class="nerve-button">Off</button>
+    <div>
+        <button data-query="rgb.power 1" class="nerve-button">Background</button>
+        <button data-query="rgb.power 2" class="nerve-button">Valence</button>
+    </div>
 </div>
-</table>
+
+<div class="nerve-row">
+    <div>
+        <button data-query="rgb.key 2C1" class="nerve-button">Faster</button>
+        <button data-query="rgb.key 201" class="nerve-button">Slower</button>
+    </div>
+    <div>
+        <button data-query="rgb.key 258" class="nerve-button">Intensity Up</button>
+        <button data-query="rgb.key 278" class="nerve-button">Intensity Down</button>
+    </div>
+</div>
 
 <div class="nerve-row">
     <button data-query="rgb.channel 1" class="nerve-button">1</button>
@@ -149,17 +163,6 @@
     <button class="nerve-button" data-query="rgb.index 1c"><div style="height:50px; border: 1px solid #000; background: #ffff80;"></div></button>
     <button class="nerve-button" data-query="rgb.index 1d"><div style="height:50px; border: 1px solid #000; background: #40ff00;"></div></button>
     <button class="nerve-button" data-query="rgb.index 1e"><div style="height:50px; border: 1px solid #000; background: #4000ff;"></div></button>
-</div>
-
-
-<div class="disabled-nerve-query-block" data-query="player.html_status" data-time="5000">
-    <span class="song"></span><br/>
-    <span class="volume"></span><br/>
-    <span class="state"></span><br/>
-    <span class="position"></span><br/>
-    <span class="loop"></span><br/>
-    <span class="random"></span><br/>
-    <span class="fullscreen"></span><br/>
 </div>
 
 

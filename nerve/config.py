@@ -130,13 +130,18 @@ class ConfigObjectTable (ConfigObject):
     def __getattr__(self, name):
 	if name in self.objects:
 	    return self.objects[name]
-	return getattr(self.objects, name)
+
+    def __getitem__(self, index):
+	return self.objects[index]
 
     def __iter__(self):
 	return iter(self.objects)
 
     def __len__(self):
 	return len(self.objects)
+
+    def keys(self):
+	return self.objects.keys()
 
     def get_object(self, ref):
 	(name, sep, remain) = ref.partition('/')
