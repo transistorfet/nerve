@@ -25,5 +25,14 @@ class SystemDevice (nerve.Device):
 	os.system("xscreensaver-command -activate")
 
     def wakeup(self):
-	os.system("xscreensaver-command -deactivate") 
+	os.system("xscreensaver-command -deactivate")
+
+    def cycle_screensaver(self):
+	os.system("xscreensaver-command -cycle")
+
+    def next_screensaver(self):
+	os.system("xscreensaver-command -next")
+
+    def previous_screensaver(self):
+	os.system("xscreensaver-command -prev")
 

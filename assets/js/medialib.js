@@ -75,7 +75,7 @@ function MediaLibPlaylist(element)
     });
 
     $('.pl_load').click(function (e) {
-	$.post('/query', { 'queries[]' : "player.load_playlist " + $('#select-playlist').val() }, function (response) { }, 'json');
+	$.post('/query', { 'queries[]' : "player.load_playlist " + encodeURIComponent($('#select-playlist').val()) }, function (response) { }, 'json');
     });
 }
 

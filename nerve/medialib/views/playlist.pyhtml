@@ -6,8 +6,8 @@
 	<th></th>
 	<th>Artist</th>
 	<th>Title</th>
-	<th>#</th>
-	<th>Album</th>
+	<!-- <th>#</th>
+	<th>Album</th> -->
     </tr></thead>
     <tbody>
 	<% for num,media in enumerate(playlist, 1): %>
