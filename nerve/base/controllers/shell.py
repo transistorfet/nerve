@@ -7,12 +7,12 @@ import shlex
 
 class ShellController (nerve.Controller):
     def do_request(self, request):
-	result = None
-	if 'queries[]' in request.args:
-	    result = [ ]
-	    for query_string in request.args['queries[]']:
+        result = None
+        if 'queries[]' in request.args:
+            result = [ ]
+            for query_string in request.args['queries[]']:
                 result.append(self.execute_command(query_string))
-	self.write_json(result)
+        self.write_json(result)
 
     def execute_command(self, command_line):
         result = [ ]

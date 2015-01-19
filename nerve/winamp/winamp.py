@@ -9,27 +9,27 @@ import time
 
 class Winamp (nerve.Device):
     def __init__(self):
-	nerve.Device.__init__(self)
-	self.winamp = winampapi.Winamp()
+        nerve.Device.__init__(self)
+        self.winamp = winampapi.Winamp()
 
     def next(self):
-	self.winamp.next()
+        self.winamp.next()
 
     def previous(self):
-	self.winamp.previous()
+        self.winamp.previous()
 
     def toggle(self):
-	s = self.winamp.getPlaybackStatus()
-	if s == winampapi.Winamp.PLAYBACK_PLAYING or s == winampapi.Winamp.PLAYBACK_PAUSE:
-	    self.winamp.pause()
-	elif s == winampapi.Winamp.PLAYBACK_NOT_PLAYING:
-	    self.winamp.play()
+        s = self.winamp.getPlaybackStatus()
+        if s == winampapi.Winamp.PLAYBACK_PLAYING or s == winampapi.Winamp.PLAYBACK_PAUSE:
+            self.winamp.pause()
+        elif s == winampapi.Winamp.PLAYBACK_NOT_PLAYING:
+            self.winamp.play()
 
     def getvolume(self):
-	return self.winamp.getVolume()
+        return self.winamp.getVolume()
 
     def getsong(self):
-	song = self.winamp.getCurrentPlayingTitle()
-	return song.encode("ascii", "replace")
+        song = self.winamp.getCurrentPlayingTitle()
+        return song.encode("ascii", "replace")
 
 

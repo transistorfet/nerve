@@ -22,89 +22,89 @@ stdout = sys.stdout
 
 class Main (nerve.ConfigObjectTable):
     def __init__(self):
-	nerve.ConfigObjectTable.__init__(self)
-	self.stopflag = threading.Event()
+        nerve.ConfigObjectTable.__init__(self)
+        self.stopflag = threading.Event()
 
-	parser = argparse.ArgumentParser(prog='nerve', formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='Nerve Control Server')
-	parser.add_argument('-c', '--configdir', action='store', help='Use specified directory for configuration', default='~/.nerve/')
-	self.args = parser.parse_args()
+        parser = argparse.ArgumentParser(prog='nerve', formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='Nerve Control Server')
+        parser.add_argument('-c', '--configdir', action='store', help='Use specified directory for configuration', default='~/.nerve/')
+        self.args = parser.parse_args()
 
-	self.configdir = self.args.configdir.strip('/')
+        self.configdir = self.args.configdir.strip('/')
 
     @staticmethod
     def get_config_info():
-	config_info = nerve.ConfigObjectTable.get_config_info()
-	config_info.add_setting('servers', "Servers", default=nerve.ConfigObjectTable())
-	config_info.add_setting('devices', "Devices", default=nerve.ConfigObjectTable())
-	return config_info
+        config_info = nerve.ConfigObjectTable.get_config_info()
+        config_info.add_setting('servers', "Servers", default=nerve.ConfigObjectTable())
+        config_info.add_setting('devices', "Devices", default=nerve.ConfigObjectTable())
+        return config_info
 
     def getdir(self):
-	return self.configdir
+        return self.configdir
 
     def start(self):
-	signal.signal(signal.SIGINT, self.signal_handler)
+        signal.signal(signal.SIGINT, self.signal_handler)
 
-	try:
-	    if not self.load_config(os.path.join(self.configdir, 'settings.json')):
-		self.shutdown()
-	    if not self.run_init():
-		self.shutdown()
+        try:
+            if not self.load_config(os.path.join(self.configdir, 'settings.json')):
+                self.shutdown()
+            if not self.run_init():
+                self.shutdown()
 
-	    #print dir(nerve)
-	    while not self.stopflag.wait(0.5):
-		pass
-	    nerve.log("exiting main loop")
-	except:
-	    nerve.log(traceback.format_exc())
+            #print dir(nerve)
+            while not self.stopflag.wait(0.5):
+                pass
+            nerve.log("exiting main loop")
+        except:
+            nerve.log(traceback.format_exc())
 
-	self.shutdown()
+        self.shutdown()
 
     def signal_handler(self, signal, frame):
-	self.stopflag.set()
+        self.stopflag.set()
 
     def shutdown(self):
-	nerve.log("shutting down all threads")
-	nerve.Task.stop_all()
-	nerve.Task.join_all()
-	os.system('stty sane')
-	sys.exit(0)
+        nerve.log("shutting down all threads")
+        nerve.Task.stop_all()
+        nerve.Task.join_all()
+        os.system('stty sane')
+        sys.exit(0)
 
     def run_init(self):
-	filename = os.path.join(self.configdir, 'init.py')
-	if not os.path.exists(filename):
-	    return True
+        filename = os.path.join(self.configdir, 'init.py')
+        if not os.path.exists(filename):
+            return True
 
-	nerve.log("running init script located at " + filename)
-	try:
-	    with open(filename, 'r') as f:
-		code = f.read()
-	    self.init = { 'nerve' : nerve }
-	    exec(code, self.init)
-	    nerve.log(filename + " has completed sucessfully")
-	    return True
-	except:
-	    nerve.log("error running init from " + filename + "\n\n" + traceback.format_exc())
-	    return False
+        nerve.log("running init script located at " + filename)
+        try:
+            with open(filename, 'r') as f:
+                code = f.read()
+            self.init = { 'nerve' : nerve }
+            exec(code, self.init)
+            nerve.log(filename + " has completed sucessfully")
+            return True
+        except:
+            nerve.log("error running init from " + filename + "\n\n" + traceback.format_exc())
+            return False
 
     def get_config_file(self, filename):
-	filename = os.path.join(self.configdir, filename)
-	(path, _, _) = filename.rpartition('/')
-	if not os.path.isdir(path):
-	    os.makedirs(path)
-	if not os.path.isfile(filename):
-	    with open(filename, 'w'):
-		pass
-	with open(filename, 'r') as f:
-	    contents = f.read()
-	return contents
+        filename = os.path.join(self.configdir, filename)
+        (path, _, _) = filename.rpartition('/')
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        if not os.path.isfile(filename):
+            with open(filename, 'w'):
+                pass
+        with open(filename, 'r') as f:
+            contents = f.read()
+        return contents
 
     def write_config_file(self, filename, contents):
-	filename = os.path.join(self.configdir, filename)
-	(path, _, _) = filename.rpartition('/')
-	if not os.path.isdir(path):
-	    os.makedirs(path)
-	with open(filename, 'w') as f:
-	    f.write(contents)
+        filename = os.path.join(self.configdir, filename)
+        (path, _, _) = filename.rpartition('/')
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        with open(filename, 'w') as f:
+            f.write(contents)
 
 
 def log(text):
@@ -146,10 +146,10 @@ def save_config():
 def set_object(name, obj, **config):
     global mainloops
     if type(obj) == str:
-	obj = nerve.ConfigObject.make_object(obj, config)
+        obj = nerve.ConfigObject.make_object(obj, config)
     if not obj:
-	nerve.log("error creating object " + name)
-	return None
+        nerve.log("error creating object " + name)
+        return None
     return mainloops[0].set_object(name, obj)
 
 def get_object(name):
@@ -175,21 +175,21 @@ def query(urlstring, *args, **kwargs):
     nerve.log("executing query: " + urlstring + " " + ' '.join(args) + " " + repr(kwargs))
     url = urlparse.urlparse(urlstring)
     if url.netloc:
-	if url.scheme == 'http':
-	    nerve.log("remote query to " + urlstring)
-	    r = requests.get(urlstring)
-	    if r.status_code == 200:
-		return json.loads(r.text)
-	    else:
-		return "request to " + urlstring + " failed. " + str(r.status_code) + " returned"
+        if url.scheme == 'http':
+            nerve.log("remote query to " + urlstring)
+            r = requests.get(urlstring)
+            if r.status_code == 200:
+                return json.loads(r.text)
+            else:
+                return "request to " + urlstring + " failed. " + str(r.status_code) + " returned"
     else:
-	(objname, sep, funcname) = url.path.replace('.', '/').lstrip('/').rpartition('/')
-	obj = mainloops[0].devices.get_object(objname)
-	if funcname:
-	    func = getattr(obj, funcname)
-	    return func(*args, **kwargs)
-	else:
-	    return obj
+        (objname, sep, funcname) = url.path.replace('.', '/').lstrip('/').rpartition('/')
+        obj = mainloops[0].devices.get_object(objname)
+        if funcname:
+            func = getattr(obj, funcname)
+            return func(*args, **kwargs)
+        else:
+            return obj
 
 def query_string(text):
     # TODO parse quotes
