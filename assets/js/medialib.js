@@ -28,20 +28,8 @@ function MediaLibPlaylist(element)
 	}, 'json');
     }
 
-    $('#select-playlist').change(medialib.update);
-    medialib.update();
-
-    $('.pl_remove').click(medialib.remove_selected);
-
-    $('.pl_sort').click(function (e) {
-	$.post('/medialib/sort_playlist', { 'playlist' : $('#select-playlist').val() }, medialib.update, 'html');
-    });
-
-    $('.pl_shuffle').click(function (e) {
-	$.post('/medialib/shuffle_playlist', { 'playlist' : $('#select-playlist').val() }, medialib.update, 'html');
-    });
-
-    $('.pl_create').click(function (e) {
+    this.create_playlist = function ()
+    {
 	$('#nerve-error').hide();
 	$('#nerve-notice').hide();
 
@@ -57,9 +45,10 @@ function MediaLibPlaylist(element)
                 medialib.update();
             }
         }, 'json');
-    });
+    }
 
-    $('.pl_delete').click(function (e) {
+    this.delete_playlist = function ()
+    {
         var playlist = $('#select-playlist').val();
         if (confirm("Are you sure you want to delete the playlist: " + playlist)) {
 	    $.post('/medialib/delete_playlist', { 'playlist' : playlist }, function (response) {
@@ -72,11 +61,32 @@ function MediaLibPlaylist(element)
                 }
             });
         }
-    });
+    }
 
-    $('.pl_load').click(function (e) {
-	$.post('/query', { 'queries[]' : "player.load_playlist " + encodeURIComponent($('#select-playlist').val()) }, function (response) { }, 'json');
-    });
+    this.sort_playlist = function ()
+    {
+	$.post('/medialib/sort_playlist', { 'playlist' : $('#select-playlist').val() }, medialib.update, 'html');
+    }
+
+    this.shuffle_playlist = function ()
+    {
+	$.post('/medialib/shuffle_playlist', { 'playlist' : $('#select-playlist').val() }, medialib.update, 'html');
+    }
+
+    this.load_playlist = function ()
+    {
+	$.post('/query', { 'queries[]' : "player.load_playlist " + $('#select-playlist').val() }, function (response) { }, 'json');
+    }
+
+    $('#select-playlist').change(this.update);
+    this.update();
+
+    $('.pl_remove').click(this.remove_selected);
+    $('.pl_sort').click(this.sort_playlist);
+    $('.pl_shuffle').click(this.shuffle_playlist);
+    $('.pl_create').click(this.create_playlist);
+    $('.pl_delete').click(this.delete_playlist);
+    $('.pl_load').click(this.load_playlist);
 }
 
 function MediaLibSearch(element)

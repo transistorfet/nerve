@@ -1,5 +1,4 @@
  
-
 - resource identifiers should conform to the uri spec...
 
 	http://localhost:8888/player.next
@@ -44,6 +43,8 @@
 
 
 -----
+
+2014/07/22:
 
 config consists of a list of 'servers' (instead of portals...) and a list of root devices, and a device type
 The device name must be unique, and can then be used as the root index into the global configs.  The
@@ -199,4 +200,11 @@ Device.request(address, request, args)
 
 - now... where does this leave the need to specify 'default' devices, such that different components can control devices through a redirectable
   name (ie. local device player redirects to a remote player device)
+
+---------
+
+2015/01/19:
+
+player/load_playlist?arg1=Nine+Inch+Nails
+
 

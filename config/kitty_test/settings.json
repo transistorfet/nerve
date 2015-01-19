@@ -76,6 +76,15 @@
                 }
             }
         },
+        "shell": {
+            "__type__": "base/TCPServer",
+            "port": 6060,
+            "controllers": {
+                "__default__": {
+                    "__type__": "base/ShellController"
+                }
+            }
+        },
         "http": {
             "__type__": "http/HTTPServer",
             "controllers": {

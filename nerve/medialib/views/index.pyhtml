@@ -26,7 +26,7 @@
 
 <hr>
 
-<div class="nerve-container">
+<div class="nerve-row">
     <button data-query="player.previous" class="nerve-button">Previous</button>
     <button data-query="player.toggle" class="nerve-button">PlayPause</button>
     <button data-query="player.next" class="nerve-button">Next</button>

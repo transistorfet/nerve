@@ -39,7 +39,7 @@ div.nerve-editor > #editor-save {
     border: 1px solid #70B008;
     margin: 0.5em;
     padding: 0.5em;
-    width: 30em;
+    display: inline-block;
 }
 
 .nerve-form-list h4 {
@@ -80,7 +80,7 @@ div.nerve-editor > #editor-save {
 
 .nerve-treeview {
     /* float: left; */
-    width: 30em;
+    display: inline-block;
 }
 
 .nerve-treeview ul,

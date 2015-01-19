@@ -12,13 +12,17 @@ import string
 
 
 class TCPConnection (nerve.Server):
-    def __init__(self, server, socket, addr):
+    def __init__(self, server, socket, addr, controllers):
+        nerve.Server.__init__(self)
 	self.server = server
 	self.socket = socket
 	(self.host, self.port) = addr
+        self.controllers = controllers
+
 	self.buffer = ""
+
 	self.thread = nerve.Task('TCPConnectionTask', self.run)
-	self.daemon = True
+	self.thread.daemon = True
 	self.thread.start()
 
     def readline(self):
@@ -39,6 +43,7 @@ class TCPConnection (nerve.Server):
 	self.socket.send(data + '\n')
 
     def close(self):
+        nerve.log("closing connection to " + str(self.host) + ":" + str(self.port))
 	self.socket.close()
 
     def run(self):
@@ -46,10 +51,16 @@ class TCPConnection (nerve.Server):
 	    try:
 		data = self.readline()
 		data = data.strip('\n')
-		if (data):
+		if data:
 		    nerve.log("RECV <- " + str(self.host) + ":" + str(self.port) + ": " + data)
-		    msg = nerve.Message(data, self, self.server)
-		    nerve.dispatch(msg)
+
+                    if data == 'quit':
+                        self.thread.stopflag.set()
+                    else:
+                        request = nerve.Request(self, 'QUERY', "", { 'queries[]' : [ data ] })
+                        controller = self.find_controller(request)
+                        controller.handle_request(request)
+                        self.send(controller.get_output() + '\n')
 
 	    except socket.error, e:
 		nerve.log("Socket Error: " + str(e))
@@ -58,16 +69,30 @@ class TCPConnection (nerve.Server):
 	    except:
 		nerve.log(traceback.format_exc())
 	self.close()
+        self.thread.finish()
 
 
 class TCPServer (nerve.Server):
-    def __init__(self, port):
-	self.port = port
+    def __init__(self, **config):
+        nerve.Server.__init__(self, **config)
+
 	self.thread = nerve.Task('TCPServerTask', self.run)
 	self.thread.daemon = True
 	self.thread.start()
 
+    @staticmethod
+    def get_config_info():
+	config_info = nerve.Server.get_config_info()
+        config_info.add_setting('port', "Port", default=12345)
+	config_info.add_setting('controllers', "Controllers", default={
+	    '__default__' : {
+		'type' : 'base/ShellController'
+	    }
+	})
+	return config_info
+
     def listen(self):
+        nerve.log("starting tcp server on port " + str(self.port))
 	self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	self.socket.bind(('', self.port))
 	self.socket.listen(5)
@@ -82,7 +107,7 @@ class TCPServer (nerve.Server):
 	    while not self.thread.stopflag.is_set():
 		try:
 		    sock, addr = self.socket.accept()
-		    conn = TCPConnection(self, sock, addr)
+		    conn = TCPConnection(self, sock, addr, self.controllers)
 
 		except socket.error, e:
 		    nerve.log("Socket Error: " + str(e))

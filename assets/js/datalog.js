@@ -16,8 +16,8 @@ function NerveGraph(element)
     var areaHeight = height - 100;
     var areaWidth = width - 100;
 
+    var end_time = Math.ceil((new Date().getTime() / 1000) / 3600) * 3600;
     var domain = 86400;
-    var start_time = (Math.ceil((new Date().getTime() / 1000) / 3600) * 3600) - domain;
     var rangeSteps = 5;
     var domainSteps = 6;
 
@@ -27,7 +27,7 @@ function NerveGraph(element)
     {
 	var postvars = { };
 	postvars.datalog = datalog_name;
-	postvars.start_time = start_time;
+	postvars.start_time = end_time - domain;
 	postvars.length = domain;
 
 	//var query = $(element).attr('data-query');
@@ -75,12 +75,23 @@ function NerveGraph(element)
 	    c.moveTo(originX, posY);
 	    c.lineTo(originX - 4, posY);
 	    c.stroke();
+
+            if (val < data.columns[column].max) {
+                for (var j = 0; j < 10; j++) {
+                    var offsetY = posY - (j * ((areaHeight / rangeSteps) / 10));
+                   
+                    c.beginPath();
+                    c.moveTo(originX, offsetY);
+                    c.lineTo(originX - 4, offsetY);
+                    c.stroke();
+                }
+            }
 	}
 
 	c.font = "10px sans-serif";
 	c.textAlign = "center";
 	for (var i = 0; i <= domainSteps; i++) {
-	    var date = new Date((start_time + (i * (domain / domainSteps))) * 1000);
+	    var date = new Date((end_time - domain + (i * (domain / domainSteps))) * 1000);
 	    var posX = originX + (i * (areaWidth / domainSteps));
 
 	    c.fillText(date.toLocaleTimeString(), posX, bottomMargin + 15);
@@ -95,6 +106,7 @@ function NerveGraph(element)
 
     this.graph_line = function (c, data, column, colour)
     {
+        var start_time = end_time - domain;
 	var base = data.columns[column].min;
 	var range = data.columns[column].max - data.columns[column].min;
 	var rangeRes = areaHeight / range;
@@ -128,7 +140,6 @@ function NerveGraph(element)
 	}
     }
 
-    //$(element).click(this.submit);
     $(element).delegate('.legend', 'change', function () {
 	graphobj.update_graph();
     });
@@ -138,12 +149,12 @@ function NerveGraph(element)
     });
 
     $(element).find('#older').click(function () {
-	start_time -= (domain / 4);
+	end_time -= (domain / 4);
 	graphobj.update_graph();
     });
 
     $(element).find('#newer').click(function () {
-	start_time += (domain / 4);
+	end_time += (domain / 4);
 	graphobj.update_graph();
     });
 
@@ -153,7 +164,7 @@ function NerveGraph(element)
     });
 
     $(element).find('#zoomout').click(function () {
-	domain = domain * 1.25;
+        domain = domain * 1.25;
 	graphobj.update_graph();
     });
 
