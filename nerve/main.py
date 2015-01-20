@@ -182,7 +182,11 @@ def query(urlstring, *args, **kwargs):
                 return json.loads(r.text)
             else:
                 return "request to " + urlstring + " failed. " + str(r.status_code) + " returned"
+        else:
+            raise Exception("unsupported url scheme: " + url.scheme)
     else:
+        (url, kwargs) = nerve.Request.parse_query(urlstring, kwargs)
+
         (objname, sep, funcname) = url.path.replace('.', '/').lstrip('/').rpartition('/')
         obj = mainloops[0].devices.get_object(objname)
         if funcname:

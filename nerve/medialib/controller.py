@@ -20,7 +20,7 @@ class MediaLibController (nerve.http.Controller):
 
     def get_playlist(self, request):
         medialib = nerve.get_device('medialib')
-        playlist = request.args['playlist'][0] if 'playlist' in request.args else 'default'
+        playlist = request.args['playlist'] if 'playlist' in request.args else 'default'
 
         data = { }
         data['playlist'] = medialib.get_playlist(playlist)
@@ -59,27 +59,27 @@ class MediaLibController (nerve.http.Controller):
 
     def shuffle_playlist(self, request):
         medialib = nerve.get_device('medialib')
-        playlist = request.args['playlist'][0]
+        playlist = request.args['playlist']
         medialib.shuffle_playlist(playlist)
 
     def sort_playlist(self, request):
         medialib = nerve.get_device('medialib')
-        playlist = request.args['playlist'][0]
+        playlist = request.args['playlist']
         medialib.sort_playlist(playlist)
 
     def create_playlist(self, request):
         medialib = nerve.get_device('medialib')
-        playlist_name = request.args['playlist'][0]
+        playlist_name = request.args['playlist']
         for name in medialib.get_playlist_list():
             if name == playlist_name:
                 self.write_json({ 'error' : "A playlist by that name already exists" })
                 return
-        playlist = nerve.medialib.Playlist(playlist_name)
+        playlist = nerve.medialib.Playlist.create(playlist_name)
         self.write_json({ 'notice' : "Playlist created successfully" })
 
     def delete_playlist(self, request):
         medialib = nerve.get_device('medialib')
-        playlist_name = request.args['playlist'][0]
+        playlist_name = request.args['playlist']
         for name in medialib.get_playlist_list():
             if name == playlist_name:
                 self.write_json({ 'notice' : "Playlist deleted successfully" })
@@ -121,7 +121,7 @@ class MediaLibController (nerve.http.Controller):
         if 'playlist' in request.args and 'urls[]' in request.args:
             for url in request.args['urls[]']:
                 urls.append(urllib.unquote(url))
-            playlist = nerve.medialib.Playlist(request.args['playlist'][0])
+            playlist = nerve.medialib.Playlist(request.args['playlist'])
             result['count'] = playlist.remove_files(urls)
         self.write_json(result)
 

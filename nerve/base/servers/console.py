@@ -34,9 +34,7 @@ class Console (nerve.Server):
                 if line == 'quit':
                     break
                 elif (line):
-                    #result = nerve.query_string(line)
-                    #print repr(result)
-                    request = nerve.Request(self, 'QUERY', "", { 'queries[]' : [ line ] })
+                    request = nerve.Request(self, 'QUERY', "/", { 'queries[]' : [ line ] })
                     controller = self.find_controller(request)
                     controller.handle_request(request)
                     print controller.get_output()

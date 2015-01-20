@@ -163,9 +163,22 @@ class Playlist (object):
             os.mkdir(plroot)
         self.filename = plroot + '/' + name + '.m3u'
         if not os.path.isfile(self.filename):
+            raise Exception(self.filename + " playlist not found")
+        self.media_list = [ ]
+
+    @staticmethod
+    def create(self, name):
+        filename = plroot + '/' + name + '.m3u'
+        if not os.path.isfile(filename):
             with open(self.filename, 'w') as f:
                 pass
-        self.media_list = [ ]
+
+    @staticmethod
+    def delete(name):
+        plroot = nerve.configdir() + '/playlists'
+        filename = plroot + '/' + name + '.m3u'
+        if os.path.isdir(plroot) and os.path.isfile(filename):
+            os.remove(filename)
 
     def load(self):
         self.media_list = [ ]
@@ -228,12 +241,5 @@ class Playlist (object):
     def clear(self):
         self.media_list = [ ]
         self.save()
-
-    @staticmethod
-    def delete(name):
-        plroot = nerve.configdir() + '/playlists'
-        filename = plroot + '/' + name + '.m3u'
-        if os.path.isdir(plroot) and os.path.isfile(filename):
-            os.remove(filename)
 
 

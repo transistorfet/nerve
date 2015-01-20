@@ -7,7 +7,7 @@ import nerve
 class QueryController (nerve.Controller):
     def do_request(self, request):
         result = None
-        querystr = request.remaining_segments().replace('/', '.')
+        querystr = request.remaining_segments()
         if querystr != '':
             result = nerve.query(querystr, **request.args)
         elif 'queries[]' in request.args:

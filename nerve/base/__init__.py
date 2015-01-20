@@ -9,7 +9,6 @@ from controllers.shell import ShellController
 
 from servers.console import Console
 from servers.tcpserver import TCPServer
-from servers.tcpclient import TCPClient
 from servers.udpserver import UDPServer
 
 def init():

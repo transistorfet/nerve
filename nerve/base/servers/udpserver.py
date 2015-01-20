@@ -16,11 +16,20 @@ class UDPServer (nerve.Server):
     def __init__(self, **config):
         nerve.Server.__init__(self, **config)
 
-        self.port = config['port'] if 'port' in config else 5959
-
         self.thread = nerve.Task('UDPServerTask', target=self.run)
         self.thread.daemon = True
         self.thread.start()
+
+    @staticmethod
+    def get_config_info():
+        config_info = nerve.Server.get_config_info()
+        config_info.add_setting('port', "Port", default=5959)
+        config_info.add_setting('controllers', "Controllers", default={
+            '__default__' : {
+                'type' : 'base/QueryController'
+            }
+        })
+        return config_info
 
     def open(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -53,15 +62,12 @@ class UDPServer (nerve.Server):
                     data, addr = self.receive()
                     data = data.strip('\n')
                     (host, port) = addr
-                    if (data):
+                    if data:
                         nerve.log("RECV <- " + str(host) + ":" + str(port) + ": " + data)
-                        result = nerve.query_string(data)
-                        self.send(repr(result), addr)
-
-                        #args = data.split()
-                        #request = nerve.Request(self, 'QUERY', args[0], { })
-                        #controller = self.find_controller(request)
-                        #controller.handle_request(request)
+                        request = nerve.Request(self, 'QUERY', "/", { 'queries[]' : [ data ] })
+                        controller = self.find_controller(request)
+                        controller.handle_request(request)
+                        self.send(controller.get_output() + '\n', addr)
 
                 except socket.error, e:
                     nerve.log("Socket Error: " + str(e))

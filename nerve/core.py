@@ -13,10 +13,21 @@ class Request (object):
     def __init__(self, server, reqtype, urlstring, args):
         self.server = server
         self.reqtype = reqtype
-        self.url = urlparse.urlparse(urlstring)
+        (self.url, self.args) = self.parse_query(urlstring, args)
+
         self.segments = self.url.path.lstrip('/').split('/')
         self.current_segment = 0
-        self.args = args
+
+    @staticmethod
+    def parse_query(urlstring, args=None):
+        if not args:
+            args = dict()
+        url = urlparse.urlparse(urlstring)
+        args.update(urlparse.parse_qs(url.query, keep_blank_values=True))
+        for name in args.keys():
+            if not name.endswith("[]") and len(args[name]) == 1:
+                args[name] = args[name][0]
+        return (url, args)
 
     def next_segment(self):
         if self.current_segment < len(self.segments):
@@ -38,10 +49,7 @@ class Request (object):
 
     def arg(self, name, default=None):
         if name in self.args:
-            if name.endswith("[]"):
-                return self.args[name]
-            else:
-                return self.args[name][0]
+            return self.args[name]
         return default
 
 

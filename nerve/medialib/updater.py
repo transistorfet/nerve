@@ -28,7 +28,11 @@ class MediaUpdaterTask (nerve.Task):
             #nerve.log("Skipping " + safe_filename)
             return
 
-        meta = MetaData(filename)
+        try:
+            meta = MetaData(filename)
+        except:
+            return
+
         data = {
             'filename' : filename,
             'artist' : meta.get('artist'),

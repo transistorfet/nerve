@@ -31,12 +31,12 @@ class DatalogController (nerve.http.Controller):
         self.load_view('nerve/datalog/views/graph.pyhtml', data)
 
     def get_data(self, request):
-        datalog_name = request.arg('datalog')
-        start_time = request.arg('start_time')
-        length = request.arg('length')
+        datalog_name = request.args['datalog']
+        start_time = request.args['start_time']
+        length = request.args['length']
         ref = 'datalogs/%s/get_data' % (datalog_name,)
 
-        data = nerve.query(ref, start_time, length)
+        data = nerve.query(ref, start_time=start_time, length=length)
         self.write_json(data)
 
 

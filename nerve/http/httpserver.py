@@ -60,8 +60,6 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_404()
 
         request = nerve.Request(self, 'GET', self.path, None)
-        #url = urlparse(self.path)
-        request.args = parse_qs(request.url.query)
         self.do_request(request)
 
     def do_POST(self):

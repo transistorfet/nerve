@@ -57,7 +57,7 @@ class TCPConnection (nerve.Server):
                     if data == 'quit':
                         self.thread.stopflag.set()
                     else:
-                        request = nerve.Request(self, 'QUERY', "", { 'queries[]' : [ data ] })
+                        request = nerve.Request(self, 'QUERY', "/", { 'queries[]' : [ data ] })
                         controller = self.find_controller(request)
                         controller.handle_request(request)
                         self.send(controller.get_output() + '\n')
