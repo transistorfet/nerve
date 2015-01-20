@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from controller import RemoteController
+from controllers import RemoteController
 
 
 def init():
