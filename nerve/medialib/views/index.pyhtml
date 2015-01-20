@@ -27,13 +27,13 @@
 <hr>
 
 <div class="nerve-display">
-    <div class="nerve-query" data-query="player.getsong" data-time="2000">(no connection)</div>
+    <div class="nerve-query" data-query="player/getsong" data-time="2000">(no connection)</div>
 </div>
 
 <div class="nerve-row">
-    <button data-query="player.previous" class="nerve-button">Previous</button>
-    <button data-query="player.toggle" class="nerve-button">PlayPause</button>
-    <button data-query="player.next" class="nerve-button">Next</button>
+    <button data-query="player/previous" class="nerve-button">Previous</button>
+    <button data-query="player/toggle" class="nerve-button">PlayPause</button>
+    <button data-query="player/next" class="nerve-button">Next</button>
 </div>
 
 <hr>
@@ -50,7 +50,7 @@
             <% end %>
         </select>
         <button type="submit" class="pl_load">Load</button>
-        <button class="nerve-button" data-query="player.clear_playlist">Clear</button>
+        <button class="nerve-button" data-query="player/clear_playlist">Clear</button>
     </div>
 
     <div class="medialib-list">

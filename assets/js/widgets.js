@@ -5,7 +5,7 @@ function NerveButton(element)
     this.submit = function ()
     {
         var query = $(element).attr('data-query');
-        $.post('/query/' + query, { }, function(response) {
+        $.post('/query/'+query, { }, function(response) {
         }, 'json');
     }
 
@@ -19,7 +19,7 @@ function NerveInputSubmit(element)
         var query = $(element).attr('data-query');
         var data = $('#'+sourceid).val();
         if (data) {
-            $.post('/query', { 'queries[]': [ query + ' ' + data ] }, function(response) {
+            $.post('/query/'+query, { 'a' : data }, function(response) {
             }, 'json');
         }
     }

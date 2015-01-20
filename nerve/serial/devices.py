@@ -76,7 +76,13 @@ class NerveSerialDevice (SerialDevice):
 
     def __getattr__(self, name):
         def serial_getter(*args, **kwargs):
+            args = list(args)
             query_string = name
+            for arg in [ 'a', 'b', 'c', 'd', 'e', 'f' ]:
+                if arg in kwargs:
+                    args.append(kwargs[arg])
+                else:
+                    break
             if len(args) > 0:
                 query_string += ' ' + ' '.join(args)
             self.received.clear()

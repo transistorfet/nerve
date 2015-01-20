@@ -75,7 +75,7 @@ function MediaLibPlaylist(element)
 
     this.load_playlist = function ()
     {
-	$.post('/query', { 'queries[]' : "player.load_playlist " + $('#select-playlist').val() }, function (response) { }, 'json');
+	$.post('/query/player/load_playlist', { 'url' : $('#select-playlist').val() }, function (response) { }, 'json');
     }
 
     $('#select-playlist').change(this.update);
