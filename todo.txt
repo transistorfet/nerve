@@ -1,4 +1,7 @@
 
+* add the ability to make some kind of timed scripted event thing... I'm thinking like a particular pattern being played on rgb node
+  without it being programmed into the device itself... like "rgb/fade ff0000 10s; delay 15s; rgb/fade 00ff00 10s; ..."
+
 * implement symbolic link style redirect
 * the file controller doesn't properly return an error message when a file isn't found, since it doesn't throw an exception
 

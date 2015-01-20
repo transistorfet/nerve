@@ -1,15 +1,11 @@
 
 
 button.nerve-button {
-    width: 100%;
     min-height: 1.75em;
     font-size: 1.25em;
 }
 
 .nerve-display {
     font-size: 1.25em;
-    border: 1px solid #70B008;
-    padding: 5px;
-    margin-bottom: 5px;
 }
 

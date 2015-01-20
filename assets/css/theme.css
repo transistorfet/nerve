@@ -10,6 +10,16 @@ body {
     margin: 4px;
 }
 
+h5,
+h6 {
+    margin-top: 0px;
+    margin-bottom: 4px;
+}
+
+hr {
+    border-color: #70B008;
+}
+
 button {
     color: #000;
     margin: 2px;
@@ -44,4 +54,8 @@ input, textarea, select {
     margin-bottom: 20px;
 }
 
- 
+.nerve-display {
+    border: 1px solid #70B008;
+    background: #DFFFBF;
+}
+

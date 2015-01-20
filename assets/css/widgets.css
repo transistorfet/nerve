@@ -12,6 +12,15 @@
     margin-right: 4px;
 }
 
+.nerve-row button {
+    width: 100%;
+}
+
+.nerve-display {
+    padding: 5px;
+    margin-bottom: 5px;
+}
+
 /*** Nerve Editor Widget ***/
 
 div.nerve-editor {
