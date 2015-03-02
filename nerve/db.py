@@ -191,6 +191,16 @@ class DatabaseCursor (object):
         self.reset_cache()
         return result
 
+    def delete(self, table, where=None):
+        if where is None:
+            where = self.cache_where
+            self.reset_cache()
+        query = u"DELETE FROM %s WHERE %s" % (table, where)
+
+        cursor = self.db.dbcon.cursor()
+        result = cursor.execute(query)
+        return result
+
     """
     def select(self, table, values=None, where=None, whereval=None, order_by=None):
         if values is None:

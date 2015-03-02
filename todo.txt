@@ -1,4 +1,18 @@
 
+* make it possible to edit the html, css, and maybe js of all files, not just remote...  Now that I have two different dirs of code,
+  it's not such a big deal to directly edit the code of the production repo.  I'd just have to manually copy those changes to the dev
+  code.  I could also maybe have a cache... (either a cache of previous edits or a cache of the changed files, and when a view is loaded,
+  it uses the cached file, otherwise the default file??
+
+* make a vlc extension that interacts better with nerve, particularly being able to push media info to nerve
+
+* add is-playing animated icon next to the song title (info to be sent with getsong())
+* maybe add labels to the sections of the remote
+* change the channel paradigm on remote to more meaningful names, possibly using icons instead of just text
+* remove the playlist stuff from remote? (add to playlists section? what about kill vlc?)
+* how possible would it be to make like a gtk app window to act as a player control.  I'm thinking if vlc was replaced with
+  gstreamer, we'd still want the player window, with any video to be played (basically like the ob gtk thing)
+
 * add the ability to make some kind of timed scripted event thing... I'm thinking like a particular pattern being played on rgb node
   without it being programmed into the device itself... like "rgb/fade ff0000 10s; delay 15s; rgb/fade 00ff00 10s; ..."
 

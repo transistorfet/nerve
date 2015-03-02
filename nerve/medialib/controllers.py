@@ -37,7 +37,7 @@ class MediaLibController (nerve.http.Controller):
         data['limit'] = request.arg('limit', default=1000)
         data['search'] = request.arg('search', default='%')
         data['recent'] = request.arg('recent', default=None)
-        data['media_type'] = request.arg('type', default=None)
+        data['media_type'] = request.arg('media_type', default=None)
 
         self.load_view('nerve/medialib/views/search.pyhtml', data)
 

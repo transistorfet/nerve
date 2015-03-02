@@ -55,7 +55,6 @@ class MediaUpdaterTask (nerve.Task):
             self.db.update('media', data)
 
     def update_all(self):
-        nerve.log("Starting medialib update...")
         for libpath in self.path:
             for root, dirs, files in os.walk(unicode(libpath)):
                 if self.stopflag.is_set():
@@ -64,13 +63,25 @@ class MediaUpdaterTask (nerve.Task):
                 for media in files:
                     if media.endswith('.mp3'):
                         self.update_file(os.path.join(root, media))
-        nerve.log("Medialib update complete")
+
+    def check_for_deleted(self):
+        for libpath in self.path:
+            self.db.select('id,filename')
+            self.db.where_like('filename', libpath + '%')
+            for row in self.db.get('media'):
+                if not os.path.exists(row[1]):
+                    nerve.log("Removing " + row[1] + " (id: " + str(row[0]) + ")")
+                    self.db.where('id', row[0])
+                    self.db.delete('media')
 
     def run(self):
         while True:
             row = self.db.get_single('info', 'name,value', self.db.inline_expr('name', 'last_updated'))
             if row is None or float(row[1]) + 86400 < time.time():
+                nerve.log("Starting medialib update...")
                 self.update_all()
+                self.check_for_deleted()
+                nerve.log("Medialib update complete")
                 self.db.insert('info', { 'name' : 'last_updated', 'value' : str(time.time()) }, replace=True)
             if self.stopflag.wait(3600):
                 break 

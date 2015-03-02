@@ -5,6 +5,7 @@ import thread
 import os
 import sys
 import select
+import codecs
 import xmmsclient
 
 import nerve
@@ -103,5 +104,19 @@ class Xmms2 (nerve.Device):
             msg.from_port.send(msg.query + " " + songname)
         """
 
+    def load_playlist(self, url):
+        result = self.xmms.playlist_clear()
+        result.wait()
+
+        if url.find('/') < 0:
+            url = nerve.configdir() + '/playlists/' + url + '.m3u'
+
+        with codecs.open(url, 'r', encoding='utf-8') as f:
+            for line in f.read().split('\n'):
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    media_url = "file://" + line
+                    result = self.xmms.playlist_add_url(media_url)
+                    result.wait()
 
 

@@ -88,28 +88,6 @@ class VLCHTTP (nerve.Device):
             return self._get_title()
         return ""
 
-    def html_status(self, **postvars):
-        if self.status is not None:
-            return {
-                'song' : self._get_title(),
-                'volume' : int(self.status['volume']),
-                'state' : self.status['state'],
-                'position' : self.status['position'],
-                'loop' : self.status['loop'],
-                'random' : self.status['random'],
-                'fullscreen' : self.status['fullscreen']
-            }
-        else:
-            return {
-                'song' : '(no song)',
-                'volume' : -1,
-                'status' : 'noconnection',
-                'position' : 0,
-                'loop' : False,
-                'random' : False,
-                'fullscreen' : False
-            }
-
     def clear_playlist(self):
         self._send_command('pl_empty')
 

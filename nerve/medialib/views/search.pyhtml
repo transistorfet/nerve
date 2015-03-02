@@ -37,7 +37,7 @@
         <a href="/medialib/search?mode=genre&order=genre">By Genre</a>
         <a href="/medialib/search?mode=title&order=artist">By Title</a>
         <a href="/medialib/search?mode=album&order=modified">By Modified Date</a>
-        <a href="/medialib/search?mode=album&recent=52">Most Recent</a>
+        <a href="/medialib/search?mode=album&order=modified&recent=52">Most Recent</a>
         <a href="/medialib/search?mode=album&order=random">Random</a>
     </div>
 

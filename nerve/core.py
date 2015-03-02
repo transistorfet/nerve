@@ -152,6 +152,11 @@ class Device (nerve.ConfigObject):
 
     def __init__(self, **config):
         nerve.ConfigObject.__init__(self, **config)
+        self.callbacks = { }
+
+    def on_update(self, attrib, func):
+        self.callbacks[attrib] = func
+
 
     """
     def query(self, ref, *args, **kwargs):
