@@ -36,3 +36,10 @@ class SystemDevice (nerve.Device):
     def previous_screensaver(self):
         os.system("xscreensaver-command -prev")
 
+    def mouse_click(self):
+        os.system("xdotool getactivewindow mousemove -window %1 200 200 click 1")
+
+    def xdotool(self, commands):
+        os.system("xdotool " + commands)
+
+

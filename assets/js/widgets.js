@@ -39,21 +39,19 @@ function NerveQuery(element)
         }, 'json');
     }
 
-    this.time = $(element).attr('data-time');
     this.interval = 0;
+    this.time = $(element).attr('data-time');
 
-    $(window).on('focus', function () {
-        if (!obj.interval) {
-            obj.interval = setInterval(obj.query, obj.time);
-        }
-    });
-
-    $(window).on('blur', function () {
-        if (obj.interval) {
+    this.set_timer = function ()
+    {
+        if (document.hidden)
             clearInterval(obj.interval);
-            obj.interval = 0;
-        }
-    });
+        else
+            obj.interval = setInterval(obj.query, obj.time);
+    }
+
+    document.addEventListener('visibilitychange', this.set_timer);
+    this.set_timer();
 
     $(element).click(this.query);
     this.query();
@@ -72,8 +70,20 @@ function NerveQueryBlock(element)
         }, 'json');
     }
 
+    this.interval = 0;
     this.time = $(element).attr('data-time');
-    this.interval = setInterval(this.query, this.time);
+
+    this.set_timer = function ()
+    {
+        if (document.hidden)
+            clearInterval(obj.interval);
+        else
+            obj.interval = setInterval(obj.query, obj.time);
+    }
+
+    document.addEventListener('visibilitychange', this.set_timer);
+    this.set_timer();
+
     $(element).click(this.query);
     this.query();
 }

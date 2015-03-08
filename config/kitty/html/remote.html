@@ -13,7 +13,7 @@
     <button data-query="player/fullscreen" class="nerve-button">Fullscreen</button>
 </div>
 
-<div class="nerve-container">
+<div class="nerve-row">
     <button data-query="deskclock/relay_toggle" class="nerve-button">Lamp</button>
 </div>
 
@@ -43,6 +43,10 @@
 <div class="nerve-row">
     <button data-query="rgb/power" class="nerve-button">Power</button>
     <div>
+        <button class="nerve-button" data-query="rgb/key?a=2C1">Faster</button>
+        <button class="nerve-button" data-query="rgb/key?a=201">Slower</button>
+    </div>
+    <div>
         <button data-query="rgb/key 258" class="nerve-button">Intensity Up</button>
         <button data-query="rgb/key 278" class="nerve-button">Intensity Down</button>
     </div>
@@ -50,15 +54,18 @@
 </table>
 
 <div class="nerve-row">
-    <button data-query="rgb/channel?a=1" class="nerve-button">1</button>
-    <button data-query="rgb/channel?a=2" class="nerve-button">2</button>
-    <button data-query="rgb/channel?a=3" class="nerve-button">3</button>
-    <button data-query="rgb/channel?a=4" class="nerve-button">4</button>
-    <button data-query="rgb/channel?a=5" class="nerve-button">5</button>
-    <button data-query="rgb/channel?a=6" class="nerve-button">6</button>
-    <button data-query="rgb/channel?a=7" class="nerve-button">7</button>
-    <button data-query="rgb/channel?a=8" class="nerve-button">8</button>
-    <button data-query="rgb/channel?a=9" class="nerve-button">9</button>
+    <div>
+        <button class="nerve-button" data-query="rgb/channel?a=3">White</button>
+        <button class="nerve-button" data-query="rgb/channel?a=4">Index</button>
+    </div>
+    <div>
+        <button class="nerve-button" data-query="rgb/channel?a=5">Strobe</button>
+        <button class="nerve-button" data-query="rgb/channel?a=6">RStrobe</button>
+    </div>
+    <div>
+        <button class="nerve-button" data-query="rgb/channel?a=7">Swirl</button>
+        <button class="nerve-button" data-query="rgb/channel?a=8">RSwirl</button>
+    </div>
 </div>
 
 <div class="nerve-row">
