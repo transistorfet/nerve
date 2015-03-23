@@ -1,11 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import thread
 import os
 import sys
 import select
-import codecs
 import xmmsclient
 
 import nerve
@@ -26,8 +24,8 @@ class Xmms2 (nerve.Device):
         self.xmms = xmmsclient.XMMS('PyXMMS')
         try:
             self.xmms.connect(os.getenv("XMMS_PATH"))
-        except IOError, detail:
-            print "Connection failed:", detail
+        except IOError as detail:
+            print ("Connection failed:" + str(detail))
             sys.exit(1)
 
         self.xmms.playback_current_id(self._get_info)
@@ -111,7 +109,7 @@ class Xmms2 (nerve.Device):
         if url.find('/') < 0:
             url = nerve.configdir() + '/playlists/' + url + '.m3u'
 
-        with codecs.open(url, 'r', encoding='utf-8') as f:
+        with open(url, 'r') as f:
             for line in f.read().split('\n'):
                 line = line.strip()
                 if line and not line.startswith('#'):

@@ -26,7 +26,7 @@ class ConfigController (nerve.http.Controller):
         if request.reqtype != "POST":
             self.write_json({ 'status' : 'error', 'message' : "Unrecognized request type: " + request.reqtype })
             return False
-        defaults = nerve.ConfigObject.get_class_config_info(request.args['type'])
+        defaults = nerve.ObjectNode.get_class_config_info(request.args['type'])
         self.write_json(defaults)
 
 

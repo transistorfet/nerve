@@ -13,16 +13,16 @@ import traceback
 import threading
 
 import json
-import urlparse
 import requests
+import urllib.parse
 
 mainloops = [ ]
 stdout = sys.stdout
 
 
-class Main (nerve.ConfigObjectTable):
+class Main (nerve.ObjectDirectory):
     def __init__(self):
-        nerve.ConfigObjectTable.__init__(self)
+        nerve.ObjectDirectory.__init__(self)
         self.stopflag = threading.Event()
 
         parser = argparse.ArgumentParser(prog='nerve', formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='Nerve Control Server')
@@ -33,9 +33,10 @@ class Main (nerve.ConfigObjectTable):
 
     @staticmethod
     def get_config_info():
-        config_info = nerve.ConfigObjectTable.get_config_info()
-        config_info.add_setting('servers', "Servers", default=nerve.ConfigObjectTable())
-        config_info.add_setting('devices', "Devices", default=nerve.ConfigObjectTable())
+        config_info = nerve.ObjectDirectory.get_config_info()
+        config_info.add_setting('modules', "Modules", default=nerve.Modules())
+        config_info.add_setting('servers', "Servers", default=nerve.ObjectDirectory())
+        config_info.add_setting('devices', "Devices", default=nerve.ObjectDirectory())
         return config_info
 
     def getdir(self):
@@ -50,7 +51,7 @@ class Main (nerve.ConfigObjectTable):
             if not self.run_init():
                 self.shutdown()
 
-            #print dir(nerve)
+            #print (dir(nerve))
             while not self.stopflag.wait(0.5):
                 pass
             nerve.log("exiting main loop")
@@ -86,7 +87,7 @@ class Main (nerve.ConfigObjectTable):
             nerve.log("error running init from " + filename + "\n\n" + traceback.format_exc())
             return False
 
-    def get_config_file(self, filename):
+    def read_config_file(self, filename):
         filename = os.path.join(self.configdir, filename)
         (path, _, _) = filename.rpartition('/')
         if not os.path.isdir(path):
@@ -120,8 +121,7 @@ def loop():
 
 def quit():
     global mainloops
-    main = mainloops.pop(0)
-    self.stopflag.set()
+    mainloops[0].stopflag.set()
 
 def main():
     global mainloops
@@ -141,39 +141,22 @@ def configdir():
 
 def save_config():
     global mainloops
-    return mainloops[0].save_config(os.path.join(nerve.configdir(), 'settings.json'))
+    return mainloops[0].save_config(os.path.join(nerve.configdir(), 'settings.saved.json'))
 
 def set_object(name, obj, **config):
     global mainloops
-    if type(obj) == str:
-        obj = nerve.ConfigObject.make_object(obj, config)
-    if not obj:
-        nerve.log("error creating object " + name)
-        return None
-    return mainloops[0].set_object(name, obj)
+    return mainloops[0].set_object(name.lstrip('/'), obj, **config)
 
 def get_object(name):
     global mainloops
-    return mainloops[0].get_object(name)
-
-def add_server(name, obj, **config):
-    return nerve.set_object('servers/' + name, obj, **config)
-
-def get_server(name):
-    global mainloops
-    return mainloops[0].server.get_object(name)
-
-def add_device(name, obj, **config):
-    return nerve.set_object('devices/' + name, obj, **config)
-
-def get_device(name):
-    global mainloops
-    return mainloops[0].devices.get_object(name)
+    if name == "/":
+        return mainloops[0]
+    return mainloops[0].get_object(name.lstrip('/'))
 
 def query(urlstring, *args, **kwargs):
     global mainloops
     nerve.log("executing query: " + urlstring + " " + ' '.join(args) + " " + repr(kwargs))
-    url = urlparse.urlparse(urlstring)
+    url = urllib.parse.urlparse(urlstring)
     if url.netloc:
         if url.scheme == 'http':
             nerve.log("remote query to " + urlstring)
@@ -187,11 +170,9 @@ def query(urlstring, *args, **kwargs):
     else:
         (url, kwargs) = nerve.Request.parse_query(urlstring, kwargs)
 
-        (objname, sep, funcname) = url.path.replace('.', '/').lstrip('/').rpartition('/')
-        obj = mainloops[0].devices.get_object(objname)
-        if funcname:
-            func = getattr(obj, funcname)
-            return func(*args, **kwargs)
+        obj = mainloops[0].get_object(url.path.replace('.', '/').lstrip('/'))
+        if callable(obj):
+            return obj(*args, **kwargs)
         else:
             return obj
 
@@ -201,10 +182,9 @@ def query_string(text):
     ref = args.pop(0)
     return query(ref, *args)
 
-
-def get_config_file(filename):
+def read_config_file(filename):
     global mainloops
-    return mainloops[0].get_config_file(filename)
+    return mainloops[0].read_config_file(filename)
 
 def write_config_file(filename, contents):
     global mainloops

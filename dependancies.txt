@@ -2,14 +2,14 @@
 The following is a list of Debian packages that are needed to run each module:
 
 everything:
-    python-apsw
-    python-requests
+    python3-apsw
+    python3-requests
 
 serial:
-    python-serial
+    python3-serial
 
 medialib:
-    python-mutagen
+    python3-mutagen
 
 xmms2:
     python-xmmsclient

@@ -52,10 +52,7 @@ class DatabaseCursor (object):
     def escape(self, text):
         if text is None:
             return u""
-        if isinstance(text, str):
-            text = unicode(text, 'utf-8')
-        elif not isinstance(text, unicode):
-            text = str(text)
+        text = str(text)
         return text.replace(u"'", u"''")
 
     def inline_expr(self, name, val, compare='='):
@@ -125,7 +122,7 @@ class DatabaseCursor (object):
 
     def get(self, table, select=None, where=None):
         query = self.compile_select(table, select, where)
-        #print query
+        #print (query)
         result = self.dbcursor.execute(query)
         #result = self.dbcursor.execute(query.decode('utf-8'))
         self.reset_cache()
@@ -133,7 +130,7 @@ class DatabaseCursor (object):
 
     def get_assoc(self, table, select=None, where=None):
         query = self.compile_select(table, select, where)
-        #print query.encode('utf-8', 'replace')
+        #print (query.encode('utf-8', 'replace'))
         result = self.dbcursor.execute(query)
         #result = self.dbcursor.execute(query.decode('utf-8'))
 
@@ -143,10 +140,7 @@ class DatabaseCursor (object):
             assoc = { }
             for i, key in enumerate(keys):
                 (column, datatype) = key
-                if isinstance(row[i], unicode):
-                    assoc[column] = row[i].encode('utf-8')
-                else:
-                    assoc[column] = row[i]
+                assoc[column] = row[i]
             rows.append(assoc)
 
         self.reset_cache()
@@ -170,7 +164,7 @@ class DatabaseCursor (object):
 
         insert = 'INSERT' if replace is False else 'INSERT OR REPLACE'
         query = u"%s INTO %s (%s) VALUES (%s)" % (insert, table, ','.join(columns), ','.join(values))
-        #print query
+        #print (query)
         self.dbcursor.execute(query)
         #self.dbcursor.execute(query.decode('utf-8'))
         self.reset_cache()
@@ -185,7 +179,7 @@ class DatabaseCursor (object):
 
         query = u"UPDATE %s SET %s " % (table, ','.join(values))
         query += self.compile_clauses()
-        #print query
+        #print (query)
         result = self.dbcursor.execute(query)
         #result = self.dbcursor.execute(query.decode('utf-8'))
         self.reset_cache()

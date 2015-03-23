@@ -7,14 +7,14 @@ import os
 import sys
 import traceback
 
-import cStringIO
+import io
 import re
 
 import cgi
 import json
 import mimetypes
 
-import urllib
+import urllib.parse
 
 
 class PyHTML (object):
@@ -84,7 +84,7 @@ class PyHTML (object):
             if seg['type'] == 'raw':
                 lines.append("py.output.write(py.segments[%d]['data'])" % (i,))
             elif seg['type'] == 'eval':
-                lines.append("py.output.write(utf8(eval(py.segments[%d]['data'])))" % (i,))
+                lines.append("py.output.write(str(eval(py.segments[%d]['data'])))" % (i,))
             elif seg['type'] == 'exec':
                 sublines = seg['data'].split('\n')
                 lines.extend(sublines)
@@ -115,7 +115,7 @@ class PyHTML (object):
 
     def _fix_indentation(self, lines):
         indent = 0
-        for i in xrange(0, len(lines)):
+        for i in range(0, len(lines)):
             code, sep, comment = lines[i].partition('#')
             code = code.strip()
             # TODO also take into account \ and """ """, [ ], { }, etc
@@ -141,7 +141,7 @@ class PyHTML (object):
         old_stdout = sys.stdout
 
         try:
-            self.output = cStringIO.StringIO()
+            self.output = io.StringIO()
             sys.stdout = self.output
 
             self.globals = self.data
@@ -149,18 +149,17 @@ class PyHTML (object):
             self.globals['py'] = self
             self.globals['json'] = json
             self.globals['re'] = re
-            self.globals['urlencode'] = urllib.quote
-            self.globals['urldecode'] = urllib.unquote
-            self.globals['utf8'] = utf8
+            self.globals['urlencode'] = urllib.parse.quote
+            self.globals['urldecode'] = urllib.parse.unquote
             self.globals['echo'] = self.output.write
 
             #self.debug_print_env()
-            exec self.pycode in self.globals
+            exec(self.pycode, self.globals)
 
         except Exception as e:
-            #print '<b>Eval Error</b>: (line %s) %s<br />' % (str(self.output.getvalue().count('\n') + 1), repr(e))
-            print '\n<b>Eval Error:</b>\n<pre>\n%s</pre><br />\n' % (traceback.format_exc(),)
-            print '<br /><pre>' + self.htmlspecialchars('\n'.join([ str(num + 1) + ':  ' + line for num,line in enumerate(self.pycode.splitlines()) ])) + '</pre>'
+            #print ('<b>Eval Error</b>: (line %s) %s<br />' % (str(self.output.getvalue().count('\n') + 1), repr(e)))
+            print ('\n<b>Eval Error:</b>\n<pre>\n%s</pre><br />\n' % (traceback.format_exc(),))
+            print ('<br /><pre>' + self.htmlspecialchars('\n'.join([ str(num + 1) + ':  ' + line for num,line in enumerate(self.pycode.splitlines()) ])) + '</pre>')
 
         finally:
             sys.stdout = old_stdout
@@ -168,22 +167,16 @@ class PyHTML (object):
         return self.output.getvalue()
 
     def debug_print_env(self):
-        #print "<pre>\n"
+        #print ("<pre>\n")
         #for s in self.segments:
-        #    print self.htmlspecialchars(repr(s))
-        #print "\n</pre><br />\n"
+        #    print (self.htmlspecialchars(repr(s)))
+        #print ("\n</pre><br />\n")
 
-        #print "<table>\n"
+        #print ("<table>\n")
         #for s in self.segments:
-        #    print "<tr><td>" + s['type'] + "</td><td>" + self.htmlspecialchars(repr(s['data'])) + "</td></tr>"
-        #print "\n</table><br />\n"
+        #    print ("<tr><td>" + s['type'] + "</td><td>" + self.htmlspecialchars(repr(s['data'])) + "</td></tr>")
+        #print ("\n</table><br />\n")
 
-        print "<pre>\n" + self.htmlspecialchars(self.pycode) + "\n</pre>\n"
+        print ("<pre>\n" + self.htmlspecialchars(self.pycode) + "\n</pre>\n")
         
-
-def utf8(data):
-    if isinstance(data, unicode):
-        return data.encode('utf-8')
-    return str(data)
-
 

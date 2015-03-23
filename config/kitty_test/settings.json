@@ -1,4 +1,8 @@
 {
+    "modules" : {
+        "__type__": "config/Modules",
+        "autoload": [ "base", "computer", "datalog", "http", "medialib", "player.vlc", "remote", "serial" ]
+    },
     "devices": {
 	"test": {
 	    "__type__": "config/SymbolicLink",
@@ -20,7 +24,7 @@
                         "max": 100,
                         "min": 0,
                         "name": "kitty_temp",
-                        "ref": "computer.cputemp",
+                        "ref": "/devices/computer/cputemp",
                         "units": "C"
                     },
                     {
@@ -29,7 +33,7 @@
                         "max": 100,
                         "min": 0,
                         "name": "kitty_systemp1",
-                        "ref": "computer.systemp1",
+                        "ref": "/devices/computer/systemp1",
                         "units": "C"
                     },
                     {
@@ -38,7 +42,7 @@
                         "max": 100,
                         "min": 0,
                         "name": "kitty_systemp2",
-                        "ref": "computer.systemp2",
+                        "ref": "/devices/computer/systemp2",
                         "units": "C"
                     }
                 ],
@@ -59,7 +63,7 @@
             ]
         },
         "player": {
-            "__type__": "xmms2/Xmms2"
+            "__type__": "player/vlc/VLCHTTP"
         },
         "rgb": {
             "__type__": "serial/NerveSerialDevice",
@@ -112,9 +116,9 @@
                     "__type__": "remote/RemoteController"
                 }
             },
-            "password": "dev",
+            "password": "",
             "port": 8888,
-            "username": "dev"
+            "username": ""
         }
     }
 }

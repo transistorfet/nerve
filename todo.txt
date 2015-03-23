@@ -1,4 +1,7 @@
 
+* should devices, at least their source files, be renamed drivers?  Basically the class/definition is the driver and the instantiated
+  object itself is the device
+
 * make it possible to edit the html, css, and maybe js of all files, not just remote...  Now that I have two different dirs of code,
   it's not such a big deal to directly edit the code of the production repo.  I'd just have to manually copy those changes to the dev
   code.  I could also maybe have a cache... (either a cache of previous edits or a cache of the changed files, and when a view is loaded,
@@ -7,9 +10,6 @@
 * make a vlc extension that interacts better with nerve, particularly being able to push media info to nerve
 
 * add is-playing animated icon next to the song title (info to be sent with getsong())
-* maybe add labels to the sections of the remote
-* change the channel paradigm on remote to more meaningful names, possibly using icons instead of just text
-* remove the playlist stuff from remote? (add to playlists section? what about kill vlc?)
 * how possible would it be to make like a gtk app window to act as a player control.  I'm thinking if vlc was replaced with
   gstreamer, we'd still want the player window, with any video to be played (basically like the ob gtk thing)
 
@@ -31,8 +31,6 @@
 * should you have a means of registering types (server, device, controller)?  You'd kind of have to import all the right modules first, and have them register
   you could maybe even add them automatically, by searching through every module to see if there are any classes of type Controller, Server, or Device
 
-* modify rgbnode to always return data, so the delay doesn't happen, or else have some way of telling the device to not wait (which kinda breaks device agnosticism...)
-
 * you need a way to have a header and footer for html, possible the idea of a template... or perhaps the header and footer can be generated on
   the fly... possibly even part of the themeing system, so what gets sent back has all the theme specific info, as well as the stuff needed for the specific page
 * make more advanced widgets for various things (ideas?)
@@ -44,8 +42,6 @@
   You've already sort of implemented a RedirectException...
 * you need a better way for controllers to return or control error message returns...
 * make it possible to do multiple queries at once, particularly with http, so that all data fetches on an html page can be updated at once
-
-* make ajax requests stop when the window isn't visible
 
 * add a theme system
 * add a user system.  Users can have their own themes, remote control layouts, and so on
@@ -82,4 +78,10 @@ POSSIBLE FEATURES:
 
     * make it possible to paste a link (youtube video or playlist link) to play the link on the server end of things
     * add voice commands somehow, possibly through android or google web api
+
+    * for an IR/Remote Control Emulation type device, you could program the system such that... you take a picture of the remote
+      control you're adding, you could take a picture on your phone of the remote control (maybe there could be image recognition
+      to break it into buttons, or else you can indicate with a mouse box).  You'd then click on each button in the picture with
+      the computer mouse or touch, and then it waits for an IR code, which you can then press on the remote, and it will record
+      what button produces what code for each button.  You can then refer to that table to send the code you want (somehow)
 

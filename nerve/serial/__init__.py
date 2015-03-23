@@ -1,5 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from devices import SerialDevice, NerveSerialDevice
+from .devices import SerialDevice, NerveSerialDevice
 

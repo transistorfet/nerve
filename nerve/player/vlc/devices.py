@@ -8,11 +8,10 @@ import os
 import sys
 import time
 import socket
-import thread
 import traceback
 import platform
 
-import urllib
+import urllib.parse
 import requests
 import json
 
@@ -112,13 +111,13 @@ class VLCHTTP (nerve.Device):
         r = requests.get(url, auth=('', 'test'))
 
     def play(self, url):
-        self._send_command_and_uri('in_play', urllib.quote(url))
+        self._send_command_and_uri('in_play', urllib.parse.quote(url))
 
     def load_playlist(self, url):
         self._send_command('pl_empty')
         if url.find('/') < 0:
             url = nerve.configdir() + '/playlists/' + url + '.m3u'
-        self._send_command_and_uri('in_play', urllib.quote(url))
+        self._send_command_and_uri('in_play', urllib.parse.quote(url))
 
     def kill_instance(self):
         if self.proc is not None:
@@ -150,9 +149,9 @@ class VLCHTTP (nerve.Device):
             return '(no data)'
         meta = self.status['information']['category']['meta']
         if 'artist' in meta and 'title' in meta:
-            return meta['artist'].encode('utf-8') + " - " + meta['title'].encode('utf-8')
+            return meta['artist'] + " - " + meta['title']
         else:
-            return meta['filename'].encode('utf-8')
+            return meta['filename']
 
     def run(self):
         retry_counter = 0
@@ -171,7 +170,7 @@ class VLCHTTP (nerve.Device):
                 r = requests.get('http://%s/requests/status.json' % (self.server,), auth=('', 'test'))
                 if r.text:
                     self.status = json.loads(r.text)
-                #print r.text
+                #print (r.text)
 
                 if self.status['currentplid'] != self.lastplid:
                     self.lastplid = self.status['currentplid']

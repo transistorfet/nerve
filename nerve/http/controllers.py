@@ -11,5 +11,5 @@ class Controller (nerve.Controller):
         self.set_mimetype('text/html')
         engine = PyHTML(filename, None, data)
         contents = engine.evaluate()
-        self.write_output(contents)
+        self.write_text(contents)
 

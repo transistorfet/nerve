@@ -9,21 +9,19 @@ import sys
 import signal
 import traceback
 
-import SocketServer
-import BaseHTTPServer
+import socketserver
+import http.server
+import base64
 import ssl
 
 import cgi
 import json
 import mimetypes
 
-if sys.version.startswith('3'):
-    from urllib.parse import parse_qs,urlparse
-else:
-    from urlparse import parse_qs,urlparse
+import urllib.parse
 
 
-class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
+class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
     protocol_version = 'HTTP/1.1'
     server_version = "Nerve HTTP/0.2"
 
@@ -34,22 +32,22 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
         if not self.server.username:
             return True
 
-        authdata = self.headers.getheader('Authorization')
-        if type(authdata).__name__ == 'str':
-            authdata = authdata.split(' ')[-1].decode('base64')
-            username = authdata.split(':')[0]
-            password = authdata.split(':')[1]
+        authdata = self.headers.get('Authorization')
+        if authdata:
+            #authdata = authdata.split(' ')[-1].decode('base64')
+            #username = authdata.split(':')[0]
+            #password = authdata.split(':')[1]
+            (username, _, password) = base64.b64decode(bytes(authdata.split(' ')[-1], 'utf-8')).decode('utf-8').partition(':')
 
             if username == self.server.username and password == self.server.password:
                 return True
 
-        content = 'Authorization required.'
         self.send_response(401)
         self.send_header('WWW-Authenticate', 'Basic realm="Secure Area"')
         self.send_header('Content-Type', 'text/html')
         self.send_header('Content-Length', len(content))
         self.end_headers()
-        self.wfile.write(content)
+        self.wfile.write(bytes('Authorization required.'))
         return False
 
     def do_GET(self):
@@ -80,7 +78,8 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
             postvars = cgi.parse_multipart(self.rfile, pdict)
         elif ctype == 'application/x-www-form-urlencoded':
             length = int(self.headers['content-length'])
-            postvars = parse_qs(self.rfile.read(length), keep_blank_values=True)
+            qstr = self.rfile.read(length).decode('utf-8')
+            postvars = urllib.parse.parse_qs(qstr, keep_blank_values=True)
         else:
             postvars = {}
 
@@ -88,7 +87,7 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
         self.do_request(request)
 
     def do_request(self, request):
-        controller = self.server.find_controller(request)
+        controller = self.server.make_controller(request)
         success = controller.handle_request(request)
         # TODO fetch the error from the controller
         self.send_content(200 if success else 404, controller.get_mimetype(), controller.get_output())
@@ -102,10 +101,10 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
         self.wfile.write(content)
 
     def send_400(self):
-        self.send_content(400, 'text/plain', '400 Bad Request')
+        self.send_content(400, 'text/plain', bytes('400 Bad Request'))
 
     def send_404(self):
-        self.send_content(404, 'text/plain', '404 Not Found')
+        self.send_content(404, 'text/plain', bytes('404 Not Found'))
 
     @staticmethod
     def is_valid_path(path):
@@ -117,7 +116,7 @@ class HTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
         return True
 
 
-class HTTPServer (nerve.Server, SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):  #, SocketServer.ThreadingMixIn
+class HTTPServer (nerve.Server, socketserver.ThreadingMixIn, http.server.HTTPServer):
     daemon_threads = True
 
     def __init__(self, **config):
@@ -127,12 +126,12 @@ class HTTPServer (nerve.Server, SocketServer.ThreadingMixIn, BaseHTTPServer.HTTP
         self.username = self.get_setting("username")
         self.password = self.get_setting("password")
 
-        #sslenable = obplayer.Config.setting('http_admin_secure')
-        #sslcert = obplayer.Config.setting('http_admin_sslcert')
+        #sslenable = Config.setting('http_admin_secure')
+        #sslcert = Config.setting('http_admin_sslcert')
 
-        #server_address = ('', obplayer.Config.setting('http_admin_port'))  # (address, port)
+        #server_address = ('', Config.setting('http_admin_port'))  # (address, port)
 
-        BaseHTTPServer.HTTPServer.__init__(self, ('', config['port']), HTTPRequestHandler)
+        http.server.HTTPServer.__init__(self, ('', config['port']), HTTPRequestHandler)
         #if sslenable:
         #    self.socket = ssl.wrap_socket(self.socket, certfile=sslcert, server_side=True)
 

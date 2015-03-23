@@ -25,7 +25,7 @@ class FileController (nerve.Controller):
             filename = os.path.join(filename, "index.html")
 
         if not os.path.isfile(filename):
-            self.write_output("Error file not found: " + filename)
+            self.write_text("Error file not found: " + filename)
             raise Exception("Error file not found: " + filename)
             return False
 
@@ -35,13 +35,14 @@ class FileController (nerve.Controller):
             self.set_mimetype('text/html')
             engine = PyHTML(filename, request)
             contents = engine.evaluate()
+            self.write_text(contents)
         else:
             (mimetype, encoding) = mimetypes.guess_type(filename)
             self.set_mimetype(mimetype)
-            with open(filename, 'r') as f:
+            with open(filename, 'rb') as f:
                 contents = f.read()
+                self.write_bytes(contents)
 
-        self.write_output(contents)
         return True
 
 

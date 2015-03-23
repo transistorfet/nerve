@@ -25,7 +25,7 @@ class DatalogManager (nerve.Device):
 
     @staticmethod
     def get_config_info():
-        config_info = nerve.ConfigObject.get_config_info()
+        config_info = nerve.ObjectNode.get_config_info()
         return config_info
 
     def add(self, name, update_time=60):
@@ -36,7 +36,7 @@ class DatalogManager (nerve.Device):
     def run(self):
         while not self.thread.stopflag.wait(60):
             try:
-                datalogs = nerve.get_device('datalogs')
+                datalogs = nerve.get_object('devices/datalogs')
                 for name in datalogs.keys():
                     obj = getattr(datalogs, name)
                     if isinstance(obj, DatalogDevice):

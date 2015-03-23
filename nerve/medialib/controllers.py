@@ -6,28 +6,28 @@ import nerve.http
 import nerve.medialib
 
 import urllib
-import urlparse
+import urllib.parse
 
 
 class MediaLibController (nerve.http.Controller):
 
     def index(self, request):
-        medialib = nerve.get_device('medialib')
+        medialib = nerve.get_object('devices/medialib')
 
         data = { }
         data['list_of_playlists'] = medialib.get_playlist_list()
-        self.load_view('nerve/medialib/views/index.pyhtml', data)
+        self.load_view('nerve/medialib/views/playlist.pyhtml', data)
 
     def get_playlist(self, request):
-        medialib = nerve.get_device('medialib')
+        medialib = nerve.get_object('devices/medialib')
         playlist = request.args['playlist'] if 'playlist' in request.args else 'default'
 
         data = { }
         data['playlist'] = medialib.get_playlist(playlist)
-        self.load_view('nerve/medialib/views/playlist.pyhtml', data)
+        self.load_view('nerve/medialib/views/playlist-data.pyhtml', data)
 
     def search(self, request):
-        medialib = nerve.get_device('medialib')
+        medialib = nerve.get_object('devices/medialib')
 
         data = { }
         data['list_of_playlists'] = medialib.get_playlist_list()
@@ -42,7 +42,7 @@ class MediaLibController (nerve.http.Controller):
         self.load_view('nerve/medialib/views/search.pyhtml', data)
 
     def get_search_results(self, request):
-        medialib = nerve.get_device('medialib')
+        medialib = nerve.get_object('devices/medialib')
 
         mode = request.arg('mode')
         order = request.arg('order')
@@ -55,20 +55,20 @@ class MediaLibController (nerve.http.Controller):
         data = { }
         data['media_list'] = medialib.get_media_list(mode, order, offset, limit, search, recent, media_type)
         data['mode'] = mode
-        self.load_view('nerve/medialib/views/search-results.pyhtml', data)
+        self.load_view('nerve/medialib/views/search-data.pyhtml', data)
 
     def shuffle_playlist(self, request):
-        medialib = nerve.get_device('medialib')
+        medialib = nerve.get_object('devices/medialib')
         playlist = request.args['playlist']
         medialib.shuffle_playlist(playlist)
 
     def sort_playlist(self, request):
-        medialib = nerve.get_device('medialib')
+        medialib = nerve.get_object('devices/medialib')
         playlist = request.args['playlist']
         medialib.sort_playlist(playlist)
 
     def create_playlist(self, request):
-        medialib = nerve.get_device('medialib')
+        medialib = nerve.get_object('devices/medialib')
         playlist_name = request.args['playlist']
         for name in medialib.get_playlist_list():
             if name == playlist_name:
@@ -78,7 +78,7 @@ class MediaLibController (nerve.http.Controller):
         self.write_json({ 'notice' : "Playlist created successfully" })
 
     def delete_playlist(self, request):
-        medialib = nerve.get_device('medialib')
+        medialib = nerve.get_object('devices/medialib')
         playlist_name = request.args['playlist']
         for name in medialib.get_playlist_list():
             if name == playlist_name:
@@ -88,12 +88,12 @@ class MediaLibController (nerve.http.Controller):
         self.write_json({ 'error' : "That playlist no longer exists" })
 
     def add_tracks(self, request):
-        medialib = nerve.get_device('medialib')
+        medialib = nerve.get_object('devices/medialib')
         result = dict(count=0)
         media = [ ]
         if 'method' in request.args and 'playlist' in request.args and 'media[]' in request.args:
             for argstr in request.args['media[]']:
-                query = urlparse.parse_qs(argstr)
+                query = urllib.parse.parse_qs(argstr)
                 media.extend(medialib.get_media_query(query))
             playlist = nerve.medialib.Playlist(request.arg('playlist'))
             if request.arg('method') == 'replace':

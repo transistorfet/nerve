@@ -1,11 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from devices import MediaLib, Playlist
-from updater import MediaUpdaterTask
-from youtube import YoutubePlaylistFetcher
+from .devices import MediaLib, Playlist
+from .updater import MediaUpdaterTask
+from .youtube import YoutubePlaylistFetcher
 
-from controllers import MediaLibController
+from .controllers import MediaLibController
 
 
 def init():

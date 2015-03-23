@@ -1,4 +1,17 @@
 {
+    "modules": {
+        "__type__": "config/Modules",
+        "autoload": [
+            "base",
+            "computer",
+            "datalog",
+            "http",
+            "medialib",
+            "player.vlc",
+            "remote",
+            "serial"
+        ]
+    },
     "devices": {
         "medialib": {
             "__type__": "medialib/MediaLib",
@@ -24,7 +37,7 @@
             "__type__": "serial/NerveSerialDevice"
         },
 	"player": {
-	    "__type__": "vlc/VLCHTTP"
+	    "__type__": "player/vlc/VLCHTTP"
 	},
         "datalogs": {
             "manager": {
@@ -39,7 +52,7 @@
                         "max": 50,
                         "min": 0,
                         "name": "inside_temp",
-                        "ref": "sensors.temp0",
+                        "ref": "/devices/sensors/temp0",
                         "units": "C"
                     },
                     {
@@ -48,7 +61,7 @@
                         "max": 50,
                         "min": 0,
                         "name": "window_temp",
-                        "ref": "sensors.temp1",
+                        "ref": "/devices/sensors/temp1",
                         "units": "C"
                     }
                 ],

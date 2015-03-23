@@ -3,26 +3,25 @@
 
 #import nerve
 
-#nerve.add_device('player', 'xmms2.Xmms2')
-#nerve.add_device('player', 'vlc.VLCHTTP')
-#nerve.add_device('layout', 'layout.LayoutDevice')
-#nerve.add_device('deskclock', 'deskclock.Deskclock', "/dev/ttyACM0", 19200)
-#nerve.add_device('player', 'vlc.VLCHTTP')
-#nerve.add_device('medialib', 'medialib/MediaLib')
+#nerve.set_object('devices/player', 'xmms2.Xmms2')
+#nerve.set_object('devices/player', 'vlc.VLCHTTP')
+#nerve.set_object('devices/layout', 'layout.LayoutDevice')
+#nerve.set_object('devices/deskclock', 'deskclock.Deskclock', "/dev/ttyACM0", 19200)
+#nerve.set_object('devices/player', 'vlc.VLCHTTP')
+#nerve.set_object('devices/medialib', 'medialib/MediaLib')
 
-"""
 class Test (nerve.Device):
     def __init__(self):
-	nerve.Device.__init__(self)
+        nerve.Device.__init__(self)
 
     def say(self, text):
-	print text
+        print(text)
 
     def toggle(self):
-	return 50
+        return 50
 
-nerve.mainloops[0].root.player = Test()
-"""
+#nerve.set_object('devices/test', Test())
+nerve.set_object('devices/testthing', Test())
 
 
 """
@@ -36,21 +35,21 @@ nerve.add_controller('http', 'medialib', MediaLibController())
 #nerve.add_portal('raw.TCPServer', 5960)
 #nerve.add_portal('http.HTTPServer', 8888)
 #nerve.add_portal('raw.Console')
-#nerve.add_server('console', 'base/Console')
+#nerve.set_object('servers/console', 'base/Console')
 
-#rgb = nerve.add_device('rgb', 'serial/NerveSerialDevice', **dict(file="/dev/ttyACM1", baud=19200))
+#rgb = nerve.set_object('devices/rgb', 'serial/NerveSerialDevice', **dict(file="/dev/ttyACM1", baud=19200))
 
 config = {
     'devices' : [
-	[ 'player', 'xmms2.Xmms2' ],
-	[ 'deskclock', 'deskclock.Deskclock' ],
-	[ 'rgb', 'serialdev.NerveSerialDevice' ],
-	[ 'deskclockold', 'serialdev.SerialDevice' ]
+        [ 'player', 'xmms2.Xmms2' ],
+        [ 'deskclock', 'deskclock.Deskclock' ],
+        [ 'rgb', 'serialdev.NerveSerialDevice' ],
+        [ 'deskclockold', 'serialdev.SerialDevice' ]
     ],
     'portals' : [
-	'tcpserver.TCPServer',
-	'httpserver.HTTPServer',
-	'console.Console'
+        'tcpserver.TCPServer',
+        'httpserver.HTTPServer',
+        'console.Console'
     ],
     'tcpserver' : { 'port' : 5960 },
     'httpserver' : { 'port' : 8999 },
@@ -61,8 +60,8 @@ config = {
 
 {
     'devices' : [
-	{ 'device' : 'xmms2.Xmms2', 'node' : 'player' },
-	{ 'device' : 'deskclock.Deskclock', 'node' : 'deskclock', 'devfile' : '/dev/ttyACM0', 'baud' : 19200 },
+        { 'device' : 'xmms2.Xmms2', 'node' : 'player' },
+        { 'device' : 'deskclock.Deskclock', 'node' : 'deskclock', 'devfile' : '/dev/ttyACM0', 'baud' : 19200 },
     ]
 }
 
@@ -71,68 +70,68 @@ config = {
     'modules' : [ 'http', 'base', 'medialib', 'player', 'vlc' ],
 
     'servers' : {
-	'http' : {
-	    'type' : 'http/HTTPServer',
-	    'port' : 8888,
-	    'controllers' : {
-		'__default__' : {
-		    'type' : 'base/RedirectController',
-		    'target' : '/files/index.php'
-		},
-		'files' : {
-		    'type' : 'http/FileController',
-		    'root' : "nerve/http/wwwdata"
-		},
-		'medialib' : {
-		    'type' : 'medialib/MediaLibController',
-		    'device' : 'medialib'
-		},
-		'query' : {
-		    'type' : 'base/QueryController'
-		}
-	    }
-	},
-	'console' : {
-	    'type' : 'raw/Console',
-	    'controllers' : {
-		'__default__' : {
-		    'type' : 'base/QueryController'
-		}
-	    }
-	},
-	'udp' : {
-	    'type' : 'raw/UDPServer',
-	    'port' : 5959,
-	    'controllers' : {
-		'__default__' : {
-		    'type' : 'base/QueryController'
-		}
-	    }
-	}
+        'http' : {
+            'type' : 'http/HTTPServer',
+            'port' : 8888,
+            'controllers' : {
+                '__default__' : {
+                    'type' : 'base/RedirectController',
+                    'target' : '/files/index.php'
+                },
+                'files' : {
+                    'type' : 'http/FileController',
+                    'root' : "nerve/http/wwwdata"
+                },
+                'medialib' : {
+                    'type' : 'medialib/MediaLibController',
+                    'device' : 'medialib'
+                },
+                'query' : {
+                    'type' : 'base/QueryController'
+                }
+            }
+        },
+        'console' : {
+            'type' : 'raw/Console',
+            'controllers' : {
+                '__default__' : {
+                    'type' : 'base/QueryController'
+                }
+            }
+        },
+        'udp' : {
+            'type' : 'raw/UDPServer',
+            'port' : 5959,
+            'controllers' : {
+                '__default__' : {
+                    'type' : 'base/QueryController'
+                }
+            }
+        }
     },
     'devices' : {
-	'medialib' : {
-	    'type' : 'medialib/MediaLib',
-	    'update_path' : [ '/media/media/Music', 'media/media/Torrents' ]
-	},
-	'deskclock' : {
-	    'type' : 'DeskClock',
-	    'devfile' : '/dev/ttyACM0',
-	    'baud' : 19200
-	},
-	'rgb' : {
-	    'type' : 'serial/NerveSerialDevice',
-	    'devfile' : '/dev/ttyACM1',
-	    'baud' : 19200
-	},
-	'tv' : {
-	    'type' : 'TV',
-	    'parent' : 'rgb'
-	},
-	'stereo' : {
-	    'type' : 'stereo',
-	    'parent' : 'rgb'
-	}
+        'medialib' : {
+            'type' : 'medialib/MediaLib',
+            'update_path' : [ '/media/media/Music', 'media/media/Torrents' ]
+        },
+        'deskclock' : {
+            'type' : 'DeskClock',
+            'devfile' : '/dev/ttyACM0',
+            'baud' : 19200
+        },
+        'rgb' : {
+            'type' : 'serial/NerveSerialDevice',
+            'devfile' : '/dev/ttyACM1',
+            'baud' : 19200
+        },
+        'tv' : {
+            'type' : 'TV',
+            'parent' : 'rgb'
+        },
+        'stereo' : {
+            'type' : 'stereo',
+            'parent' : 'rgb'
+        }
     }
 }
 

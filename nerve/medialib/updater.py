@@ -19,13 +19,9 @@ class MediaUpdaterTask (nerve.Task):
     def update_file(self, filename):
         (mode, inode, dev, nlink, uid, gid, size, atime, mtime, ctime) = os.stat(filename)
 
-        safe_filename = filename
-        if isinstance(filename, unicode):
-            safe_filename = filename.encode('utf-8', 'replace')
-
         rows = list(self.db.get('media', 'id,file_last_modified', self.db.inline_expr('filename', filename)))
         if len(rows) > 0 and mtime <= rows[0][1]:
-            #nerve.log("Skipping " + safe_filename)
+            #nerve.log("Skipping " + filename)
             return
 
         try:
@@ -47,16 +43,16 @@ class MediaUpdaterTask (nerve.Task):
             'file_last_modified' : mtime,
         }
         if len(rows) <= 0:
-            nerve.log("Adding " + safe_filename)
+            nerve.log("Adding " + filename)
             self.db.insert('media', data)
         else:
-            nerve.log(u"Updating " + safe_filename)
+            nerve.log(u"Updating " + filename)
             self.db.where('id', rows[0][0])
             self.db.update('media', data)
 
     def update_all(self):
         for libpath in self.path:
-            for root, dirs, files in os.walk(unicode(libpath)):
+            for root, dirs, files in os.walk(libpath):
                 if self.stopflag.is_set():
                     return
                 nerve.log("Searching " + root)
@@ -103,7 +99,7 @@ class MetaData (object):
         if name == 'duration' and self.info != None:
             return self.info.info.length
         if self.meta and name in self.meta and len(self.meta[name]) > 0:
-            return self.meta[name][0].encode('utf-8', 'replace')
+            return self.meta[name][0]
         return default
 
 

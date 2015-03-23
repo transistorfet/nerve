@@ -3,7 +3,6 @@
 
 import nerve
 
-import thread
 import threading
 
 class Task (threading.Thread):

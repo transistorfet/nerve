@@ -3,12 +3,11 @@
 
 import nerve
 
-import socket
-import thread
-import sys
 import os
-import traceback
+import sys
+import socket
 import string
+import traceback
 
 
 class TCPConnection (nerve.Server):
@@ -36,11 +35,11 @@ class TCPConnection (nerve.Server):
             data = self.socket.recv(4096)
             if not data:
                 raise socket.error("TCP socket closed by remote end. (" + str(self.host) + ":" + str(self.port) + ")")
-            self.buffer = self.buffer + data
+            self.buffer = self.buffer + data.decode('utf-8')
 
     def send(self, data):
-        nerve.log("SEND -> " + str(self.host) + ":" + str(self.port) + ": " + data)
-        self.socket.send(data + '\n')
+        #nerve.log("SEND -> " + str(self.host) + ":" + str(self.port) + ": " + data)
+        self.socket.send(data + b'\n')
 
     def close(self):
         nerve.log("closing connection to " + str(self.host) + ":" + str(self.port))
@@ -58,11 +57,11 @@ class TCPConnection (nerve.Server):
                         self.thread.stopflag.set()
                     else:
                         request = nerve.Request(self, 'QUERY', "/", { 'queries[]' : [ data ] })
-                        controller = self.find_controller(request)
+                        controller = self.make_controller(request)
                         controller.handle_request(request)
-                        self.send(controller.get_output() + '\n')
+                        self.send(controller.get_output())
 
-            except socket.error, e:
+            except socket.error as e:
                 nerve.log("Socket Error: " + str(e))
                 break
 
@@ -109,7 +108,7 @@ class TCPServer (nerve.Server):
                     sock, addr = self.socket.accept()
                     conn = TCPConnection(self, sock, addr, self.controllers)
 
-                except socket.error, e:
+                except socket.error as e:
                     nerve.log("Socket Error: " + str(e))
                     break
 

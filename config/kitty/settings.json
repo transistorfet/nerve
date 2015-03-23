@@ -1,4 +1,16 @@
 {
+    "modules": {
+        "__type__": "config/Modules",
+        "autoload": [
+            "base",
+            "computer",
+            "http",
+            "medialib",
+            "player.xmms2cli",
+            "remote",
+            "serial"
+        ]
+    },
     "devices": {
         "computer": {
             "__type__": "computer/SystemDevice"
@@ -9,7 +21,7 @@
             "__type__": "serial/NerveSerialDevice"
         },
 	"player": {
-	    "__type__": "xmms2/Xmms2"
+	    "__type__": "player/xmms2cli/Xmms2CLI"
 	}
     },
     "servers": {

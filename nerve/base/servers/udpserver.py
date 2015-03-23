@@ -4,7 +4,6 @@
 import nerve
 
 import socket
-import thread
 import sys
 import os
 import time
@@ -65,11 +64,11 @@ class UDPServer (nerve.Server):
                     if data:
                         nerve.log("RECV <- " + str(host) + ":" + str(port) + ": " + data)
                         request = nerve.Request(self, 'QUERY', "/", { 'queries[]' : [ data ] })
-                        controller = self.find_controller(request)
+                        controller = self.make_controller(request)
                         controller.handle_request(request)
                         self.send(controller.get_output() + '\n', addr)
 
-                except socket.error, e:
+                except socket.error as e:
                     nerve.log("Socket Error: " + str(e))
                     break
 

@@ -208,3 +208,45 @@ Device.request(address, request, args)
 player/load_playlist?arg1=Nine+Inch+Nails
 
 
+---------
+
+2015/03/15:
+
+internal vfs:
+/
+    /modules
+        /modules/datalog
+            /modules/datalog/controllers/DatalogController
+            /modules/datalog/devices/DatalogManager
+            /modules/datalog/devices/DatalogDevice
+        /modules/serial
+            /modules/serial/devices/SerialDevice
+            /modules/serial/devices/NerveSerialDevice
+        /modules/http
+            /modules/http/servers/HTTPServer
+
+    /devices
+        /devices/datalog (type = /modules/datalog/devices/DatalogManager)
+            /devices/datalog/temperature (type = /modules/datalog/devices/DatalogDevice)
+        /devices/tv (type = /modules/local/TV)
+            { serial = /devices/rgb }
+            /devices/tv/power (callable function essentially)
+        /devices/lamp/ (type = /modules/base/ConfigObjectTable)
+            /devices/lamp/power (type = /modules/base/SymbolicLink) -> /devices/sensors/relay_toggle
+            /devices/lamp/is_on (type = /modules/base/CustomMethodOrSomething):
+                intensity = nerve.query("/devices/sensors/intensity")
+                if intensity > xx:
+                    return True
+                return False
+    /servers
+        /servers/http (type = /modules/http/servers/HTTPServer)
+            { port = 8888 }
+
+
+
+An alternative to /modules is /types.  They can also be grouped by type
+/types/servers/http/HTTPServer
+/types/devices/datalog/DatalogManager
+/types/devices/datalog/DatalogDevice
+
+

@@ -50,7 +50,7 @@
 	    end
 
 	else:
-	    config_info = nerve.ConfigObject.get_class_config_info(object['__type__'])
+	    config_info = nerve.ObjectNode.get_class_config_info(object['__type__'])
 
 	    %>
 	    <li><div class="nerve-form-item">
@@ -60,7 +60,7 @@
 	    <%
 
 	    for setting in config_info.get_proper_names():
-		if type(object[setting[0]]) in [ int, float, str, unicode ]:
+		if type(object[setting[0]]) in [ int, float, str ]:
 		    %>
 		    <li><div class="nerve-form-item">
 			<label><%= setting[1] %></label>
@@ -92,7 +92,7 @@
 	global last_label
 
 	for name in object.keys():
-	    if type(object[name]) in [ int, float, str, unicode ]:
+	    if type(object[name]) in [ int, float, str ]:
 		%>
 		<li><div class="nerve-form-item">
 		    <label><%= name.capitalize() %></label>
@@ -119,7 +119,7 @@
 	global last_label
 
 	for index, object in enumerate(objectlist):
-	    if type(object) in [ int, float, str, unicode ]:
+	    if type(object) in [ int, float, str ]:
 		%>
 		<li><div class="nerve-form-item">
 		    <label><%= name.capitalize() %></label>

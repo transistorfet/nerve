@@ -1,15 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from controllers.config import ConfigController
-from controllers.files import FileController
-from controllers.query import QueryController
-from controllers.pyexec import PyExecController
-from controllers.shell import ShellController
+from .controllers.config import ConfigController
+from .controllers.files import FileController
+from .controllers.query import QueryController
+from .controllers.pyexec import PyExecController
+from .controllers.shell import ShellController
 
-from servers.console import Console
-from servers.tcpserver import TCPServer
-from servers.udpserver import UDPServer
+from .servers.console import Console
+from .servers.tcpserver import TCPServer
+from .servers.udpserver import UDPServer
 
 def init():
     pass

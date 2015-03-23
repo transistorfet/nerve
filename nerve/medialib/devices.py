@@ -8,11 +8,10 @@ import os
 import os.path
 
 import urllib
-import codecs
 import random
 
-from updater import MediaUpdaterTask
-from youtube import YoutubePlaylistFetcher
+from .updater import MediaUpdaterTask
+from .youtube import YoutubePlaylistFetcher
 
 
 class MediaLib (nerve.Device):
@@ -185,7 +184,7 @@ class Playlist (object):
         artist = ""
         title = ""
         duration = 0
-        with codecs.open(self.filename, 'r', encoding='utf-8') as f:
+        with open(self.filename, 'r') as f:
             for line in f.read().split('\n'):
                 line = line.strip()
                 if line and line.startswith('#'):
@@ -202,7 +201,7 @@ class Playlist (object):
                     self.media_list.append(media)
 
     def save(self):
-        with codecs.open(self.filename, 'w', encoding='utf-8') as f:
+        with open(self.filename, 'w') as f:
             f.write("#EXTM3U\n")
             for media in self.media_list:
                 f.write("#EXTINF:%d, %s - %s\n" % (float(media['duration']), media['artist'], media['title']))

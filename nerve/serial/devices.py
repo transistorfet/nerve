@@ -5,10 +5,9 @@ import nerve
 
 import sys
 import serial
-import thread
-import threading
 import select
 import traceback
+import threading
 
 class SerialDevice (nerve.Device):
     def __init__(self, **config):
@@ -33,8 +32,8 @@ class SerialDevice (nerve.Device):
         return config_info
 
     def send(self, data):
-        nerve.log("SEND -> " + str(self.file) + ": " + data)
-        self.serial.write(data + '\n')
+        #nerve.log("SEND -> " + str(self.file) + ": " + data)
+        self.serial.write(bytes(data + '\n', 'utf-8'))
 
     def do_receive(self, line):
         pass
@@ -49,7 +48,7 @@ class SerialDevice (nerve.Device):
                 (rl, wl, el) = select.select([ self.serial ], [ ], [ ], 0.1)
                 if rl and self.serial in rl:
                     line = self.serial.readline()
-                    line = line.strip()
+                    line = line.strip().decode('utf-8')
                     nerve.log("RECV <- " + self.file + ": " + line)
                     self.do_receive(line)
 
@@ -99,4 +98,5 @@ class NerveSerialDevice (SerialDevice):
         (ref, _, args) = line.partition(" ")
         self.data = args
         self.received.set()
+
 

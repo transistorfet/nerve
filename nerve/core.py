@@ -3,10 +3,10 @@
 
 import nerve
 
+import io
 import json
-import urlparse
 import traceback
-import cStringIO
+import urllib.parse
 
 
 class Request (object):
@@ -22,8 +22,8 @@ class Request (object):
     def parse_query(urlstring, args=None):
         if not args:
             args = dict()
-        url = urlparse.urlparse(urlstring)
-        args.update(urlparse.parse_qs(url.query, keep_blank_values=True))
+        url = urllib.parse.urlparse(urlstring)
+        args.update(urllib.parse.parse_qs(url.query, keep_blank_values=True))
         for name in args.keys():
             if not name.endswith("[]") and len(args[name]) == 1:
                 args[name] = args[name][0]
@@ -53,20 +53,19 @@ class Request (object):
         return default
 
 
-class RedirectException (Exception):
-    pass
+class RedirectException (Exception): pass
 
 
-class Controller (nerve.ConfigObject):
+class Controller (nerve.ObjectNode):
     def __init__(self, **config):
-        nerve.ConfigObject.__init__(self, **config)
+        nerve.ObjectNode.__init__(self, **config)
         self.error = None
         self.output = None
 
     def initialize(self):
         self.error = None
         self.mimetype = 'text/plain'
-        self.output = cStringIO.StringIO()
+        self.output = io.BytesIO()
 
     def finalize(self):
         pass
@@ -79,12 +78,18 @@ class Controller (nerve.ConfigObject):
     def get_mimetype(self):
         return self.mimetype
 
-    def write_output(self, data):
+    def write_bytes(self, data):
         self.output.write(data)
+
+    def write_text(self, data):
+        self.output.write(data.encode('utf-8'))
 
     def write_json(self, data):
         self.mimetype = 'application/json'
-        self.output.write(json.dumps(data, sort_keys=True, indent=4, separators=(',', ': ')))
+        def json_default(obj):
+            return str(obj)
+        text = json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '), default=json_default)
+        self.write_text(text)
 
     def write_error(self, typename, message):
         self.error = Exception(typename, message)
@@ -102,7 +107,7 @@ class Controller (nerve.ConfigObject):
             nerve.log(traceback.format_exc())
             # TODO this should change when you get a better error reporting system
             self.write_error('internal', traceback.format_exc())
-            self.write_output(traceback.format_exc())
+            self.write_text(traceback.format_exc())
         finally:
             self.finalize()
 
@@ -118,13 +123,13 @@ class Controller (nerve.ConfigObject):
         return func(request)
 
 
-class Server (nerve.ConfigObject):
+class Server (nerve.ObjectNode):
     def __init__(self, **config):
-        nerve.ConfigObject.__init__(self, **config)
+        nerve.ObjectNode.__init__(self, **config)
 
     @staticmethod
     def get_config_info():
-        config_info = nerve.ConfigObject.get_config_info()
+        config_info = nerve.ObjectNode.get_config_info()
         config_info.add_setting('controllers', "Controllers", default=dict())
         return config_info
 
@@ -137,26 +142,23 @@ class Server (nerve.ConfigObject):
     def stop_server(self):
         pass
 
-    def find_controller(self, request):
+    def make_controller(self, request):
         basename = request.next_segment()
         if basename in self.controllers:
             controller = self.controllers[basename]
         else:
             request.back_segment();
             controller = self.controllers['__default__']
-        return nerve.ConfigObject.make_object(controller['__type__'], controller)
+        return nerve.ObjectNode.make_object(controller['__type__'], controller)
 
 
-class Device (nerve.ConfigObject):
-    device_types = { }
-
+class Device (nerve.ObjectNode):
     def __init__(self, **config):
-        nerve.ConfigObject.__init__(self, **config)
+        nerve.ObjectNode.__init__(self, **config)
         self.callbacks = { }
 
     def on_update(self, attrib, func):
         self.callbacks[attrib] = func
-
 
     """
     def query(self, ref, *args, **kwargs):
@@ -170,11 +172,6 @@ class Device (nerve.ConfigObject):
             func = getattr(self, name)
             return func(*args, **kwargs)
     """
-
-    @staticmethod
-    def register_device_type(name, device_class, description):
-        Device.device_types[name] = { 'class' : device_class, 'description' : description }
-        # TODO you could call a static method on the class to get config data...
 
 
 
@@ -194,7 +191,7 @@ class Something (object):
 
 
     def dispatch_request(self, url, args):
-        urldata = urlparse.urlparse(url)
+        urldata = urllib.parse.urlparse(url)
         # TODO do all the rest
 
     def run(self):
