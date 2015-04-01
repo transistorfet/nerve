@@ -10,19 +10,19 @@ class Stereo (nerve.Device):
         self.serial = serial
 
     def power(self):
-        self.serial.send("ir S A81")
+        self.serial.send("ir S 0xA81")
 
     def volup(self):
-        self.serial.send("ir S 481")
+        self.serial.send("ir S 0x481")
 
     def voldown(self):
-        self.serial.send("ir S C81")
+        self.serial.send("ir S 0xC81")
 
     def tape(self):
-        self.serial.send("ir S C41")
+        self.serial.send("ir S 0xC41")
 
     def tuner(self):
-        self.serial.send("ir S 841")
+        self.serial.send("ir S 0x841")
 
 
 class Television (nerve.Device):
@@ -31,40 +31,29 @@ class Television (nerve.Device):
         self.serial = serial
 
     def power(self):
-        self.serial.send("ir P 4004 100BCBD")
+        self.serial.send("ir P 0x4004 0x100BCBD")
 
     def volup(self):
-        self.serial.send("ir P 4004 1000405")
+        self.serial.send("ir P 0x4004 0x1000405")
 
     def voldown(self):
-        self.serial.send("ir P 4004 1008485")
+        self.serial.send("ir P 0x4004 0x1008485")
 
     def ps3(self):
-        self.serial.send("ir P 4004 100A0A1")
-        self.serial.send("ir P 4004 1008889")
+        self.serial.send("ir P 0x4004 0x100A0A1")
+        self.serial.send("ir P 0x4004 0x1008889")
 
     def netbook(self):
-        self.serial.send("ir P 4004 100A0A1")
-        self.serial.send("ir P 4004 1004849")
+        self.serial.send("ir P 0x4004 0x100A0A1")
+        self.serial.send("ir P 0x4004 0x1004849")
 
     def computer(self):
-        self.serial.send("ir P 4004 100A0A1")
-        self.serial.send("ir P 4004 1004849")
+        self.serial.send("ir P 0x4004 0x100A0A1")
+        self.serial.send("ir P 0x4004 0x1004849")
 
 
-#nerve.add_portal('raw.UDPServer', 5959)
+rgb = nerve.get_object('/devices/rgb')
+nerve.set_object('/devices/stereo', Stereo(rgb))
+nerve.set_object('/devices/tv', Television(rgb))
 
-#rgb = nerve.add_device('rgb', 'serial.NerveSerialDevice', '/dev/ttyACM0', 19200)
-rgb = nerve.get_object('devices/rgb')
-nerve.set_object('devices/stereo', Stereo(rgb))
-nerve.set_object('devices/tv', Television(rgb))
-
-#nerve.add_device("sys", Sys())
-#nerve.add_device("player", 'vlc.VLCHTTP')
-
-#nerve.add_device('medialib', 'medialib.MediaLib')
-
-#nerve.add_portal('http.HTTPServer', 8888)
-
-#nerve.add_portal('raw.Console')
 

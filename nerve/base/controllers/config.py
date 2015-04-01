@@ -5,6 +5,10 @@ import nerve
 import nerve.http
 
 class ConfigController (nerve.http.Controller):
+    def __init__(self, **config):
+        nerve.http.Controller.__init__(self, **config)
+        self.load_header("nerve/base/views/header.pyhtml", dict(tab="Config", title="Nerve Configuration"))
+        self.load_footer("nerve/base/views/footer.pyhtml")
 
     def index(self, request):
         data = { }

@@ -12,6 +12,19 @@ function NerveButton(element)
     $(element).click(this.submit);
 }
 
+function NerveSlider(element)
+{
+    this.send_change = function ()
+    {
+        var query = $(element).attr('data-query');
+        var value = $(element).val();
+        $.post('/query/'+query, { 'a' : value }, function(response) {
+        }, 'json');
+    }
+
+    $(element).on('change input', this.send_change);
+}
+
 function NerveInputSubmit(element)
 {
     this.submit = function () {
@@ -141,6 +154,10 @@ $(document).ready(function()
 {
     $('.nerve-button').each(function () {
         new NerveButton(this);
+    });
+
+    $('.nerve-slider').each(function () {
+        new NerveSlider(this);
     });
 
     $('.nerve-input-submit').each(function () {

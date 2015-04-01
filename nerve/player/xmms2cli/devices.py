@@ -3,6 +3,7 @@
 
 import os
 import sys
+import urllib
 import subprocess
 
 import nerve
@@ -43,7 +44,7 @@ class Xmms2CLI (nerve.Device):
         (out, err) = proc.communicate()
         parts = out.decode('utf-8').split(':', 2)
         (self.current_song, _, _) = parts[1].strip().rpartition('.')
-        (_, _, self.title) = self.current_song.partition(" - ")
+        (self.artist, _, self.title) = self.current_song.partition(" - ")
 
     def load_playlist(self, url):
         os.system("xmms2 clear")
@@ -56,6 +57,6 @@ class Xmms2CLI (nerve.Device):
                 line = line.strip()
                 if line and not line.startswith('#'):
                     media_url = "file://" + line
-                    os.system("xmms2 add " + media_url)
+                    os.system("xmms2 add \"" + media_url + "\"")
 
 

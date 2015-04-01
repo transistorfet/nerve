@@ -155,8 +155,10 @@ def get_object(name):
 
 def query(urlstring, *args, **kwargs):
     global mainloops
+
     nerve.log("executing query: " + urlstring + " " + ' '.join(args) + " " + repr(kwargs))
     url = urllib.parse.urlparse(urlstring)
+
     if url.netloc:
         if url.scheme == 'http':
             nerve.log("remote query to " + urlstring)
@@ -167,10 +169,11 @@ def query(urlstring, *args, **kwargs):
                 return "request to " + urlstring + " failed. " + str(r.status_code) + " returned"
         else:
             raise Exception("unsupported url scheme: " + url.scheme)
+
     else:
         (url, kwargs) = nerve.Request.parse_query(urlstring, kwargs)
 
-        obj = mainloops[0].get_object(url.path.replace('.', '/').lstrip('/'))
+        obj = mainloops[0].get_object(url.path.lstrip('/'))
         if callable(obj):
             return obj(*args, **kwargs)
         else:

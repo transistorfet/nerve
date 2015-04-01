@@ -53,17 +53,16 @@ class Request (object):
         return default
 
 
-class RedirectException (Exception): pass
-
-
 class Controller (nerve.ObjectNode):
     def __init__(self, **config):
         nerve.ObjectNode.__init__(self, **config)
         self.error = None
+        self.redirect = None
         self.output = None
 
     def initialize(self):
         self.error = None
+        self.redirect = None
         self.mimetype = 'text/plain'
         self.output = io.BytesIO()
 
@@ -75,8 +74,11 @@ class Controller (nerve.ObjectNode):
             raise Exception('mimetype', "in nerve.Controller, attempting to change mimetype after output has been written")
         self.mimetype = mimetype
 
-    def get_mimetype(self):
-        return self.mimetype
+    def report_error(self, typename, message):
+        self.error = Exception(typename, message)
+
+    def redirect_to(self, location):
+        self.redirect = location
 
     def write_bytes(self, data):
         self.output.write(data)
@@ -91,8 +93,14 @@ class Controller (nerve.ObjectNode):
         text = json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '), default=json_default)
         self.write_text(text)
 
-    def write_error(self, typename, message):
-        self.error = Exception(typename, message)
+    def get_mimetype(self):
+        return self.mimetype
+
+    def get_error(self):
+        return self.error
+
+    def get_redirect(self):
+        return self.redirect
 
     def get_output(self):
         return self.output.getvalue()
@@ -101,13 +109,11 @@ class Controller (nerve.ObjectNode):
         self.initialize()
         try:
             self.do_request(request)
-        except RedirectException as redirect:
-            self.error = redirect
         except:
-            nerve.log(traceback.format_exc())
-            # TODO this should change when you get a better error reporting system
-            self.write_error('internal', traceback.format_exc())
-            self.write_text(traceback.format_exc())
+            tb = traceback.format_exc()
+            nerve.log(tb)
+            self.write_text(tb)
+            self.report_error('internal', tb)
         finally:
             self.finalize()
 

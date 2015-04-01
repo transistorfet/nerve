@@ -16,8 +16,7 @@ import urllib.parse
 class DatalogController (nerve.http.Controller):
 
     def index(self, request):
-        # TODO redirect somehow to .../graph
-        pass
+        self.redirect_to('/%s/graph' % (request.segments[0],))
 
     def graph(self, request):
         remain = request.remaining_segments().lstrip('/')
@@ -34,7 +33,7 @@ class DatalogController (nerve.http.Controller):
         datalog_name = request.args['datalog']
         start_time = request.args['start_time']
         length = request.args['length']
-        ref = 'datalogs/%s/get_data' % (datalog_name,)
+        ref = '/devices/datalogs/%s/get_data' % (datalog_name,)
 
         data = nerve.query(ref, start_time=start_time, length=length)
         self.write_json(data)

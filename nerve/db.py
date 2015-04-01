@@ -24,46 +24,51 @@ class Database (object):
 class DatabaseCursor (object):
     def __init__(self, db):
         self.db = db
-        self.dbcursor = self.db.dbcon.cursor()
         self.reset_cache()
 
     def reset_cache(self):
-        self.cache_where = u""
-        self.cache_group = u""
-        self.cache_order = u""
-        self.cache_limit = u""
-        self.cache_select = u"*"
-        self.cache_distinct = u""
+        self.cache_where = ""
+        self.cache_group = ""
+        self.cache_order = ""
+        self.cache_limit = ""
+        self.cache_select = "*"
+        self.cache_distinct = ""
 
-    def query(self, q):
-        self.dbcursor.execute(text)
+    def query(self, query):
+        dbcursor = self.db.dbcon.cursor()
+        result = dbcursor.execute(query)
+        try:
+            self.columns = dbcursor.getdescription()
+        except apsw.ExecutionCompleteError:
+            self.columns = [ ]
+        return result
 
     def table_exists(self, name):
-        for row in self.dbcursor.execute("SELECT name FROM sqlite_master WHERE type IN ('table','view') AND name = '" + name + "' UNION ALL SELECT name FROM sqlite_temp_master WHERE type IN ('table','view') AND name = '" + name + "'"):
+        for row in self.query("SELECT name FROM sqlite_master WHERE type IN ('table','view') AND name = '" + name + "' UNION ALL SELECT name FROM sqlite_temp_master WHERE type IN ('table','view') AND name = '" + name + "'"):
             return True
         return False
 
     def create_table(self, table, columns):
-        self.dbcursor.execute(u"CREATE TABLE IF NOT EXISTS %s (%s)" % (table, columns))
+        self.query("CREATE TABLE IF NOT EXISTS %s (%s)" % (table, columns))
 
     def add_column(self, table, column, datatype, default=None):
-        self.dbcursor.execute(u"ALTER TABLE %s ADD COLUMN %s %s" % (table, column, datatype))
+        self.query("ALTER TABLE %s ADD COLUMN %s %s" % (table, column, datatype))
 
     def escape(self, text):
         if text is None:
-            return u""
+            return ""
         text = str(text)
-        return text.replace(u"'", u"''")
+        return text.replace("'", "''")
 
     def inline_expr(self, name, val, compare='='):
-        return u"%s%s'%s' " % (name, compare, self.escape(val))
+        return "%s%s'%s' " % (name, compare, self.escape(val))
 
     def where(self, where, val, compare='='):
         where_sql = self.inline_expr(where, val, compare)
         if not self.cache_where:
             self.cache_where = where_sql
         else:
-            self.cache_where += u" AND " + where_sql
+            self.cache_where += " AND " + where_sql
 
     def where_not(self, where, val):
         self.where(where, val, "<>")
@@ -94,20 +99,20 @@ class DatabaseCursor (object):
 
     def distinct(self, enabled):
         if enabled is True:
-            self.cache_distinct = u'DISTINCT'
+            self.cache_distinct = 'DISTINCT'
         else:
-            self.cache_distinct = u""
+            self.cache_distinct = ""
 
     def compile_clauses(self):
-        query = u""
+        query = ""
         if self.cache_where:
-            query += u"WHERE %s " % (self.cache_where,)
+            query += "WHERE %s " % (self.cache_where,)
         if self.cache_group:
-            query += u"GROUP BY %s " % (self.cache_group,)
+            query += "GROUP BY %s " % (self.cache_group,)
         if self.cache_order:
-            query += u"ORDER BY %s " % (self.cache_order,)
+            query += "ORDER BY %s " % (self.cache_order,)
         if self.cache_limit:
-            query += u"LIMIT %s " % (self.cache_limit,)
+            query += "LIMIT %s " % (self.cache_limit,)
         return query
 
     def compile_select(self, table, select=None, where=None):
@@ -116,25 +121,23 @@ class DatabaseCursor (object):
         if where is not None:
             self.cache_where = where
 
-        query = u"SELECT %s %s FROM %s " % (self.cache_distinct, self.cache_select, table)
+        query = "SELECT %s %s FROM %s " % (self.cache_distinct, self.cache_select, table)
         query += self.compile_clauses()
         return query
 
     def get(self, table, select=None, where=None):
         query = self.compile_select(table, select, where)
         #print (query)
-        result = self.dbcursor.execute(query)
-        #result = self.dbcursor.execute(query.decode('utf-8'))
+        result = self.query(query)
         self.reset_cache()
         return result
 
     def get_assoc(self, table, select=None, where=None):
         query = self.compile_select(table, select, where)
         #print (query.encode('utf-8', 'replace'))
-        result = self.dbcursor.execute(query)
-        #result = self.dbcursor.execute(query.decode('utf-8'))
+        result = self.query(query)
 
-        keys = self.dbcursor.getdescription()
+        keys = self.columns
         rows = [ ]
         for row in result:
             assoc = { }
@@ -154,7 +157,8 @@ class DatabaseCursor (object):
             return None
 
     def get_columns(self):
-        return self.dbcursor.getdescription()
+        #return self.dbcursor.getdescription()
+        return self.columns
 
     def insert(self, table, data, replace=False):
         columns = data.keys()
@@ -163,10 +167,9 @@ class DatabaseCursor (object):
             values.append(u"\'%s\'" % (self.escape(data[key]),))
 
         insert = 'INSERT' if replace is False else 'INSERT OR REPLACE'
-        query = u"%s INTO %s (%s) VALUES (%s)" % (insert, table, ','.join(columns), ','.join(values))
+        query = "%s INTO %s (%s) VALUES (%s)" % (insert, table, ','.join(columns), ','.join(values))
         #print (query)
-        self.dbcursor.execute(query)
-        #self.dbcursor.execute(query.decode('utf-8'))
+        self.query(query)
         self.reset_cache()
 
     def update(self, table, data, where=None):
@@ -175,13 +178,12 @@ class DatabaseCursor (object):
 
         values = [ ]
         for key in data.keys():
-            values.append(u"%s=\'%s\'" % (key, self.escape(data[key])))
+            values.append("%s=\'%s\'" % (key, self.escape(data[key])))
 
-        query = u"UPDATE %s SET %s " % (table, ','.join(values))
+        query = "UPDATE %s SET %s " % (table, ','.join(values))
         query += self.compile_clauses()
         #print (query)
-        result = self.dbcursor.execute(query)
-        #result = self.dbcursor.execute(query.decode('utf-8'))
+        result = self.query(query)
         self.reset_cache()
         return result
 
@@ -189,7 +191,7 @@ class DatabaseCursor (object):
         if where is None:
             where = self.cache_where
             self.reset_cache()
-        query = u"DELETE FROM %s WHERE %s" % (table, where)
+        query = "DELETE FROM %s WHERE %s" % (table, where)
 
         cursor = self.db.dbcon.cursor()
         result = cursor.execute(query)
@@ -204,7 +206,7 @@ class DatabaseCursor (object):
             query += "WHERE %s='%s' " % (where, self.escape(whereval))
         if order_by is not None:
             query += "ORDER BY %s " % (order_by,)
-        return self.dbcursor.execute(query.decode('utf-8'))
+        return self.query(query)
     """
 
  

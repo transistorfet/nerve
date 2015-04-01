@@ -60,7 +60,7 @@ class ObjectNode (object):
 
     def __getattr__(self, name):
         try:
-            return self.config[name]
+            return self.__dict__['config'][name]
         except KeyError:
             raise AttributeError("'%s' object has no attribute '%s'" % (str(self), name))
 
@@ -75,6 +75,9 @@ class ObjectNode (object):
 
     def keys(self):
         return [ name for name in dir(self) if name[0] != '_' ] + list(self.config.keys())
+
+    def query_keys(self):
+        return [ name for name in list(self.__class__.__dict__.keys()) + list(self.config.keys()) if name[0] != '_' ]
 
     def get_object(self, name):
         obj = self

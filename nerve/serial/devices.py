@@ -74,6 +74,11 @@ class NerveSerialDevice (SerialDevice):
         self.data = None
 
     def __getattr__(self, name):
+        try:
+            return super().__getattr__(name)
+        except AttributeError:
+            pass
+
         def serial_getter(*args, **kwargs):
             args = list(args)
             query_string = name

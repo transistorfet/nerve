@@ -3,13 +3,15 @@
 
 #import nerve
 
-#nerve.set_object('devices/player', 'xmms2.Xmms2')
-#nerve.set_object('devices/player', 'vlc.VLCHTTP')
-#nerve.set_object('devices/layout', 'layout.LayoutDevice')
-#nerve.set_object('devices/deskclock', 'deskclock.Deskclock', "/dev/ttyACM0", 19200)
-#nerve.set_object('devices/player', 'vlc.VLCHTTP')
-#nerve.set_object('devices/medialib', 'medialib/MediaLib')
+#nerve.set_object('/devices/player', 'xmms2.Xmms2')
+#nerve.set_object('/devices/player', 'vlc.VLCHTTP')
+#nerve.set_object('/devices/layout', 'layout.LayoutDevice')
+#nerve.set_object('/devices/deskclock', 'deskclock.Deskclock', "/dev/ttyACM0", 19200)
+#nerve.set_object('/devices/player', 'vlc.VLCHTTP')
+#nerve.set_object('/devices/medialib', 'medialib/MediaLib')
 
+
+"""
 class Test (nerve.Device):
     def __init__(self):
         nerve.Device.__init__(self)
@@ -20,8 +22,9 @@ class Test (nerve.Device):
     def toggle(self):
         return 50
 
-#nerve.set_object('devices/test', Test())
-nerve.set_object('devices/testthing', Test())
+#nerve.set_object('/devices/test', Test())
+nerve.set_object('/devices/testthing', Test())
+"""
 
 
 """
@@ -31,13 +34,8 @@ nerve.add_controller('http', 'files', FileController("nerve/http/wwwdata"))
 nerve.add_controller('http', 'medialib', MediaLibController())
 """
 
-#nerve.add_portal('raw.UDPServer', 5960)
-#nerve.add_portal('raw.TCPServer', 5960)
-#nerve.add_portal('http.HTTPServer', 8888)
-#nerve.add_portal('raw.Console')
-#nerve.set_object('servers/console', 'base/Console')
 
-#rgb = nerve.set_object('devices/rgb', 'serial/NerveSerialDevice', **dict(file="/dev/ttyACM1", baud=19200))
+#rgb = nerve.set_object('/devices/rgb', 'serial/NerveSerialDevice', **dict(file="/dev/ttyACM1", baud=19200))
 
 config = {
     'devices' : [

@@ -58,13 +58,6 @@ class DeskClock (nerve.serial.SerialDevice):
             rgb = nerve.get_object("/devices/rgb")
             rgb.send('key 2' + line[5:7])
 
-#from config.panther.devices.deskclock import DeskClock
-
 nerve.set_object('/devices/deskclock', DeskClock(file="/dev/ttyACM0", baud=19200))
-#rgb = nerve.add_device('rgb', 'serial.NerveSerialDevice', "/dev/ttyACM1", 19200)
-
-#nerve.add_device('player', 'xmms2.Xmms2')
-
-#nerve.add_portal('raw.Console')
 
 

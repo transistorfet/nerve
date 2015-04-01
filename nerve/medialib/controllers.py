@@ -107,7 +107,7 @@ class MediaLibController (nerve.http.Controller):
         urls = [ ]
         if 'playlist' in request.args and 'urls[]' in request.args:
             for url in request.args['urls[]']:
-                urls.append(urllib.unquote(url))
+                urls.append(urllib.parse.unquote(url))
             playlist = nerve.medialib.Playlist(request.args['playlist'])
             if 'pl_replace' in request.args:
                 result['count'] = playlist.set_files(urls)
@@ -120,7 +120,7 @@ class MediaLibController (nerve.http.Controller):
         urls = [ ]
         if 'playlist' in request.args and 'urls[]' in request.args:
             for url in request.args['urls[]']:
-                urls.append(urllib.unquote(url))
+                urls.append(urllib.parse.unquote(url))
             playlist = nerve.medialib.Playlist(request.args['playlist'])
             result['count'] = playlist.remove_files(urls)
         self.write_json(result)

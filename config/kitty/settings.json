@@ -22,7 +22,17 @@
         },
 	"player": {
 	    "__type__": "player/xmms2cli/Xmms2CLI"
-	}
+	},
+        "medialib": {
+            "__type__": "medialib/MediaLib",
+	    "medialib_dirs": [
+		"/media/media/Music", 
+		"/media/media/Torrents"
+	    ],
+	    "youtube_playlists": [
+		"FL_VkJGWFV9ZEIv87E-0NM5w"
+	    ]
+        }
     },
     "servers": {
         "console": {

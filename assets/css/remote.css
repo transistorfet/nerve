@@ -5,6 +5,13 @@ button.nerve-button {
     font-size: 1.25em;
 }
 
+input.nerve-slider {
+    height: 2.50em;
+    font-size: 1.25em;
+    margin-left: 1.0em;
+    margin-right: 1.0em;
+}
+
 .nerve-display {
     font-size: 1.25em;
 }

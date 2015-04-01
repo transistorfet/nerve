@@ -1,7 +1,16 @@
 {
     "modules" : {
         "__type__": "config/Modules",
-        "autoload": [ "base", "computer", "datalog", "http", "medialib", "player.vlc", "remote", "serial" ]
+        "autoload": [
+            "base",
+            "computer",
+            "datalog",
+            "http",
+            "medialib",
+            "player",
+            "remote",
+            "serial"
+        ]
     },
     "devices": {
 	"test": {
@@ -63,7 +72,8 @@
             ]
         },
         "player": {
-            "__type__": "player/vlc/VLCHTTP"
+            "__type__": "player/PlayerDevice",
+            "backend": "player/xmms2cli/Xmms2CLI"
         },
         "rgb": {
             "__type__": "serial/NerveSerialDevice",

@@ -13,6 +13,12 @@
     text-align: left;
 }
 
+.medialib-list td:first-child
+{
+    text-align: center;
+    width: 1.5em;
+}
+
 .medialib-list table,
 .medialib-list th,
 .medialib-list td

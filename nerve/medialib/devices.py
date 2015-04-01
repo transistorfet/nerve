@@ -115,21 +115,15 @@ class MediaLib (nerve.Device):
         if name is None:
             name = self.current
         playlist = Playlist(name)
-        media_list = playlist.get_list()
-        if media_list is  None:
-            return 0
-        media_list.sort()
-        return playlist.set_list(media_list)
+        playlist.sort()
+        return playlist.get_size()
 
     def shuffle_playlist(self, name=None):
         if name is None:
             name = self.current
         playlist = Playlist(name)
-        media_list = playlist.get_list()
-        if media_list is  None:
-            return 0
-        random.shuffle(media_list)
-        return playlist.set_list(media_list)
+        playlist.shuffle()
+        return playlist.get_size()
 
     def get_media_info(self, media_list):
         info = [ ]
@@ -161,15 +155,19 @@ class Playlist (object):
         if not os.path.isdir(plroot):
             os.mkdir(plroot)
         self.filename = plroot + '/' + name + '.m3u'
+        #if not os.path.isfile(self.filename):
+        #    raise Exception(self.filename + " playlist not found")
         if not os.path.isfile(self.filename):
-            raise Exception(self.filename + " playlist not found")
+            with open(self.filename, 'w') as f:
+                pass
         self.media_list = [ ]
 
     @staticmethod
     def create(self, name):
+        plroot = nerve.configdir() + '/playlists'
         filename = plroot + '/' + name + '.m3u'
         if not os.path.isfile(filename):
-            with open(self.filename, 'w') as f:
+            with open(filename, 'w') as f:
                 pass
 
     @staticmethod
@@ -207,6 +205,10 @@ class Playlist (object):
                 f.write("#EXTINF:%d, %s - %s\n" % (float(media['duration']), media['artist'], media['title']))
                 f.write(media['filename'] + "\n")
 
+    def get_size(self):
+        self.load()
+        return len(self.media_list)
+
     def get_list(self):
         self.load()
         return self.media_list
@@ -241,4 +243,13 @@ class Playlist (object):
         self.media_list = [ ]
         self.save()
 
+    def shuffle(self):
+        self.load()
+        random.shuffle(self.media_list)
+        self.save()
+
+    def sort(self):
+        self.load()
+        self.media_list = sorted(self.media_list, key=lambda media: media['filename'])
+        self.save()
 

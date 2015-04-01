@@ -34,20 +34,11 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
 
         authdata = self.headers.get('Authorization')
         if authdata:
-            #authdata = authdata.split(' ')[-1].decode('base64')
-            #username = authdata.split(':')[0]
-            #password = authdata.split(':')[1]
             (username, _, password) = base64.b64decode(bytes(authdata.split(' ')[-1], 'utf-8')).decode('utf-8').partition(':')
-
             if username == self.server.username and password == self.server.password:
                 return True
 
-        self.send_response(401)
-        self.send_header('WWW-Authenticate', 'Basic realm="Secure Area"')
-        self.send_header('Content-Type', 'text/html')
-        self.send_header('Content-Length', len(content))
-        self.end_headers()
-        self.wfile.write(bytes('Authorization required.'))
+        self.send_content(401, 'text/html', 'Authorization required.', [ ('WWW-Authenticate', 'Basic realm="Secure Area"') ])
         return False
 
     def do_GET(self):
@@ -88,23 +79,36 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
 
     def do_request(self, request):
         controller = self.server.make_controller(request)
-        success = controller.handle_request(request)
-        # TODO fetch the error from the controller
-        self.send_content(200 if success else 404, controller.get_mimetype(), controller.get_output())
+        controller.handle_request(request)
+
+        mimetype = controller.get_mimetype()
+        redirect = controller.get_redirect()
+        error = controller.get_error()
+        output = controller.get_output()
+
+        if redirect:
+            self.send_content(302, mimetype, output, [ ('Location', redirect) ])
+        else:
+            self.send_content(200 if not error else 404, mimetype, output)
         return
 
-    def send_content(self, errcode, mimetype, content):
+    def send_content(self, errcode, mimetype, content, headers=None):
+        if isinstance(content, str):
+            content = bytes(content, 'utf-8')
         self.send_response(errcode)
         self.send_header('Content-Type', mimetype)
         self.send_header('Content-Length', len(content))
+        if headers:
+            for (header, value) in headers:
+                self.send_header(header, value)
         self.end_headers()
         self.wfile.write(content)
 
     def send_400(self):
-        self.send_content(400, 'text/plain', bytes('400 Bad Request'))
+        self.send_content(400, 'text/plain', '400 Bad Request')
 
     def send_404(self):
-        self.send_content(404, 'text/plain', bytes('404 Not Found'))
+        self.send_content(404, 'text/plain', '404 Not Found')
 
     @staticmethod
     def is_valid_path(path):
@@ -121,7 +125,6 @@ class HTTPServer (nerve.Server, socketserver.ThreadingMixIn, http.server.HTTPSer
 
     def __init__(self, **config):
         nerve.Server.__init__(self, **config)
-        self.root = 'nerve/http/wwwdata'
 
         self.username = self.get_setting("username")
         self.password = self.get_setting("password")
