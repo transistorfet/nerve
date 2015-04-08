@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C/DTD HTML 4.01//EN">
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/theme.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/widgets.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/medialib.css" />
+
+    <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/assets/js/widgets.js"></script>
+    <script type="text/javascript" src="/assets/js/medialib.js"></script>
+</head>
+<body>
+
+<div class="nerve-tabs">
+    <div class="tab" data-content="/remote">Remote</div>
+    <div class="tab selected" data-content="/medialib">Playlists</div>
+    <div class="tab" data-content="/medialib/search">Media Search</div>
+    <div class="tab" data-content="/datalog/graph">Datalogs</div>
+    <div class="tab" data-content="/config">Config</div>
+    <div style="clear: both;"></div>
+</div>
+
+<hr>
+
+<div class="nerve-display">
+    <div class="nerve-query" data-query="player/getsong" data-time="2000">(no connection)</div>
+</div>
+
+<div class="nerve-row">
+    <button data-query="player/previous" class="nerve-button">Previous</button>
+    <button data-query="player/toggle" class="nerve-button">PlayPause</button>
+    <button data-query="player/next" class="nerve-button">Next</button>
+</div>
+
+<hr>
+
+<div id="nerve-notice" style="display: none;"></div>
+<div id="nerve-error" style="display: none;"></div>
+
+<div class="medialib-playlist">
+    <div>
+        <button type="submit" class="pl_delete">-</button>
+        <select id="select-playlist">
+            <% for name in list_of_playlists: %>
+                <option value="<%= name %>"><%= name %></option>
+            <% end %>
+        </select>
+        <button type="submit" class="pl_load">Load</button>
+        <button class="nerve-button" data-query="player/clear_playlist">Clear</button>
+    </div>
+
+    <div class="medialib-list">
+        <button type="submit" class="pl_remove">Remove Selected</button>
+        <button type="submit" class="pl_sort">Sort</button>
+        <button type="submit" class="pl_shuffle">Shuffle</button>
+
+        <div id="playlist-contents">
+        </div>
+
+        <button type="submit" class="pl_remove">Remove Selected</button>
+        <button type="submit" class="pl_sort">Sort</button>
+        <button type="submit" class="pl_shuffle">Shuffle</button>
+    </div>
+</div>
+
+<div class="nerve-form-list">
+    <h4>Create Playlist</h4>
+    <div>
+        <input type="text" id="pl_name" />
+        <button type="submit" class="pl_create">Create</button>
+    </div>
+</div>
+
+</body>
+</html> 
+ 

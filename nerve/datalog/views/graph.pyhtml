@@ -1,0 +1,67 @@
+<!DOCTYPE html PUBLIC "-//W3C/DTD HTML 4.01//EN">
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/theme.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/widgets.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/datalog.css" />
+
+    <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/assets/js/widgets.js"></script>
+    <script type="text/javascript" src="/assets/js/datalog.js"></script>
+</head>
+<body>
+
+<div class="nerve-tabs">
+    <div class="tab" data-content="/remote">Remote</div>
+    <div class="tab" data-content="/medialib">Playlists</div>
+    <div class="tab" data-content="/medialib/search">Media Search</div>
+    <div class="tab selected" data-content="/datalog/graph">Datalogs</div>
+    <div class="tab" data-content="/config">Config</div>
+    <div style="clear: both;"></div>
+</div>
+
+<hr>
+
+<h3>Datalog Data Display</h3>
+
+<div id="nerve-notice" style="display: none;"></div>
+<div id="nerve-error" style="display: none;"></div>
+
+<div>
+    <select id="select-datalog">
+	<% for name in datalog_list: %>
+	    <option value="<%= name %>"><%= name %></option>
+	<% end %>
+    </select>
+    <button type="submit" class="dl_add">+</button>
+    <button type="submit" class="dl_remove">-</button>
+</div>
+
+<br />
+
+<div class="nerve-graph" data-log="<%= datalog_name %>">
+    <div class="nerve-graph column">
+	<canvas id="graph" width="600" height="400" style="border: 1px solid #000000;">
+	</canvas>
+
+	<div class="nerve-graph controls">
+	    <button id="oldest">&lt;&lt;</button>
+	    <button id="older">&lt;</button>
+	    <button id="newer">&gt;</button>
+	    <button id="newest">&gt;&gt;</button>
+	    <button id="zoomin">+</button>
+	    <button id="zoomout">-</button>
+	</div>
+    </div>
+    <div class="nerve-graph column">
+	<div class="nerve-graph legend">
+	</div>
+    </div>
+</div>
+
+</body>
+</html> 

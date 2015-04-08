@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C/DTD HTML 4.01//EN">
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/theme.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/widgets.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/medialib.css" />
+
+    <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/assets/js/widgets.js"></script>
+    <script type="text/javascript" src="/assets/js/medialib.js"></script>
+</head>
+<body>
+
+<a name="top"></a>
+<a href="/">Root</a> | <a href="/remote/index.html">Remote</a> | <a href="/remote/player.html">Player</a> | <a href="playlist.html">Current Playlist</a> | <a href="add.html">Add Media</a> | <a href="youtube_search.html">Search YouTube</a>
+<hr>
+
+<%
+    media_list = None
+    if py._REQTYPE == "POST":
+	if py.POST('yt_search'):
+	    import requests
+	    import json
+	    url = "http://ajax.googleapis.com/ajax/services/search/video?v=1.0&rsz=large&q=%s" % (py.POST('q'),)
+	    r = requests.get(url)
+	    if r.text:
+		media_list = json.loads(r.text)
+		#echo(json.dumps(media_list, sort_keys=True, indent=4, separators=(',', ':')))
+	    end
+	else:
+	    medialib = nerve.get_device('medialib')
+	    num = medialib.html_add_urls(py._POST)
+	    if num > 0:
+		%><span class="success">Successfully added <%= num %> files to playlist</span><%
+	    else:
+		%><span class="error">Error: No files added to playlist</span><%
+	    end
+	end
+    end
+%>
+
+<form method="post" action="<%= py._PATH %>">
+    <input type="text" name="q" value="<%= py.ARGS('q') %>" />
+    <button type="submit" name="yt_search" value="1">Search</button>
+</form>
+
+<% if media_list and 'results' in media_list['responseData']: %>
+    <form method="post" action="<%= py._PATH %>">
+    <div class="medialist">
+
+	<button type="submit" name="pl_replace" value="1">Replace</button>
+	<button type="submit" name="pl_enqueue" value="1">Enqueue</button>
+
+	<table>
+	<thead><tr>
+	    <th></th>
+	    <th></th>
+	    <th>Title</th>
+	</tr></thead>
+	<tbody>
+	    <% for media in media_list['responseData']['results']: %>
+		<tr>
+		    <td><input type="checkbox" name="urls" value="<%= urlencode(media['url']) %>" /></td>
+		    <td><img src="<%= media['tbUrl'] %>"></td>
+		    <td><%= media['title'] %></td>
+		</tr>
+	    <% end %>
+	</tbody>
+	</table>
+
+	<button type="submit" name="pl_replace" value="1">Replace</button>
+	<button type="submit" name="pl_enqueue" value="1">Enqueue</button>
+
+    </div>
+    </form>
+    <a href="#top">Top</a>
+
+<% elif py.POST('yt_search'): %>
+    <div style="font-size: 0.8em;">
+	There are no search results
+    </div>
+<% end %>
+
+</body>
+</html> 
+ 

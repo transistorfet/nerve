@@ -1,0 +1,65 @@
+
+<% if media_list: %>
+    <%
+    has_album = True if 'album' in media_list[0] else False
+    has_genre = True if 'genre' in media_list[0] else False
+    has_title = True if 'title' in media_list[0] else False
+    has_track_num = True if 'track_num' in media_list[0] else False
+    %>
+
+    <div class="medialib-list">
+	<table>
+	<thead><tr>
+	    <th></th>
+	    <th>Artist</th>
+	    <% if has_title: %>
+		<th>Title</th>
+	    <% end %>
+	    <% if has_album: %>
+		<th>Album</th>
+	    <% end %>
+	    <% if has_track_num: %>
+		<th>#</th>
+	    <% end %>
+	    <% if has_genre: %>
+		<th>Genre</th>
+	    <% end %>
+	</tr></thead>
+	<tbody>
+	    <% for media in media_list: %>
+		<tr>
+		    <%
+		    if mode == 'artist':
+			dataval = 'artist=' + urlencode(media['artist'])
+		    elif mode == 'album' or mode == 'genre':
+			dataval = 'artist=' + urlencode(media['artist']) + '&album=' + urlencode(media['album'])
+		    elif mode == 'title' or mode == 'tags':
+			dataval = 'id=' + str(media['id'])
+		    end
+		    %>
+		    <td><input type="checkbox" name="media" value="<%= dataval %>" /></td>
+		    <!-- <td><a href="<%= py._PATH %>?mode=title&order=artist&search=<%= urlencode(media['artist']) %>"><%= media['artist'] %></a></td> -->
+		    <td><a href="#" class="expand-artist"><%= media['artist'] %></a></td>
+		    <% if has_title: %>
+			<td><%= media['title'] %></td>
+		    <% end %>
+		    <% if has_album: %>
+			<td><%= media['album'] %></td>
+		    <% end %>
+		    <% if has_track_num: %>
+			<td><%= media['track_num'] %></td>
+		    <% end %>
+		    <% if has_genre: %>
+			<td><%= media['genre'] %></td>
+		    <% end %>
+		</tr>
+	    <% end %>
+	</tbody>
+	</table>
+    </div>
+
+<% elif py.ARGS('mode'): %>
+    <div>No media files found using the given search criteria</div>
+<% end %>
+
+

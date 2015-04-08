@@ -1,0 +1,125 @@
+{
+    "modules": {
+        "__type__": "config/Modules",
+        "autoload": [
+            "base",
+            "computer",
+            "datalog",
+            "http",
+            "medialib",
+            "player.vlc",
+            "remote",
+            "serial"
+        ]
+    },
+    "devices": {
+        "medialib": {
+            "__type__": "medialib/MediaLib",
+	    "medialib_dirs": [
+		"/media/media/Music", 
+		"/media/media/Torrents"
+	    ],
+	    "youtube_playlists": [
+		"FL_VkJGWFV9ZEIv87E-0NM5w"
+	    ]
+        },
+        "computer": {
+            "__type__": "computer/SystemDevice"
+        },
+        "rgb": {
+            "baud": 19200,
+            "file": "/dev/ttyACM0",
+            "__type__": "serial/NerveSerialDevice"
+        },
+        "sensors": {
+            "baud": 19200,
+            "file": "/dev/ttyACM1",
+            "__type__": "serial/NerveSerialDevice"
+        },
+	"player": {
+	    "__type__": "player/vlc/VLCHTTP"
+	},
+        "datalogs": {
+            "manager": {
+                "__type__": "datalog/DatalogManager"
+            },
+            "temperature": {
+                "__type__": "datalog/DatalogDevice",
+                "datapoints": [
+                    {
+                        "datatype": "NUMERIC",
+                        "label": "Inside Temperature",
+                        "max": 50,
+                        "min": 0,
+                        "name": "inside_temp",
+                        "ref": "/devices/sensors/temp0",
+                        "units": "C"
+                    },
+                    {
+                        "datatype": "NUMERIC",
+                        "label": "Window Temperature",
+                        "max": 50,
+                        "min": 0,
+                        "name": "window_temp",
+                        "ref": "/devices/sensors/temp1",
+                        "units": "C"
+                    }
+                ],
+                "name": "temperatures",
+                "update_time": 60
+            }
+        }
+
+    },
+    "servers": {
+        "console": {
+            "controllers": {
+                "__default__": {
+                    "__type__": "base/ShellController"
+                }
+            },
+            "__type__": "base/Console"
+        },
+        "udp": {
+	    "port": 5959,
+            "controllers": {
+                "__default__": {
+                    "__type__": "base/QueryController"
+                }
+            },
+            "__type__": "base/UDPServer"
+        },
+        "http": {
+	    "username": "",
+	    "password": "",
+	    "port": 8888,
+            "controllers": {
+                "__default__": {
+                    "__type__": "base/FileController",
+		    "root" : "assets"
+                },
+                "assets": {
+                    "__type__": "base/FileController",
+		    "root" : "assets"
+                },
+                "query": {
+                    "__type__": "base/QueryController"
+                },
+                "config": {
+                    "__type__": "base/ConfigController"
+                },
+                "medialib": {
+                    "__type__": "medialib/MediaLibController"
+                },
+                "datalog": {
+                    "__type__": "datalog/DatalogController"
+                },
+                "remote": {
+                    "__type__": "remote/RemoteController"
+                }
+            },
+            "__type__": "http/HTTPServer"
+        }
+    }
+}
+

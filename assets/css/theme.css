@@ -1,0 +1,60 @@
+
+html {
+    font-family: Geneva, "DejaVu Sans", "Arial Unicode MS", sans-serif;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+}
+
+body {
+    margin: 4px;
+}
+
+h5,
+h6 {
+    margin-top: 0px;
+    margin-bottom: 4px;
+}
+
+hr {
+    border-color: #70B008;
+}
+
+button {
+    color: #000;
+    background: #f7f7f7;
+    border-top: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+    border-bottom: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+}
+
+button:hover {
+    background: #80C008;
+    color: #fff;
+}
+
+input, textarea, select {
+    background: #EFFFDF;
+    font: 14px sans-serif;
+}
+
+#nerve-notice {
+    border: 1px solid #333;
+    padding: 5px;
+    background-color: #9f9;
+    margin-bottom: 20px;
+}
+
+#nerve-error {
+    border: 1px solid #333;
+    padding: 5px;
+    background-color: #f99;
+    margin-bottom: 20px;
+}
+
+.nerve-display {
+    border: 1px solid #70B008;
+    background: #DFFFBF;
+}
+

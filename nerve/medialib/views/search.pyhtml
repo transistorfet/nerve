@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C/DTD HTML 4.01//EN">
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/theme.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/widgets.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/medialib.css" />
+
+    <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/assets/js/widgets.js"></script>
+    <script type="text/javascript" src="/assets/js/medialib.js"></script>
+</head>
+<body>
+
+<div class="nerve-tabs">
+    <div class="tab" data-content="/remote">Remote</div>
+    <div class="tab" data-content="/medialib">Playlists</div>
+    <div class="tab selected" data-content="/medialib/search">Media Search</div>
+    <div class="tab" data-content="/datalog/graph">Datalogs</div>
+    <div class="tab" data-content="/config">Config</div>
+    <div style="clear: both;"></div>
+</div>
+
+<a name="top"></a>
+<hr>
+
+<div id="nerve-notice" style="display: none;"></div>
+<div id="nerve-error" style="display: none;"></div>
+
+<div class="medialib-search">
+    <div>
+        <a href="/medialib/search?mode=artist">By Artist</a>
+        <a href="/medialib/search?mode=album">By Album</a>
+        <a href="/medialib/search?mode=genre&order=genre">By Genre</a>
+        <a href="/medialib/search?mode=title&order=artist">By Title</a>
+        <a href="/medialib/search?mode=album&order=modified">By Modified Date</a>
+        <a href="/medialib/search?mode=album&order=modified&recent=52">Most Recent</a>
+        <a href="/medialib/search?mode=album&order=random">Random</a>
+    </div>
+
+    <div>
+        <% for ch in range(ord('A'), ord('Z') + 1): %>
+            <a href="/medialib/search?mode=title&order=artist&search=<%= chr(ch) %>%"><%= chr(ch) %></a>
+        <% end %>
+    </div>
+
+    <div>
+        <select id="mode">
+            <option value="title" <%= ' selected' if mode == 'title' else '' %>>title</option>
+            <option value="artist" <%= ' selected' if mode == 'artist' else '' %>>artist</option>
+            <option value="album" <%= ' selected' if mode == 'album' else '' %>>album</option>
+            <option value="genre" <%= ' selected' if mode == 'genre' else '' %>>genre</option>
+        </select>
+
+        <select id="media_type">
+            <option value="" <%= ' selected' if not media_type else '' %>>any</option>
+            <option value="audio" <%= ' selected' if media_type == 'audio' else '' %>>audio</option>
+            <option value="video" <%= ' selected' if media_type == 'video' else '' %>>video</option>
+        </select>
+
+        <input type="text" id="recent" value="<%= recent if recent else '' %>">
+
+        <br />
+
+        <select id="order">
+            <option value="artist" <%= ' selected' if order == 'artist' else '' %>>artist</option>
+            <option value="album" <%= ' selected' if order == 'album' else '' %>>album</option>
+            <option value="title" <%= ' selected' if order == 'title' else '' %>>title</option>
+            <option value="genre" <%= ' selected' if order == 'genre' else '' %>>genre</option>
+            <option value="tags" <%= ' selected' if order == 'tags' else '' %>>tags</option>
+            <option value="modified" <%= ' selected' if order == 'modified' else '' %>>last modified</option>
+            <option value="random" <%= ' selected' if order == 'random' else '' %>>random</option>
+        </select>
+        <input type="text" id="search" value="<%= search if search else '%%' %>">
+        <button type="submit" id="pl_search" value="">Search</button>
+    </div>
+
+    <div id="search-table" style="display: none;">
+        <hr>
+        <div>
+            <select id="select-playlist">
+            <% for name in list_of_playlists: %>
+                <option value="<%= name %>"><%= name %></option>
+            <% end %>
+            </select>
+
+            <button type="submit" class="pl_replace" value="1">Replace</button>
+            <button type="submit" class="pl_enqueue" value="1">Enqueue</button>
+            <button type="submit" class="pl_playnow" value="1">Play Now</button>
+        </div>
+
+        <div id="search-results">
+        </div>
+
+        <button type="submit" class="pl_replace" value="1">Replace</button>
+        <button type="submit" class="pl_enqueue" value="1">Enqueue</button>
+        <button type="submit" class="pl_playnow" value="1">Play Now</button>
+        <a href="#top">Top</a>
+    </div>
+</div>
+
+<hr>
+
+</body>
+</html> 
+ 

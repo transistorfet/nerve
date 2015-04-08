@@ -1,0 +1,252 @@
+ 
+- resource identifiers should conform to the uri spec...
+
+	http://localhost:8888/player.next
+	http://localhost:8888/player/next
+
+	localhost:8888/player/next
+
+	/player/next
+
+	nerve://192.168.1.180/player/next	# 'nerve' being the raw protocol
+
+	http://192.168.1.180/player/next
+
+
+- the query function would take a valid uri, parse it, as well as taking arguments
+
+	nerve.query('http://localhost:8888/player/pl_add', 'a string of arguments')
+	nerve.query('http://localhost:8888/player/pl_add', [ 'list', 'of', 'arguments' ])
+	nerve.query('http://localhost:8888/player/pl_add', { 'dict' : 'arguments' })
+
+	(or should the second argument be only a string or list, and have an optional third argument that's the dict.
+	Either way, you also need to pass a source address too somehow...)
+
+	nerve.query(query, args, src=None) # or should src be 'replyTo' or something
+	nerve.query('http://localhost:8888/player/pl_add', 'a string of arguments', src='console')
+	nerve.query('http://localhost:8888/player/pl_add', 'a string of arguments', src='localhost:8888/console')
+
+- Populating a device tree???
+	nerve.add_node('player', 'http://localhost:8888/player')
+	nerve.add_node('player', AliasDevice('http://localhost:8888/player')) # or this??
+	nerve.add_node('medialib', MediaLib(config='medialib')
+
+	config = {
+		'medialib' : { 'path' : [ '/media/media/Music', '/media/media/Torrents' ] }
+	}
+
+
+
+	nerve.query('player.next', '')
+	nerve.query('http://192.168.1.180:8888/player/next', '')
+	nerve.query('192.168.1.180:8888:player.next', '')  # ???
+
+
+-----
+
+2014/07/22:
+
+config consists of a list of 'servers' (instead of portals...) and a list of root devices, and a device type
+The device name must be unique, and can then be used as the root index into the global configs.  The
+device type could maybe be stored there too...
+
+config = {
+	'devices' : [ 'player', 'medialib', 'rgb', 'deskclock' ],
+
+	'player' : {
+		'type' : 'vlchttp.VLCHTTP',
+		'vlcuser' : 'person',
+		'vlcpasswd' : 'somethingencryptedisuppose',
+		'vlcport' : 7999
+	},
+
+	'medialib' : {
+		'type' : 'medialib.MediaLib',
+		'path' : [ '/media/media/Music', '/media/media/Torrents' ],
+		'updatehours' : 24,
+	},
+
+	'rgb' : {
+		'type' : 'serial.NerveSerialDevice',
+		'file' : '/dev/ttyACM1',
+		'baud' : 19200
+	},
+
+	'deskclock' : {
+		'type' : 'deskclock.DeskClock',
+		'file' : '/dev/ttyACM0',
+		'baud' : 19200
+	}'
+
+	'servers' : [ 'http', 'console', 'udpserver' ]
+
+	'udpserver' : {
+		'type' : 'raw.UDPServer',
+		'port' : 5959
+	}
+}
+
+
+
+Possibly a new message system?
+
+	msg = {
+		'to' : 'player.next',
+		'from' : 'udpserver', # <Object ???>
+		'args' : [ ]
+	}
+
+	- it needs to be able to send a message back to whomever sent it (the 'from' field)
+	- it can be partially represented as a uri:
+		udp://localhost/player/next
+		udp://localhost/player?cmd=next
+		udp://localhost/player/add?url=file:///media/media/Torrents/song.mp3
+		/player/next	# (localhost, doesn't need protocol)
+
+
+- the primary methods for functions to be invoked are: web request, raw request, and internally code (including code in pyhtml pages, but
+  necessarily including all helper functions??)
+  It must be possible to have one function that works for all three
+
+Web Request:
+    http://localhost/rgb/ir?P&4004&100BCBD
+    http://localhost/rgb/ir?a1=P&a2=4004&a3=100BCBD
+
+Raw Request:
+    rgb.ir P 4004 100BCBD
+    /rgb/ir P 4004 100BCBD
+
+    /rgb/ir type=P&addr=4004&code=100BCBD	# this doesn't work for the serial RGBNodes, because it's too much to parse out
+
+Internal:
+    nerve.request('/rgb/ir', 'P', '4004', '100BCBD')
+    return_value?? = nerve.request('/rgb/ir', 'P', '4004', '100BCBD')
+
+    playlist = nerve.request('/player/getplaylist')
+    playlist = nerve.request('player', cmd='getplaylist')	# or the command is an argument
+    player = nerve.get_device('player'); playlist = player.getplaylist()	# this isn't good because a request should be something specific
+    player = nerve.get_device('player'); playlist = player.req_getplaylist()
+    playlist = nerve.request('player.getplaylist')
+    playlist = nerve.request('player/getplaylist')
+    playlist = nerve.request('player getplaylist')
+
+    playlist = nerve.request('player enqueue file:///W:/nerve/config/raven_medialib/playlists/Default.m3u')
+    playlist = nerve.request('/player/enqueue file:///W:/nerve/config/raven_medialib/playlists/Default.m3u')
+    playlist = nerve.request('/player/enqueue %s' % (url,))
+    playlist = nerve.request('/player/enqueue', url)
+
+- how do you reconcile the param names in web requests, and the lack of such param names in raw requests...
+  compared to the internal requests, it seems more natural to have non-named params, so they can either be thrown away when you
+  pass them to the function or....
+
+
+	def req_ir(self, type, code, code2=None):
+	    if type == 'P':
+		send_panasonic(code, code2)
+	    elif type == 'S':
+		send_sony(code)
+
+
+
+def request(*args):
+    if len(args) == 0:
+	return False
+    elif len(args) == 1:
+	args = args[0].split(' ')
+
+    ref = nerve.resolve_uri(args[0])	# this would return an object that can be used to send the command to another computer, or
+					# which can itself be invoked??? this doesn't work!! you need to treat those things differently
+					# still...
+    obj, request = ...
+    obj.request(request, args)
+    # etc
+
+class Device:
+    def request(self, req, args):
+	func = getattr('req_' + req)
+	func(args)
+
+class HTTP:
+    def request(self, req, args):
+	r = requests.post(req, args)
+
+
+
+Device.request(address, request, args)
+- for a local request, the address would be None (this might be a lower level method, with the address and request being split)
+- either way, this argues for a distinct request param that is neither the address nor the args
+- now the question is, is the device name part of the address, or part of the request? ("http://localhost/", "player/next")
+  or ("http://localhost/player", "next")
+- I prefer the second one, but the main request() function should automatically parse this a single string, or a string + arguments?...  
+    "http://localhost:8888/player/next"
+    "udp://localhost/player/next"
+
+    "localhost:8888/player/next"
+    "/player/next"
+
+    "player/next"	# this is nicer to write, but it's potentially conflicting with the missing-protocol syntax.  However, it could solved
+			# if it is possible to include local devices while searching dns records.
+    "http://player/next"	# if that were the case then this syntax would also be valid, which... I'm not sure if that's a good thing or not,
+				# but I kind of feel like not...  depends on how we parse it...
+
+    "http://localhost:8888/player.next" # kind of a bad idea
+
+- should you abandon the whole . syntax in favor of a uri?
+- yes, i like the idea of a unified namespace.  The only place I really used dot syntax where the direct device is not the top level is from the
+  phone, for eg. 'cr.player.next', and since cr just refers to a server, it could really instead be udp://cr/player/next where cr is either
+  specified in /etc/hosts, or there could be some kind of custom hosts file or host discovery or something
+- if this is going to happen, then there should be a unified resource tree, such that no matter what protocol you use, the same path structure
+  will apply.  If a request can't be satisfied on a certain protocol, then it will return an error or redirect message
+
+- now... where does this leave the need to specify 'default' devices, such that different components can control devices through a redirectable
+  name (ie. local device player redirects to a remote player device)
+
+---------
+
+2015/01/19:
+
+player/load_playlist?arg1=Nine+Inch+Nails
+
+
+---------
+
+2015/03/15:
+
+internal vfs:
+/
+    /modules
+        /modules/datalog
+            /modules/datalog/controllers/DatalogController
+            /modules/datalog/devices/DatalogManager
+            /modules/datalog/devices/DatalogDevice
+        /modules/serial
+            /modules/serial/devices/SerialDevice
+            /modules/serial/devices/NerveSerialDevice
+        /modules/http
+            /modules/http/servers/HTTPServer
+
+    /devices
+        /devices/datalog (type = /modules/datalog/devices/DatalogManager)
+            /devices/datalog/temperature (type = /modules/datalog/devices/DatalogDevice)
+        /devices/tv (type = /modules/local/TV)
+            { serial = /devices/rgb }
+            /devices/tv/power (callable function essentially)
+        /devices/lamp/ (type = /modules/base/ConfigObjectTable)
+            /devices/lamp/power (type = /modules/base/SymbolicLink) -> /devices/sensors/relay_toggle
+            /devices/lamp/is_on (type = /modules/base/CustomMethodOrSomething):
+                intensity = nerve.query("/devices/sensors/intensity")
+                if intensity > xx:
+                    return True
+                return False
+    /servers
+        /servers/http (type = /modules/http/servers/HTTPServer)
+            { port = 8888 }
+
+
+
+An alternative to /modules is /types.  They can also be grouped by type
+/types/servers/http/HTTPServer
+/types/devices/datalog/DatalogManager
+/types/devices/datalog/DatalogDevice
+
+

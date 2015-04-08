@@ -1,0 +1,134 @@
+{
+    "modules" : {
+        "__type__": "config/Modules",
+        "autoload": [
+            "base",
+            "computer",
+            "datalog",
+            "http",
+            "medialib",
+            "player",
+            "remote",
+            "serial"
+        ]
+    },
+    "devices": {
+	"test": {
+	    "__type__": "config/SymbolicLink",
+	    "link": "devices/datalogs"
+	},
+        "computer": {
+            "__type__": "computer/SystemDevice"
+        },
+        "datalogs": {
+            "manager": {
+                "__type__": "datalog/DatalogManager"
+            },
+            "testlog": {
+                "__type__": "datalog/DatalogDevice",
+                "datapoints": [
+                    {
+                        "datatype": "NUMERIC",
+                        "label": "kitty CPU Temperature",
+                        "max": 100,
+                        "min": 0,
+                        "name": "kitty_temp",
+                        "ref": "/devices/computer/cputemp",
+                        "units": "C"
+                    },
+                    {
+                        "datatype": "NUMERIC",
+                        "label": "kitty System Temperature #1",
+                        "max": 100,
+                        "min": 0,
+                        "name": "kitty_systemp1",
+                        "ref": "/devices/computer/systemp1",
+                        "units": "C"
+                    },
+                    {
+                        "datatype": "NUMERIC",
+                        "label": "kitty System Temperature #2",
+                        "max": 100,
+                        "min": 0,
+                        "name": "kitty_systemp2",
+                        "ref": "/devices/computer/systemp2",
+                        "units": "C"
+                    }
+                ],
+                "name": "testlog",
+                "update_time": 60
+            }
+        },
+        "medialib": {
+            "__type__": "medialib/MediaLib",
+            "medialib_dirs": [
+                "/media/media/Music",
+                "/media/media/Torrents"
+            ],
+            "youtube_playlists": [
+                "PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4",
+                "FL_VkJGWFV9ZEIv87E-0NM5w",
+                "PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0"
+            ]
+        },
+        "player": {
+            "__type__": "player/PlayerDevice",
+            "backend": "player/vlc/VLCHTTP"
+        },
+        "rgb": {
+            "__type__": "serial/NerveSerialDevice",
+            "baud": 19200,
+            "file": "/dev/ttyACM1"
+        }
+    },
+    "servers": {
+        "console": {
+            "__type__": "base/Console",
+            "controllers": {
+                "__default__": {
+                    "__type__": "base/ShellController"
+                }
+            }
+        },
+        "shell": {
+            "__type__": "base/TCPServer",
+            "port": 6060,
+            "controllers": {
+                "__default__": {
+                    "__type__": "base/ShellController"
+                }
+            }
+        },
+        "http": {
+            "__type__": "http/HTTPServer",
+            "controllers": {
+                "__default__": {
+                    "__type__": "base/FileController",
+                    "root": "assets"
+                },
+                "assets": {
+                    "__type__": "base/FileController",
+                    "root": "assets"
+                },
+                "config": {
+                    "__type__": "base/ConfigController"
+                },
+                "datalog": {
+                    "__type__": "datalog/DatalogController"
+                },
+                "medialib": {
+                    "__type__": "medialib/MediaLibController"
+                },
+                "query": {
+                    "__type__": "base/QueryController"
+                },
+                "remote": {
+                    "__type__": "remote/RemoteController"
+                }
+            },
+            "password": "",
+            "port": 8888,
+            "username": ""
+        }
+    }
+}

@@ -1,0 +1,54 @@
+<tab name="Comp Room">
+	<text tag="cr.player.getsong" />
+	<row>
+		<button name="Previous" tag="cr.player.previous" />
+		<button name="PlayPause" tag="cr.player.toggle" />
+		<button name="Next" tag="cr.player.next" />
+	</row>
+	<row>
+		<button name="Lamp" tag="cr.deskclock.relay_toggle" />
+	</row>
+	<row>
+		<button name="Power" tag="cr.rgb.power" />
+		<button name="Solid" tag="cr.rgb.channel 3" />
+		<button name="Strobe" tag="cr.rgb.channel 6" />
+		<button name="Swirl" tag="cr.rgb.channel 8" />
+	</row>
+	<label text="Intensity" />
+	<seekbar tag="cr.rgb.intensity" max="255" />
+	<label text="Delay" />
+	<seekbar tag="cr.rgb.delay" max="30000" />
+	<row>
+		<column>
+			<button name="Channel Up" tag="cr.rgb.chanup" />
+			<button name="Channel Down" tag="cr.rgb.chandown" />
+		</column>
+		<column>
+			<button name="Index Up" tag="cr.rgb.indexup" />
+			<button name="Index Down" tag="cr.rgb.indexdown" />
+		</column>
+	</row>
+	<row>
+		<button name="Warm White" tag="cr.rgb.color FFC040" />
+	</row>
+	<row>
+		<button name="1" tag="cr.rgb.index 1" />
+		<button name="2" tag="cr.rgb.index 2" />
+		<button name="3" tag="cr.rgb.index 3" />
+		<button name="4" tag="cr.rgb.index 4" />
+		<button name="5" tag="cr.rgb.index 5" />
+	</row>
+	<row>
+		<button name="6" tag="cr.rgb.index 6" />
+		<button name="7" tag="cr.rgb.index 7" />
+		<button name="8" tag="cr.rgb.index 8" />
+		<button name="9" tag="cr.rgb.index 9" />
+		<button name="10" tag="cr.rgb.index 10" />
+	</row>
+	<label text="Red" />
+	<seekbar tag="cr.rgb.red" max="255" />
+	<label text="Green" />
+	<seekbar tag="cr.rgb.green" max="255" />
+	<label text="Blue" />
+	<seekbar tag="cr.rgb.blue" max="255" />
+</tab> 
