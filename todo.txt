@@ -1,15 +1,15 @@
 
-* it should be possible to search for media and then play an item directly somehow...  It should be possible to use nerve to control vlc
-  to play a movie, for example.  It should then go back to playing what it was playing or something, or there should be an easy way to go
-  back to the place you were at last (last playlist and item number).
+* add movies to the thing somehow.  ID3 tags don't really work, so it'd have to fill in the data on it's own somehow
+* add a means of browsing (or searching) the medialib by some other means, like according to path, so that you can look at specifically
+  documentary videos in the documentaries directory, for example
+
 * it should be possible to easily remove items from the current playlist (like delete current song/delete all by artist/delete previous song)
-  The changes should take effect immediately
+  The changes should take effect immediately.  Possibly could have a list of recently played songs to delete
 * there should be better handling of audio vs video
 
 * get savable config page working
 * implement symbolic link style redirect
 * the file controller doesn't properly return an error message when a file isn't found, since it doesn't throw an exception
-* you need a better way for controllers to return or control error message returns...
 * convert things to use a common header/footer??
 * change all code to use super() instead of referring to the class (maybe?)
 

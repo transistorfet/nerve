@@ -158,7 +158,10 @@ class Server (nerve.ObjectNode):
         return nerve.ObjectNode.make_object(controller['__type__'], controller)
 
 
-class Device (nerve.ObjectNode):
+class Model (nerve.ObjectNode):
+    pass
+
+class Device (nerve.Model):
     def __init__(self, **config):
         nerve.ObjectNode.__init__(self, **config)
         self.callbacks = { }

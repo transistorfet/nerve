@@ -46,7 +46,7 @@ class MediaUpdaterTask (nerve.Task):
             nerve.log("Adding " + filename)
             self.db.insert('media', data)
         else:
-            nerve.log(u"Updating " + filename)
+            nerve.log("Updating " + filename)
             self.db.where('id', rows[0][0])
             self.db.update('media', data)
 

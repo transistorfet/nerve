@@ -73,7 +73,7 @@
         },
         "player": {
             "__type__": "player/PlayerDevice",
-            "backend": "player/xmms2cli/Xmms2CLI"
+            "backend": "player/vlc/VLCHTTP"
         },
         "rgb": {
             "__type__": "serial/NerveSerialDevice",

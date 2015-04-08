@@ -164,6 +164,10 @@ function MediaLibSearch(element)
 	    medialib.add_tracks('replace');
     });
 
+    $(element).find('.pl_playnow').click(function () {
+	medialib.add_tracks('playnow');
+    });
+
     $(element).delegate('.expand-artist', 'click', function () {
 	medialib.expand_artist($(this).html());
     });

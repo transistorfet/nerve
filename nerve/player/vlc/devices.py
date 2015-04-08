@@ -93,15 +93,21 @@ class VLCHTTP (nerve.Device):
     def getplaylist(self):
         r = requests.get('http://%s/requests/playlist.json' % (self.server,), auth=('', 'test'))
         self.playlist = json.loads(r.text)
-        return self.read_playlist(self.playlist)
 
-    def read_playlist(self, playlist):
+        for sublist in self.playlist['children']:
+            if sublist['name'] == "Playlist":
+                #self.playlist = sublist['children']
+                break
+
+        return self._read_playlist(self.playlist)
+
+    def _read_playlist(self, playlist):
         if playlist['type'] == 'leaf':
             return
         ret = [ ]
         for song in playlist['children']:
             if song['type'] == 'node':
-                ret.extend(self.read_playlist(song))
+                ret.extend(self._read_playlist(song))
             else:
                 ret.append(song)
         return ret
@@ -112,6 +118,9 @@ class VLCHTTP (nerve.Device):
 
     def play(self, url):
         self._send_command_and_uri('in_play', urllib.parse.quote(url))
+
+    def enqueue(self, url):
+        self._send_command_and_uri('in_enqueue', urllib.parse.quote(url))
 
     def load_playlist(self, url):
         self._send_command('pl_empty')
@@ -168,6 +177,7 @@ class VLCHTTP (nerve.Device):
 
             try:
                 r = requests.get('http://%s/requests/status.json' % (self.server,), auth=('', 'test'))
+                r.encoding = 'utf-8'
                 if r.text:
                     self.status = json.loads(r.text)
                 #print (r.text)

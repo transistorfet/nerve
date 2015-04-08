@@ -25,11 +25,23 @@ class MediaLib (nerve.Device):
 
         self.current = 'default'
 
-        self.thread = MediaUpdaterTask(self, self.get_setting("medialib_dirs"))
-        self.thread.start()
+        self.start_updaters()
 
-        self.thread = YoutubePlaylistFetcher(self, self.get_setting("youtube_playlists"))
-        self.thread.start()
+    def start_updaters(self):
+        self.media_updater = MediaUpdaterTask(self, self.get_setting("medialib_dirs"))
+        self.media_updater.start()
+
+        self.youtube_updater = YoutubePlaylistFetcher(self, self.get_setting("youtube_playlists"))
+        self.youtube_updater.start()
+
+    def force_database_update(self):
+        self.media_updater.stop()
+        self.youtube_updater.stop()
+
+        self.db.where('name', 'last_updated')
+        self.db.update('info', { 'value' : 0 })
+
+        self.start_updaters()
 
     def get_playlist_list(self):
         files = os.listdir(nerve.configdir() + '/playlists')

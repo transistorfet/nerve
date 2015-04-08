@@ -89,6 +89,7 @@
 
             <button type="submit" class="pl_replace" value="1">Replace</button>
             <button type="submit" class="pl_enqueue" value="1">Enqueue</button>
+            <button type="submit" class="pl_playnow" value="1">Play Now</button>
         </div>
 
         <div id="search-results">
@@ -96,6 +97,7 @@
 
         <button type="submit" class="pl_replace" value="1">Replace</button>
         <button type="submit" class="pl_enqueue" value="1">Enqueue</button>
+        <button type="submit" class="pl_playnow" value="1">Play Now</button>
         <a href="#top">Top</a>
     </div>
 </div>
