@@ -129,14 +129,9 @@ class HTTPServer (nerve.Server, socketserver.ThreadingMixIn, http.server.HTTPSer
         self.username = self.get_setting("username")
         self.password = self.get_setting("password")
 
-        #sslenable = Config.setting('http_admin_secure')
-        #sslcert = Config.setting('http_admin_sslcert')
-
-        #server_address = ('', Config.setting('http_admin_port'))  # (address, port)
-
-        http.server.HTTPServer.__init__(self, ('', config['port']), HTTPRequestHandler)
-        #if sslenable:
-        #    self.socket = ssl.wrap_socket(self.socket, certfile=sslcert, server_side=True)
+        http.server.HTTPServer.__init__(self, ('', self.get_setting('port')), HTTPRequestHandler)
+        #if self.get_setting('ssl_enable'):
+        #    self.socket = ssl.wrap_socket(self.socket, certfile=self.get_setting('ssl_cert'), server_side=True)
 
         sa = self.socket.getsockname()
         nerve.log('starting http(s) on port ' + str(sa[1]))
@@ -151,6 +146,8 @@ class HTTPServer (nerve.Server, socketserver.ThreadingMixIn, http.server.HTTPSer
         config_info.add_setting('port', "Port", default=8888)
         config_info.add_setting('username', "Username", default='')
         config_info.add_setting('password', "Password", default='')
+        config_info.add_setting('ssl_enable', "SSL Enable", default=False)
+        config_info.add_setting('ssl_cert', "SSL Certificate File", default='')
         return config_info
 
 

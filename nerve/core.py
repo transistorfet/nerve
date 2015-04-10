@@ -25,7 +25,7 @@ class Request (object):
         url = urllib.parse.urlparse(urlstring)
         args.update(urllib.parse.parse_qs(url.query, keep_blank_values=True))
         for name in args.keys():
-            if not name.endswith("[]") and len(args[name]) == 1:
+            if not name.endswith("[]") and isinstance(args[name], list) and len(args[name]) == 1:
                 args[name] = args[name][0]
         return (url, args)
 
@@ -136,6 +136,7 @@ class Server (nerve.ObjectNode):
     @staticmethod
     def get_config_info():
         config_info = nerve.ObjectNode.get_config_info()
+        config_info.add_setting('parent', "Parent Server", default='')
         config_info.add_setting('controllers', "Controllers", default=dict())
         return config_info
 
@@ -149,19 +150,30 @@ class Server (nerve.ObjectNode):
         pass
 
     def make_controller(self, request):
+        controllers = self.get_setting('controllers')
+        if not controllers:
+            parentname = self.get_setting('parent')
+            if parentname:
+                parent = nerve.get_object(parentname)
+                controllers = parent.get_setting('controllers')
+
+        if not controllers:
+            return None
+
         basename = request.next_segment()
-        if basename in self.controllers:
-            controller = self.controllers[basename]
+        if basename in controllers:
+            controller = controllers[basename]
         else:
             request.back_segment();
-            controller = self.controllers['__default__']
+            controller = controllers['__default__']
         return nerve.ObjectNode.make_object(controller['__type__'], controller)
 
 
 class Model (nerve.ObjectNode):
     pass
 
-class Device (nerve.Model):
+
+class Device (Model):
     def __init__(self, **config):
         nerve.ObjectNode.__init__(self, **config)
         self.callbacks = { }

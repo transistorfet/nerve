@@ -115,14 +115,16 @@ div.nerve-editor > #editor-save {
 }
 
 .nerve-treeview input + label::before {
-    content: "\25b8";	/* right-pointing triangle icon */
+    /* content: "\25b8"; */	/* right-pointing triangle icon */
+    content: "+";
     margin-right: 4px;
     margin-left: 4px;
     vertical-align: bottom;
 }
 
 .nerve-treeview input:checked + label::before {
-    content: "\25be";	/* downward-pointing triangle icon */
+    /* content: "\25be"; */	/* downward-pointing triangle icon */
+    content: "-";
     margin-right: 4px;
     margin-left: 4px;
     vertical-align: bottom;
@@ -144,12 +146,25 @@ div.nerve-editor > #editor-save {
     display: inline-block;
 }
 
+.nerve-treeview > ul {
+    width: 30em;
+}
+
 .nerve-treeview li > label {
     width: 100%;
-    background: #80C008;
+    /* background: #80C008; */
     /* border: 1px solid #222; */
-    color: #fff;
+    /* color: #fff; */
     margin-bottom: 4px;
+}
+
+.nerve-treeview .object-save {
+    float: right;
+    margin-right: 1em;
+}
+
+.nerve-treeview .directory {
+    border: 1px solid #80C008;
 }
 
 .nerve-treeview .alt-label {
@@ -159,7 +174,7 @@ div.nerve-editor > #editor-save {
     color: #000;
 }
 
-div.nerve-treeview > ul > li {
+.nerve-treeview ul > li {
     margin-bottom: 6px;
 }
 

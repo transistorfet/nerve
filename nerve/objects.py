@@ -16,21 +16,47 @@ class ConfigInfo (object):
     def __init__(self):
         self.settings = [ ]
 
-    def add_setting(self, name, propername, default=None):
+    def add_setting(self, name, propername, default=None, datatype=None):
         for i in range(len(self.settings)):
-            if self.settings[i][0] == name:
+            if self.settings[i]['name'] == name:
                 del self.settings[i]
                 break
-        self.settings.append([ name, propername, default ])
+
+        if not datatype:
+            if type(default) in (float, int):
+                datatype = 'number'
+            elif type(default) is bool:
+                datatype = 'bool'
+            elif type(default) in (list, tuple):
+                datatype = 'list'
+            elif type(default) is dict:
+                datatype = 'dict'
+            else:
+                datatype = 'str'
+
+        self.settings.append({
+            'name' : name,
+            'propername' : propername,
+            'default' : default,
+            'datatype' : datatype,
+            'options' : None
+        })
+
+    def add_option(self, settingname, propername, value):
+        for setting in self.settings:
+            if setting['name'] == settingname:
+                if not setting['options']:
+                    setting['options'] = [ ]
+                setting['options'].append( (propername, value) )
 
     def get_defaults(self):
         defaults = { }
         for setting in self.settings:
-            defaults[setting[0]] = setting[2]
+            defaults[setting['name']] = setting['default']
         return defaults
 
     def get_proper_names(self):
-        return [ [ setting[0], setting[1] ] for setting in self.settings ]
+        return [ [ setting['name'], setting['propername'], setting['datatype'] ] for setting in self.settings ]
 
 
 class ObjectNode (object):
@@ -175,7 +201,7 @@ class ObjectDirectory (ObjectNode):
         objects = { }
         for objname in config.keys():
             if '__type__' not in config[objname]:
-                typeinfo = "config/ObjectDirectory"
+                typeinfo = "objects/ObjectDirectory"
             else:
                 typeinfo = config[objname]['__type__']
             obj = ObjectNode.make_object(typeinfo, config[objname])
@@ -236,9 +262,30 @@ class Modules (ObjectNode):
             for name in modules:
                 Modules.import_module(name)
 
+    def get_types(self, classtype=None):
+        types = [ 'objects/ObjectDirectory' ]
+        modules = self.get_setting('autoload')
+        if modules:
+            for name in modules:
+                module = ObjectNode.get_object(nerve, name)
+                for typename in dir(module):
+                    attrib = getattr(module, typename)
+                    if isinstance(attrib, type) and issubclass(attrib, classtype):
+                        types.append(name.replace('.', '/') + '/' + typename)
+        return types
+
+    def get_modules(self):
+        autoload = self.get_setting('autoload')
+        modules = [ ]
+        for filename in os.listdir('nerve/'):
+            if filename != '__pycache__' and os.path.isdir('nerve/' + filename):
+                modules.append( (filename, filename in autoload) )
+        return sorted(modules)
+
     @staticmethod
     def get_module(modulename):
         return ObjectNode.get_object(nerve, modulename)
+        #return nerve.get_object("/modules/" + modulename)
 
     @staticmethod
     def import_module(modulename):

@@ -1,6 +1,6 @@
 {
     "modules" : {
-        "__type__": "config/Modules",
+        "__type__": "objects/Modules",
         "autoload": [
             "base",
             "computer",
@@ -14,7 +14,7 @@
     },
     "devices": {
 	"test": {
-	    "__type__": "config/SymbolicLink",
+	    "__type__": "objects/SymbolicLink",
 	    "link": "devices/datalogs"
 	},
         "computer": {
@@ -82,25 +82,8 @@
         }
     },
     "servers": {
-        "console": {
-            "__type__": "base/Console",
-            "controllers": {
-                "__default__": {
-                    "__type__": "base/ShellController"
-                }
-            }
-        },
-        "shell": {
-            "__type__": "base/TCPServer",
-            "port": 6060,
-            "controllers": {
-                "__default__": {
-                    "__type__": "base/ShellController"
-                }
-            }
-        },
-        "http": {
-            "__type__": "http/HTTPServer",
+        "default": {
+            "__type__": "core/Server",
             "controllers": {
                 "__default__": {
                     "__type__": "base/FileController",
@@ -125,10 +108,34 @@
                 "remote": {
                     "__type__": "remote/RemoteController"
                 }
-            },
+            }
+        },
+        "default_shell": {
+            "__type__": "core/Server",
+            "controllers": {
+                "__default__": {
+                    "__type__": "base/ShellController"
+                }
+            }
+        },
+        "console": {
+            "__type__": "base/Console",
+            "parent": "/servers/default_shell",
+            "controllers": null
+        },
+        "shell": {
+            "__type__": "base/TCPServer",
+            "port": 6060,
+            "parent": "/servers/default_shell",
+            "controllers": null
+        },
+        "http": {
+            "__type__": "http/HTTPServer",
+            "parent": "/servers/default",
             "password": "",
             "port": 8888,
-            "username": ""
+            "username": "",
+            "controllers": null
         }
     }
 }

@@ -1,4 +1,15 @@
 
+* if you have a function somewhere to handle js and css files... not only could you put them in the module directory, but you could auto minify and cache them too
+
+* change module type references to include the '/modules/' part
+* fix the race condition in console better
+
+* add run and config instructions to the readme (so that somebody could actually run the thing)
+* you could have settings such that when you click on a edit button in the corner (like linkedin), you can edit just that one property
+  or something, and it will save when you are done.
+
+* should the name of the 'controllers' dict in servers be called something different, like 'paths' or 'handlers' or something?
+
 * add movies to the thing somehow.  ID3 tags don't really work, so it'd have to fill in the data on it's own somehow
 * add a means of browsing (or searching) the medialib by some other means, like according to path, so that you can look at specifically
   documentary videos in the documentaries directory, for example

@@ -156,7 +156,7 @@ def get_object(name):
 def query(urlstring, *args, **kwargs):
     global mainloops
 
-    nerve.log("executing query: " + urlstring + " " + ' '.join(args) + " " + repr(kwargs))
+    nerve.log("executing query: " + urlstring + " " + ' '.join([ repr(val) for val in args ]) + " " + repr(kwargs))
     url = urllib.parse.urlparse(urlstring)
 
     if url.netloc:

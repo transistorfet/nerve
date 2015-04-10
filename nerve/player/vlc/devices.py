@@ -112,6 +112,14 @@ class VLCHTTP (nerve.Device):
                 ret.append(song)
         return ret
 
+    def current_playlist(self):
+        # TODO return the name of the current playlist that the player is playing, such that you can match it with the playlists in medialib
+        pass
+
+    def get_position(self):
+        # TODO read the playlist position so that you can have the playlist display and anchor in the playlist webpage
+        pass
+
     def playlist_seek(self, id):
         url = 'http://%s/requests/status.json?command=pl_play&id=%s' % (self.server, id)
         r = requests.get(url, auth=('', 'test'))

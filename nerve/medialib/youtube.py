@@ -15,7 +15,7 @@ class YoutubePlaylistFetcher (nerve.Task):
         self.list_ids = path        #nerve.get_config("youtube_playlists")
         self.medialib = medialib
 
-        self.db = nerve.DatabaseCursor(self.medialib.dbconnection)
+        self.db = self.medialib.db
         self.json = None
 
     def hash_video(self, meta):

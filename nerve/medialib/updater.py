@@ -13,7 +13,7 @@ class MediaUpdaterTask (nerve.Task):
     def __init__(self, medialib, path):
         nerve.Task.__init__(self, 'MediaUpdaterTask')
         self.medialib = medialib
-        self.db = nerve.DatabaseCursor(self.medialib.dbconnection)
+        self.db = self.medialib.db
         self.path = path        #nerve.get_config("medialib_dirs")
 
     def update_file(self, filename):

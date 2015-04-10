@@ -18,8 +18,7 @@ class MediaLib (nerve.Device):
     def __init__(self, **config):
         nerve.Device.__init__(self, **config)
         self.playlists = 'playlists'
-        self.dbconnection = nerve.Database('medialib.sqlite')
-        self.db = nerve.DatabaseCursor(self.dbconnection)
+        self.db = nerve.Database('medialib.sqlite')
         self.db.create_table('media', "id INTEGER PRIMARY KEY, filename TEXT, artist TEXT, album TEXT, title TEXT, track_num NUMERIC, genre TEXT, tags TEXT, duration NUMERIC, media_type TEXT, file_hash TEXT, file_size INT, file_last_modified INT")
         self.db.create_table('info', "name TEXT PRIMARY KEY, value TEXT")
 

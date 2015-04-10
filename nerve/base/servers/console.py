@@ -3,6 +3,7 @@
 
 import nerve
 
+import time
 import json
 import readline
 import traceback
@@ -19,7 +20,7 @@ class Console (nerve.Server):
         config_info = nerve.Server.get_config_info()
         config_info.add_setting('controllers', "Controllers", default={
             '__default__' : {
-                'type' : 'base/ShellController'
+                '__type__' : 'base/QueryController'
             }
         })
         return config_info
@@ -28,6 +29,11 @@ class Console (nerve.Server):
         print (text)
 
     def run(self):
+        # TODO this is to fix a race condition where the parent server object, /servers/default_shell, hasn't been created yet, and
+        # make_controller fails as a result.  Maybe there should be a secondary 'start threads' phase after the config objects have been
+        # created
+        time.sleep(3)
+
         controller = self.make_controller(nerve.Request(self, 'QUERY', "/", { }))
         while True:
         #while not self.thread.stopflag.is_set():

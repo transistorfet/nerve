@@ -179,6 +179,14 @@ $(document).ready(function()
     $('.nerve-tabs').each(function () {
         new NerveTabs(this);
     });
+
+    $('#nerve-status').click(function () {
+        $(this).hide();
+    });
+
+    $('#nerve-error').click(function () {
+        $(this).hide();
+    });
 });
 
 

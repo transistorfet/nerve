@@ -11,19 +11,9 @@ class Database (object):
     databases = { }
 
     def __init__(self, filename):
-        self.filename = filename
-        self.dbcon = apsw.Connection(os.path.join(nerve.configdir(), filename))
-
-    @staticmethod
-    def get_db(filename):
         if filename not in Database.databases:
-            Database.databases[filename] = Database(filename)
-        return DatabaseCursor(Database.databases[filename])
-
-
-class DatabaseCursor (object):
-    def __init__(self, db):
-        self.db = db
+            Database.databases[filename] = apsw.Connection(os.path.join(nerve.configdir(), filename))
+        self.dbcon = Database.databases[filename]
         self.reset_cache()
 
     def reset_cache(self):
@@ -35,7 +25,7 @@ class DatabaseCursor (object):
         self.cache_distinct = ""
 
     def query(self, query):
-        dbcursor = self.db.dbcon.cursor()
+        dbcursor = self.dbcon.cursor()
         result = dbcursor.execute(query)
         try:
             self.columns = dbcursor.getdescription()
@@ -193,8 +183,7 @@ class DatabaseCursor (object):
             self.reset_cache()
         query = "DELETE FROM %s WHERE %s" % (table, where)
 
-        cursor = self.db.dbcon.cursor()
-        result = cursor.execute(query)
+        result = self.query(query)
         return result
 
     """
