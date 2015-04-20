@@ -6,6 +6,7 @@ import nerve
 import io
 import json
 import traceback
+import mimetypes
 import urllib.parse
 
 
@@ -93,6 +94,13 @@ class Controller (nerve.ObjectNode):
         text = json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '), default=json_default)
         self.write_text(text)
 
+    def write_file(self, filename):
+        (mimetype, encoding) = mimetypes.guess_type(filename)
+        self.set_mimetype(mimetype)
+        with open(filename, 'rb') as f:
+            contents = f.read()
+            self.write_bytes(contents)
+
     def get_mimetype(self):
         return self.mimetype
 
@@ -126,7 +134,7 @@ class Controller (nerve.ObjectNode):
         if not name:
             name = 'index'
         func = getattr(self, name)
-        return func(request)
+        func(request)
 
 
 class Server (nerve.ObjectNode):
@@ -137,6 +145,10 @@ class Server (nerve.ObjectNode):
     def get_config_info():
         config_info = nerve.ObjectNode.get_config_info()
         config_info.add_setting('parent', "Parent Server", default='')
+        servers = nerve.get_object('/servers')
+        if servers:
+            for option in servers.keys():
+                config_info.add_option('parent', option, '/servers/' + option)
         config_info.add_setting('controllers', "Controllers", default=dict())
         return config_info
 

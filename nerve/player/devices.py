@@ -18,11 +18,16 @@ import json
 class PlayerDevice (nerve.Device):
     def __init__(self, **config):
         nerve.Device.__init__(self, **config)
+        self.backend_dev = None
+
         backend_name = self.get_setting('backend')
         try:
-            (module_name, _, _) = backend_name.rpartition('/')
-            nerve.Modules.import_module(module_name.replace('/', '.'))
-            self.backend_dev = nerve.ObjectNode.make_object(backend_name, config)
+            (empty, sep, module_name) = backend_name.partition("/modules/player/")
+            if empty == '' and sep and module_name:
+                print(module_name)
+                (module_name, sep, player_obj) = module_name.rpartition('/')
+                nerve.ModulesDirectory.import_module("player." + module_name.replace('/', '.'))
+                self.backend_dev = nerve.ObjectNode.make_object(backend_name, config)
         except:
             nerve.log("failed to initialize player backend: " + backend_name)
             nerve.log(traceback.format_exc())
@@ -31,6 +36,9 @@ class PlayerDevice (nerve.Device):
     def get_config_info():
         config_info = nerve.ObjectNode.get_config_info()
         config_info.add_setting('backend', "Player Backend", default='player.vlc')
+        for option in os.listdir('nerve/player'):
+            if option != '__pycache__' and os.path.isdir('nerve/player/' + option):
+                config_info.add_option('backend', option, '/modules/player/' + option)
         return config_info
 
     def __getattr__(self, name):

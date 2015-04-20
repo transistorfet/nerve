@@ -7,11 +7,11 @@
     <link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
     <link rel="stylesheet" type="text/css" href="/assets/css/theme.css" />
     <link rel="stylesheet" type="text/css" href="/assets/css/widgets.css" />
-    <link rel="stylesheet" type="text/css" href="/assets/css/medialib.css" />
+    <link rel="stylesheet" type="text/css" href="/medialib/assets/css/medialib.css" />
 
     <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
     <script type="text/javascript" src="/assets/js/widgets.js"></script>
-    <script type="text/javascript" src="/assets/js/medialib.js"></script>
+    <script type="text/javascript" src="/medialib/assets/js/medialib.js"></script>
 </head>
 <body>
 
@@ -31,7 +31,7 @@
 <div id="nerve-error" style="display: none;"></div>
 
 <div class="medialib-search">
-    <div>
+    <div class="medialib-links">
         <a href="/medialib/search?mode=artist">By Artist</a>
         <a href="/medialib/search?mode=album">By Album</a>
         <a href="/medialib/search?mode=genre&order=genre">By Genre</a>
@@ -41,7 +41,7 @@
         <a href="/medialib/search?mode=album&order=random">Random</a>
     </div>
 
-    <div>
+    <div class="medialib-links">
         <% for ch in range(ord('A'), ord('Z') + 1): %>
             <a href="/medialib/search?mode=title&order=artist&search=<%= chr(ch) %>%"><%= chr(ch) %></a>
         <% end %>
@@ -73,8 +73,9 @@
             <option value="tags" <%= ' selected' if order == 'tags' else '' %>>tags</option>
             <option value="modified" <%= ' selected' if order == 'modified' else '' %>>last modified</option>
             <option value="random" <%= ' selected' if order == 'random' else '' %>>random</option>
+            <option value="filename" <%= ' selected' if order == 'filename' else '' %>>filename</option>
         </select>
-        <input type="text" id="search" value="<%= search if search else '%%' %>">
+        <input type="text" id="search" value="<%= search if search else '' %>">
         <button type="submit" id="pl_search" value="">Search</button>
     </div>
 

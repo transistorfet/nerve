@@ -10,13 +10,47 @@ import json
 
 
 class YoutubePlaylistFetcher (nerve.Task):
-    def __init__(self, medialib, path):
+    def __init__(self, path):
         nerve.Task.__init__(self, 'YoutubePlaylistFetcher')
-        self.list_ids = path        #nerve.get_config("youtube_playlists")
-        self.medialib = medialib
-
-        self.db = self.medialib.db
+        self.db = nerve.Database('medialib.sqlite')
         self.json = None
+        self.list_ids = path        #nerve.get_config("youtube_playlists")
+
+    def run(self):
+        while True:
+            row = self.db.get_single('info', 'name,value', self.db.inline_expr('name', 'youtube_last_updated'))
+            if row is None or float(row[1]) + 86400 < time.time():
+                self.update_all()
+                self.db.insert('info', { 'name' : 'youtube_last_updated', 'value' : str(time.time()) }, replace=True)
+            if self.stopflag.wait(3600):
+                break 
+
+    def update_all(self):
+        nerve.log("Starting youtube medialib update...")
+        for list_id in self.list_ids:
+            json_playlist = self.fetch_json(list_id)
+            if json_playlist is None or 'video' not in json_playlist:
+                nerve.log("Unable to fetch youtube playlist " + list_id)
+            else:
+                playlist = [ ]
+                for video in json_playlist['video']:
+                    if self.stopflag.is_set():
+                        return
+                    data = self.hash_video(video)
+                    playlist.append({ 'artist' : data['artist'], 'title' : data['title'], 'duration' : data['duration'], 'filename' : data['filename'] })
+                pl = nerve.medialib.Playlist(json_playlist['title'])
+                pl.set_list(playlist)
+        nerve.log("Youtube medialib update complete")
+
+    def fetch_json(self, list_id):
+        url = 'http://www.youtube.com/list_ajax?action_get_list=1&style=json&list=%s' % (list_id,)
+        try:
+            r = requests.get(url)
+            if r.text:
+                return json.loads(r.text)
+        except:
+            nerve.log("error fetching youtube list " + list_id)
+        return None
 
     def hash_video(self, meta):
         url = 'http://www.youtube.com/watch?v=%s' % (meta['encrypted_id'],)
@@ -56,37 +90,5 @@ class YoutubePlaylistFetcher (nerve.Task):
             self.db.update('media', data)
         return data
 
-    def fetch_json(self, list_id):
-        url = 'http://www.youtube.com/list_ajax?action_get_list=1&style=json&list=%s' % (list_id,)
-        r = requests.get(url)
-        if r.text:
-            return json.loads(r.text)
-        return None
-
-    def update_all(self):
-        nerve.log("Starting youtube medialib update...")
-        for list_id in self.list_ids:
-            json_playlist = self.fetch_json(list_id)
-            if json_playlist is None or 'video' not in json_playlist:
-                nerve.log("Unable to fetch youtube playlist " + list_id)
-            else:
-                playlist = [ ]
-                for video in json_playlist['video']:
-                    if self.stopflag.is_set():
-                        return
-                    data = self.hash_video(video)
-                    playlist.append({ 'artist' : data['artist'], 'title' : data['title'], 'duration' : data['duration'], 'filename' : data['filename'] })
-                pl = nerve.medialib.Playlist(json_playlist['title'])
-                pl.set_list(playlist)
-        nerve.log("Youtube medialib update complete")
-
-    def run(self):
-        while True:
-            row = self.db.get_single('info', 'name,value', self.db.inline_expr('name', 'youtube_last_updated'))
-            if row is None or float(row[1]) + 86400 < time.time():
-                self.update_all()
-                self.db.insert('info', { 'name' : 'youtube_last_updated', 'value' : str(time.time()) }, replace=True)
-            if self.stopflag.wait(3600):
-                break 
  
 

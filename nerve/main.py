@@ -30,11 +30,12 @@ class Main (nerve.ObjectDirectory):
         self.args = parser.parse_args()
 
         self.configdir = self.args.configdir.strip('/')
+        sys.path.insert(0, ( sys.path[0] + '/' if self.configdir[0] != '/' else '' ) + self.configdir)
 
     @staticmethod
     def get_config_info():
         config_info = nerve.ObjectDirectory.get_config_info()
-        config_info.add_setting('modules', "Modules", default=nerve.Modules())
+        config_info.add_setting('modules', "Modules", default=nerve.ModulesDirectory())
         config_info.add_setting('servers', "Servers", default=nerve.ObjectDirectory())
         config_info.add_setting('devices', "Devices", default=nerve.ObjectDirectory())
         return config_info
@@ -152,6 +153,14 @@ def get_object(name):
     if name == "/":
         return mainloops[0]
     return mainloops[0].get_object(name.lstrip('/'))
+
+def has_object(name):
+    try:
+        if nerve.get_object(name):
+            return True
+    except:
+        pass
+    return False
 
 def query(urlstring, *args, **kwargs):
     global mainloops

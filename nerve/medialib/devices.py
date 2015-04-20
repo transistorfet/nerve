@@ -19,7 +19,7 @@ class MediaLib (nerve.Device):
         nerve.Device.__init__(self, **config)
         self.playlists = 'playlists'
         self.db = nerve.Database('medialib.sqlite')
-        self.db.create_table('media', "id INTEGER PRIMARY KEY, filename TEXT, artist TEXT, album TEXT, title TEXT, track_num NUMERIC, genre TEXT, tags TEXT, duration NUMERIC, media_type TEXT, file_hash TEXT, file_size INT, file_last_modified INT")
+        self.db.create_table('media', "id INTEGER PRIMARY KEY, filename TEXT, artist TEXT, album TEXT, title TEXT, track_num NUMERIC, genre TEXT, tags TEXT, duration NUMERIC, media_type TEXT, mimetype TEXT, file_hash TEXT, file_size INT, file_last_modified INT")
         self.db.create_table('info', "name TEXT PRIMARY KEY, value TEXT")
 
         self.current = 'default'
@@ -27,10 +27,10 @@ class MediaLib (nerve.Device):
         self.start_updaters()
 
     def start_updaters(self):
-        self.media_updater = MediaUpdaterTask(self, self.get_setting("medialib_dirs"))
+        self.media_updater = MediaUpdaterTask(self.get_setting("medialib_dirs"))
         self.media_updater.start()
 
-        self.youtube_updater = YoutubePlaylistFetcher(self, self.get_setting("youtube_playlists"))
+        self.youtube_updater = YoutubePlaylistFetcher(self.get_setting("youtube_playlists"))
         self.youtube_updater.start()
 
     def force_database_update(self):
@@ -75,7 +75,7 @@ class MediaLib (nerve.Device):
                 whereorder = 'file_last_modified'
             elif order == 'random':
                 whereorder = 'title'
-            self.db.where_like(whereorder, search)
+            self.db.where_like(whereorder, '%' + str(search).replace('*', '%') + '%')
 
         if order == 'artist':
             self.db.order_by('artist ASC')
@@ -89,6 +89,8 @@ class MediaLib (nerve.Device):
             self.db.order_by('title,artist,album ASC')
         elif order == 'modified':
             self.db.order_by('file_last_modified DESC')
+        elif order == 'filename':
+            self.db.order_by('filename ASC')
 
         if recent:
             self.db.where_gt('file_last_modified', time.time() - (float(recent) * (60*60*24*7)))

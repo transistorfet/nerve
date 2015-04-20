@@ -10,7 +10,7 @@
 
     <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
     <script type="text/javascript" src="/assets/js/widgets.js"></script>
-    <script type="text/javascript" src="/assets/js/config.js"></script>
+    <script type="text/javascript" src="/config/assets/js/config.js"></script>
 </head>
 <body>
 
@@ -22,8 +22,6 @@
     <div class="tab selected" data-content="/config">Config</div>
     <div style="clear: both;"></div>
 </div>
-
-<hr>
 
 <div id="nerve-notice" style="display: none;"></div>
 <div id="nerve-error" style="display: none;"></div>
@@ -233,7 +231,7 @@
 
     <h3>Devices</h3>
     <div class="nerve-treeview">
-        <% treeview_directory('/devices', expand=True) %>
+        <% treeview_directory('/devices') %>
     </div>
     <div style="clear: both;"></div>
 
@@ -241,7 +239,7 @@
 
     <h3>Servers</h3>
     <div class="nerve-treeview">
-        <% treeview_directory('/servers', expand=True) %>
+        <% treeview_directory('/servers') %>
     </div>
     <div style="clear: both;"></div>
 </div>

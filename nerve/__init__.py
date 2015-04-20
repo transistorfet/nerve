@@ -3,9 +3,9 @@
 
 from __future__ import absolute_import 
 
-from nerve.objects import ConfigInfo, ObjectNode, ObjectDirectory, SymbolicLink, Modules
+from nerve.objects import ConfigInfo, ObjectNode, ObjectDirectory, SymbolicLink, Module, ModulesDirectory
 from nerve.core import Request, Controller, Server, Device
 from nerve.tasks import Task
 from nerve.db import Database
-from nerve.main import Main, log, loop, quit, main, get_config_info, get_config_data, save_config, configdir, set_object, get_object, query, query_string, read_config_file, write_config_file
+from nerve.main import Main, log, loop, quit, main, get_config_info, get_config_data, save_config, configdir, set_object, get_object, has_object, query, query_string, read_config_file, write_config_file
 

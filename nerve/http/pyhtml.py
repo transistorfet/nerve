@@ -14,6 +14,7 @@ import cgi
 import json
 import mimetypes
 
+import urllib
 import urllib.parse
 
 
@@ -65,7 +66,8 @@ class PyHTML (object):
         else:
             return self._POST[name]
 
-    def htmlspecialchars(self, text):
+    @staticmethod
+    def htmlspecialchars(text):
         return cgi.escape(text, True)
 
     ### Parser and Execution Code ###
@@ -148,6 +150,7 @@ class PyHTML (object):
             self.globals['nerve'] = nerve
             self.globals['py'] = self
             self.globals['json'] = json
+            self.globals['urllib'] = urllib
             self.globals['re'] = re
             self.globals['urlencode'] = urllib.parse.quote
             self.globals['urldecode'] = urllib.parse.unquote

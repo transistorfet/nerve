@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
     <link rel="stylesheet" type="text/css" href="/assets/css/theme.css" />
     <link rel="stylesheet" type="text/css" href="/assets/css/widgets.css" />
+    <link rel="stylesheet" type="text/css" href="/remote/assets/css/remote.css" />
 
     <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
     <script type="text/javascript" src="/assets/js/widgets.js"></script>
@@ -17,6 +18,7 @@
 <hr>
 
 <div class="files"><%= len(playlist) %> files in playlist.</div>
+<a href="#current">skip to current</a>
 
 <div class="nerve-medialist">
 
@@ -29,7 +31,20 @@
     </tr></thead>
     <tbody>
 	<% for num,media in enumerate(playlist, 1): %>
-	    <tr><td><%= num %></td><td><a href="#" class="play_seek" data-id="<%= media['id'] %>"><%= media['name'] %></a></td></tr>
+	    <tr <%= ' class="current"' if 'current' in media else '' %>>
+            <td><%= '<a id="current"></a>' if 'current' in media else '' %><%= num %></td>
+            <td><a href="#" class="play_seek" data-id="<%= media['id'] %>">
+                <span>
+                <% if media['uri'].startswith('file'): %>
+                    <% (_, _, filename) = media['uri'].rpartition('/') %>
+                    <% (songname, _, _) = filename.rpartition('.') %>
+                    <%= urldecode(songname) %>
+                <% else: %>
+                    <%= media['name'] %>
+                <% end %>
+                </span>
+            </a></td>
+            </tr>
 	<% end %>
     </tbody>
     </table>

@@ -3,6 +3,8 @@
 
 import nerve
 
+import requests
+
 class YouTubeAggregator (nerve.Device):
     pass
 

@@ -32,7 +32,7 @@ class ConfigInfo (object):
             elif type(default) is dict:
                 datatype = 'dict'
             else:
-                datatype = 'str'
+                datatype = 'string'
 
         self.settings.append({
             'name' : name,
@@ -61,22 +61,17 @@ class ConfigInfo (object):
 
 class ObjectNode (object):
     def __init__(self, **config):
-        self.config = config
+        self.set_config_data(config)
 
     @staticmethod
     def get_config_info():
         return ConfigInfo()
 
-    def get_config_data(self):
-        return self.config
-
     def set_config_data(self, config):
         self.config = config
 
-    def get_setting(self, name, typename=None):
-        if name in self.config:
-            return self.config[name]
-        return None
+    def get_config_data(self):
+        return self.config
 
     def set_setting(self, name, value):
         try:
@@ -84,6 +79,12 @@ class ObjectNode (object):
         except:
             print (traceback.format_exc())
 
+    def get_setting(self, name, typename=None):
+        if name in self.config:
+            return self.config[name]
+        return None
+
+    # TODO maybe you should get rid of this? *shrug*
     def __getattr__(self, name):
         try:
             return self.__dict__['config'][name]
@@ -136,7 +137,7 @@ class ObjectNode (object):
             except:
                 nerve.log("error loading config from " + filename + "\n\n" + traceback.format_exc())
                 return False
-        modules = Modules(**config['modules'])
+        modules = ModulesDirectory(**config['modules'])
         self.set_config_data(config)
         return True
 
@@ -147,7 +148,7 @@ class ObjectNode (object):
 
     @staticmethod
     def make_object(typeinfo, config):
-        classtype = Modules.get_module(typeinfo)
+        classtype = ModulesDirectory.get_module(typeinfo)
         #if not issubclass(classtype, ObjectNode):
         #    raise TypeError("")
         config_data = classtype.get_config_info().get_defaults()
@@ -165,20 +166,20 @@ class ObjectNode (object):
 
 class ObjectDirectory (ObjectNode):
     def __init__(self, **config):
+        self.objects = { }
         ObjectNode.__init__(self, **config)
-        self.set_config_data(config)
 
     @staticmethod
     def get_config_info():
         config_info = nerve.ObjectNode.get_config_info()
         return config_info
 
+    def set_config_data(self, config):
+        self.objects = self.make_object_table(config)
+
     def get_config_data(self):
         config = self.save_object_table(self.objects)
         return config
-
-    def set_config_data(self, config):
-        self.objects = self.make_object_table(config)
 
     def __getattr__(self, name):
         if name in self.objects:
@@ -200,12 +201,13 @@ class ObjectDirectory (ObjectNode):
     def make_object_table(config):
         objects = { }
         for objname in config.keys():
-            if '__type__' not in config[objname]:
-                typeinfo = "objects/ObjectDirectory"
-            else:
-                typeinfo = config[objname]['__type__']
-            obj = ObjectNode.make_object(typeinfo, config[objname])
-            objects[objname] = obj
+            if objname != '__type__':
+                if '__type__' not in config[objname]:
+                    typeinfo = "objects/ObjectDirectory"
+                else:
+                    typeinfo = config[objname]['__type__']
+                obj = ObjectNode.make_object(typeinfo, config[objname])
+                objects[objname] = obj
         return objects
 
     @staticmethod
@@ -224,21 +226,29 @@ class SymbolicLink (ObjectNode):
         return config_info
 
 
-class Modules (ObjectNode):
-    def __init__(self, **config):
-        ObjectNode.__init__(self, **config)
-        self.autoload_modules()
-
+class Module (ObjectNode):
     @staticmethod
     def get_config_info():
         config_info = nerve.ObjectNode.get_config_info()
+        config_info.add_setting('name', "Module Name", default="")
+        return config_info
+
+
+class ModulesDirectory (ObjectDirectory):
+    @staticmethod
+    def get_config_info():
+        config_info = nerve.ObjectDirectory.get_config_info()
         config_info.add_setting('autoload', "Auto Load", default=[ 'base' ])
         return config_info
 
     def set_config_data(self, config):
-        ObjectNode.set_config_data(config)
+        super(ObjectDirectory, self).set_config_data(config)
         self.autoload_modules()
 
+    def get_config_data(self):
+        return super(ObjectDirectory, self).config
+
+    """
     def __getattr__(self, name):
         res = getattr(nerve, name)
         return res
@@ -254,13 +264,14 @@ class Modules (ObjectNode):
 
     def keys(self):
         return dir(nerve)
+    """
 
     def autoload_modules(self):
         modules = self.get_setting('autoload')
         if modules:
             print ("loading modules")
             for name in modules:
-                Modules.import_module(name)
+                ModulesDirectory.import_module(name)
 
     def get_types(self, classtype=None):
         types = [ 'objects/ObjectDirectory' ]
@@ -289,6 +300,7 @@ class Modules (ObjectNode):
 
     @staticmethod
     def import_module(modulename):
+        #self.set_object(modulename.replace('.', '/'), Module(name=modulename))
         try:
             nerve.log("loading module " + modulename)
             code = 'import nerve.%s\n#nerve.%s.init()' % (modulename, modulename)
@@ -296,7 +308,12 @@ class Modules (ObjectNode):
             return eval("nerve." + modulename)
             #return globals()[modulename]
         except ImportError as e:
+            # TODO this is a temporary hack...
             #nerve.log("error loading module " + modulename + "\n\n" + traceback.format_exc())
-            raise e
+            nerve.log("loading module " + modulename)
+            code = 'import local.%s\n#%s.init()' % (modulename, modulename)
+            exec(code, globals(), globals())
+            return eval("local." + modulename)
+            #raise e
 
 

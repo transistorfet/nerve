@@ -62,10 +62,6 @@ div.nerve-editor > #editor-save {
     margin-bottom: 0.5em;
 }
 
-.nerve-form-item-row {
-    display: inline-block;
-}
-
 .nerve-form-item label {
     display: block;
     width: 8em;
@@ -76,6 +72,14 @@ div.nerve-editor > #editor-save {
     color: black;
 }
 
+.nerve-form-item select {
+    width: 16em;
+}
+
+.nerve-form-item-row {
+    display: inline-block;
+}
+
 .nerve-form-item-row label {
     display: inline;
     margin-right: 0.5em;
@@ -83,7 +87,7 @@ div.nerve-editor > #editor-save {
     color: black;
 }
 
-.nerve-form-item-row input[type='text'] {
+.nerve-form-item-row label + * {
     margin-left: 0.5em;
     width: 10em;
 }

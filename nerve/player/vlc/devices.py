@@ -96,10 +96,8 @@ class VLCHTTP (nerve.Device):
 
         for sublist in self.playlist['children']:
             if sublist['name'] == "Playlist":
-                #self.playlist = sublist['children']
-                break
-
-        return self._read_playlist(self.playlist)
+                return self._read_playlist(sublist['children'])
+        return [ ]
 
     def _read_playlist(self, playlist):
         if playlist['type'] == 'leaf':

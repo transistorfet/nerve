@@ -1,13 +1,38 @@
+    <script type="text/javascript" src="/base/assets/js/widgets.js"></script>
+    <script type="text/javascript" src="/base/assets/js/config.js"></script>
 
-* if you have a function somewhere to handle js and css files... not only could you put them in the module directory, but you could auto minify and cache them too
+    <script type="text/javascript" src="/base/js/widgets.js"></script>
+    <script type="text/javascript" src="/base/js/config.js"></script>
 
+    <script type="text/javascript" src="/assets/base/js/widgets.js"></script>
+    <script type="text/javascript" src="/assets/base/js/config.js"></script>
+
+* how should asset files be references (as well as view files).  What should the root dir be, especially if we have a place for extended code in the config dir.
+  Should references be agnostic as to where the module is located?  Which of the above examples looks and means the best?  What is the most logical format given
+  how a controller can serve up those files.  Should there be a special assets-server-uper in each controller?  It wouldn't add much overhead I don't think.  You'd
+  just have a function in the controller called assets(self, request), which would then call a method to load any files in the local assets directory.  We wouldn't
+  need a seperate special controller to serve up assets at all.  We'd just need to move the code in FileController to a common location like the Controller class
+  itself (I figure it's a generic enough function that it can go there instead of on the http controller)
+* make thing to be able to specify js and css files.  Also move the files into the modules directory
 * change module type references to include the '/modules/' part
+* do you have a special ObjectNode object for each module, or just the module variable itself?  How do objects with objects work? Like the Modules class itself...
+  It has subobjects but they are 'virtually created' (not saved in the settings file)
+* implement symbolic link style redirect.  It has to be really versitile...
+* it's possible to enter anything after a url.  It doesn't throw an error, which it probably should (a 404 error)
+
+* you could have one updater thread and multiple 'updater/fetchers' or something rather than a thread for each, or possible some other
+  way to make sure they don't all run at the same time
+* rules, routines, events, triggers... these are various names that other systems have for basically making something happen when
+  certain conditions are met.  I need something like this, which would provide the thread that would handle something happening, like
+  an ir code being received through serial.  I still don't know how the serial thread will deal with receiving those unrequested messages,
+  but this would be the general mechanism by which the system could do something in response (the mapping between a given ircode and
+  the various things that get controller)
+* of course, this mechanism would have means of doing complex stuff as well, like time delays and that.  It will just use python code to
+  define the behaviour for now, and that could possibly be extended to a more user friendly system later on
+
 * fix the race condition in console better
 
 * add run and config instructions to the readme (so that somebody could actually run the thing)
-* you could have settings such that when you click on a edit button in the corner (like linkedin), you can edit just that one property
-  or something, and it will save when you are done.
-
 * should the name of the 'controllers' dict in servers be called something different, like 'paths' or 'handlers' or something?
 
 * add movies to the thing somehow.  ID3 tags don't really work, so it'd have to fill in the data on it's own somehow
@@ -19,10 +44,9 @@
 * there should be better handling of audio vs video
 
 * get savable config page working
-* implement symbolic link style redirect
 * the file controller doesn't properly return an error message when a file isn't found, since it doesn't throw an exception
-* convert things to use a common header/footer??
 * change all code to use super() instead of referring to the class (maybe?)
+* if you have a function somewhere to handle js and css files... not only could you put them in the module directory, but you could auto minify and cache them too
 
 * add a query discovery thing to nerve serial devices to get the list of queries
 
@@ -34,13 +58,6 @@
 
 * add the ability to make some kind of timed scripted event thing... I'm thinking like a particular pattern being played on rgb node
   without it being programmed into the device itself... like "rgb/fade ff0000 10s; delay 15s; rgb/fade 00ff00 10s; ..."
-
-* maybe add a mechanism like in codeigniter (don't know how it works) where the controller specifies which asset files are needed (js/css/etc)
-  You could then put the asset files in the module directories somehow so that everything is kept together (and also the header code would be autogenerated)
-* make it possible to edit the html, css, and maybe js of all files, not just remote...  Now that I have two different dirs of code,
-  it's not such a big deal to directly edit the code of the production repo.  I'd just have to manually copy those changes to the dev
-  code.  I could also maybe have a cache... (either a cache of previous edits or a cache of the changed files, and when a view is loaded,
-  it uses the cached file, otherwise the default file??
 
 * resolve the issue of config_info, and whether you call it once or call it all the time... whether you have to do it for each object individually, or if you can make
   that function recursive

@@ -1,6 +1,6 @@
 {
     "modules": {
-        "__type__": "objects/Modules",
+        "__type__": "objects/ModulesDirectory",
         "autoload": [
             "base",
             "computer",

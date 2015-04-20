@@ -20,7 +20,7 @@ class RemoteController (nerve.http.Controller):
         self.load_view('nerve/remote/views/index.pyhtml', data)
 
     def player(self, request):
-        player = nerve.get_object('devices/player')
+        player = nerve.get_object('/devices/player')
         if request.reqtype == "POST":
             if 'play' in request.args:
                 player.playlist_seek(request.arg('play'))

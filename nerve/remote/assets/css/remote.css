@@ -16,3 +16,12 @@ input.nerve-slider {
     font-size: 1.25em;
 }
 
+.nerve-medialist .current {
+    border: 1px solid green;
+    height: 1.75em;
+}
+
+.nerve-medialist .current span {
+    font-weight: bold;
+}
+

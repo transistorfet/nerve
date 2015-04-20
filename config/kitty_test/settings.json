@@ -1,6 +1,6 @@
 {
     "modules" : {
-        "__type__": "objects/Modules",
+        "__type__": "objects/ModulesDirectory",
         "autoload": [
             "base",
             "computer",
@@ -63,6 +63,7 @@
             "__type__": "medialib/MediaLib",
             "medialib_dirs": [
                 "/media/media/Music",
+                "/media/media/Video",
                 "/media/media/Torrents"
             ],
             "youtube_playlists": [
@@ -87,11 +88,11 @@
             "controllers": {
                 "__default__": {
                     "__type__": "base/FileController",
-                    "root": "assets"
+                    "root": "nerve/base/assets"
                 },
                 "assets": {
                     "__type__": "base/FileController",
-                    "root": "assets"
+                    "root": "nerve/base/assets"
                 },
                 "config": {
                     "__type__": "base/ConfigController"

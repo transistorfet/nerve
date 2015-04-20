@@ -7,11 +7,11 @@
     <link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
     <link rel="stylesheet" type="text/css" href="/assets/css/theme.css" />
     <link rel="stylesheet" type="text/css" href="/assets/css/widgets.css" />
-    <link rel="stylesheet" type="text/css" href="/assets/css/datalog.css" />
+    <link rel="stylesheet" type="text/css" href="/datalog/assets/css/datalog.css" />
 
     <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
     <script type="text/javascript" src="/assets/js/widgets.js"></script>
-    <script type="text/javascript" src="/assets/js/datalog.js"></script>
+    <script type="text/javascript" src="/datalog/assets/js/datalog.js"></script>
 </head>
 <body>
 

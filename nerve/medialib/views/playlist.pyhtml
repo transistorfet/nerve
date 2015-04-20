@@ -7,11 +7,11 @@
     <link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
     <link rel="stylesheet" type="text/css" href="/assets/css/theme.css" />
     <link rel="stylesheet" type="text/css" href="/assets/css/widgets.css" />
-    <link rel="stylesheet" type="text/css" href="/assets/css/medialib.css" />
+    <link rel="stylesheet" type="text/css" href="/medialib/assets/css/medialib.css" />
 
     <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
     <script type="text/javascript" src="/assets/js/widgets.js"></script>
-    <script type="text/javascript" src="/assets/js/medialib.js"></script>
+    <script type="text/javascript" src="/medialib/assets/js/medialib.js"></script>
 </head>
 <body>
 
