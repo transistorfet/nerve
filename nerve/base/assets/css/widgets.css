@@ -58,7 +58,8 @@ div.nerve-editor > #editor-save {
     display: inline;
 }
 
-.nerve-form-item {
+.nerve-form-item,
+.nerve-form-item-row {
     margin-bottom: 0.5em;
 }
 
@@ -72,7 +73,8 @@ div.nerve-editor > #editor-save {
     color: black;
 }
 
-.nerve-form-item select {
+.nerve-form-item select,
+.nerve-form-item-row select {
     width: 16em;
 }
 
@@ -136,8 +138,10 @@ div.nerve-editor > #editor-save {
 
 .nerve-treeview input + label + ul {
     /* margin of sub elements*/
-    padding: 0 0 0 30px;
+    padding-left: 30px;
+    padding-top: 0.25em;
     padding-bottom: 0.5em;
+    min-width: 16em;
 }
 
 .nerve-treeview label,
@@ -159,12 +163,15 @@ div.nerve-editor > #editor-save {
     /* background: #80C008; */
     /* border: 1px solid #222; */
     /* color: #fff; */
-    margin-bottom: 4px;
 }
 
 .nerve-treeview .object-save {
     float: right;
     margin-right: 1em;
+}
+
+.nerve-treeview .object-delete {
+    float: right;
 }
 
 .nerve-treeview .directory {
@@ -180,6 +187,7 @@ div.nerve-editor > #editor-save {
 
 .nerve-treeview ul > li {
     margin-bottom: 6px;
+    margin-right: 6px;
 }
 
 /*** Nerve Tabs Widget ***/

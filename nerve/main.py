@@ -17,12 +17,12 @@ import requests
 import urllib.parse
 
 mainloops = [ ]
-stdout = sys.stdout
+#stdout = sys.stdout
 
 
-class Main (nerve.ObjectDirectory):
+class Main (nerve.ObjectNode):
     def __init__(self):
-        nerve.ObjectDirectory.__init__(self)
+        super().__init__()
         self.stopflag = threading.Event()
 
         parser = argparse.ArgumentParser(prog='nerve', formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='Nerve Control Server')
@@ -34,11 +34,15 @@ class Main (nerve.ObjectDirectory):
 
     @staticmethod
     def get_config_info():
-        config_info = nerve.ObjectDirectory.get_config_info()
+        config_info = nerve.ObjectNode.get_config_info()
         config_info.add_setting('modules', "Modules", default=nerve.ModulesDirectory())
-        config_info.add_setting('servers', "Servers", default=nerve.ObjectDirectory())
-        config_info.add_setting('devices', "Devices", default=nerve.ObjectDirectory())
+        config_info.add_setting('devices', "Devices", default=nerve.ObjectNode())
+        config_info.add_setting('events', "Events", default=nerve.ObjectNode())
+        config_info.add_setting('servers', "Servers", default=nerve.ObjectNode())
         return config_info
+
+    def del_child(self, index):
+        return False
 
     def getdir(self):
         return self.configdir
@@ -88,6 +92,26 @@ class Main (nerve.ObjectDirectory):
             nerve.log("error running init from " + filename + "\n\n" + traceback.format_exc())
             return False
 
+    def load_config(self, filename):
+        config = self.get_config_info().get_defaults()
+
+        if os.path.exists(filename):
+            try:
+                with open(filename, 'r') as f:
+                    config = json.load(f)
+                    nerve.log("config loaded from " + filename)
+            except:
+                nerve.log("error loading config from " + filename + "\n\n" + traceback.format_exc())
+                return False
+        modules = nerve.ModulesDirectory(**config['__children__']['modules'])
+        self.set_config_data(config)
+        return True
+
+    def save_config(self, filename):
+        config = self.get_config_data()
+        with open(filename, 'w') as f:
+            json.dump(config, f, sort_keys=True, indent=4, separators=(',', ': '))
+
     def read_config_file(self, filename):
         filename = os.path.join(self.configdir, filename)
         (path, _, _) = filename.rpartition('/')
@@ -109,9 +133,11 @@ class Main (nerve.ObjectDirectory):
             f.write(contents)
 
 
+"""
 def log(text):
     global stdout
     stdout.write(time.strftime("%Y-%m-%d %H:%M") + " " + text + "\n")
+"""
 
 def loop():
     global mainloops
@@ -154,6 +180,12 @@ def get_object(name):
         return mainloops[0]
     return mainloops[0].get_object(name.lstrip('/'))
 
+def del_object(name):
+    global mainloops
+    if name == "/":
+        return False
+    return mainloops[0].del_object(name.lstrip('/'))
+
 def has_object(name):
     try:
         if nerve.get_object(name):
@@ -193,6 +225,16 @@ def query_string(text):
     args = text.split()
     ref = args.pop(0)
     return query(ref, *args)
+
+def notify(querystring, *args, **kwargs):
+    global mainloops
+    path = '/'
+    for segment in querystring.lstrip('/').split('/'):
+        if segment == '*':
+            pass
+        else:
+            path += segment
+        
 
 def read_config_file(filename):
     global mainloops

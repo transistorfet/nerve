@@ -206,6 +206,7 @@ Device.request(address, request, args)
 2015/01/19:
 
 player/load_playlist?arg1=Nine+Inch+Nails
+player/load_playlist?a=Nine+Inch+Nails
 
 
 ---------
@@ -248,5 +249,127 @@ An alternative to /modules is /types.  They can also be grouped by type
 /types/servers/http/HTTPServer
 /types/devices/datalog/DatalogManager
 /types/devices/datalog/DatalogDevice
+
+
+---------
+
+2015/04/20:
+
+Ok so things are currently set up for querying.  You send a query to a device, and it returns some data as a response, and/or controls
+something in response.  The queries come from an originating source, usually from a request received by a server, but also from other
+sources like the datalogger, which sends out queries periodically in order to collect the data it needs to log.  It's a one directional
+system though.
+
+What I need now is notifications... a device-originating means of getting something else to do something.  Otherwise we'd always have to
+poll the devices for changes of state, or (what I'm mostly thinking about atm) IR codes being received, that should be acted upon.  It
+wouldn't be feasible to constantly poll the device object to see if an IR code has been received, even if it's handled in the device
+object and not the device itself (thus eliminating the issue of sending serial messages over the wire).  It would be better if there were
+a way for objects to receive notifications without requiring them to send a query first (for each notification).
+
+So then the question is, what is the best way to implement this:
+The receiving object can send a query to the device to register with it (possibly a nerve.Device-generalized query and system thing).
+Would it have to register every time the target device is created?  Would it be a runtime pointer or would the device be given basically
+a return query to send in response to that notification (if /devices/rgb/ir receives an ir notification, then send a query to
+/devices/remote/notify or something like that).  What if the device is deleted and readded?  (It's easy to do in config atm)  Would all
+the registrations be lost?
+
+Or you could have a table of some kind that maps notifications to target queries (possibly embedded in the internal vfs:
+/notify/devices/rgb/ir would be a list of target queries to call).  This would be independent of the devices, so changes to the devices
+(delete and readd) wont eliminate the notification links/callbacks.  They would be set as part of configuration, and would persistently
+stay around until they are unlinked through configuration.  When a device wants to send a notification, it would send it to the list
+object which would send it to everyone else.  The actual path used to send notifications wouldn't even have to match the device's path;
+it could be a somewhat generic name, like '/notify/ir', and no matter what device receives an ir code, it would notify to that path, so
+that anyone that wants any ir codes only needs to register in one place.
+
+But what about a simple response like (in response to certain ir code) 'wait for 2sec and then send this query'.  How would this be done
+(assuming we will have some kind of rule/routines/triggers/events system)?  If a simple query is sent to notify something, then you'd
+have to set up something that can receive that notification query, which can then do that behaviour...
+
+An alternative would be that all notifications cause an 'event'.  So the device would send it's notification to the events system, which
+would have some kind of list of events to perform (some time delayed, some triggered by notifications), and then you'd always have an
+event/routine run when a notification comes in, and that would then execute any queries, if required.  If a device needed to register
+for a notification, it would create it's own event in the event system which would fire when the required notification occurs, which could
+then just send a query to the device to handle the rest itself (query is the same as calling a function on the device object).
+
+The events system would also handle situations where you need to check if a condition has been met (you might have to use only polling
+i mean, rather than notifications).  Like 'if the temperature falls below a certain amount and it's a certain time of day, then do a
+bunch of stuff in response'
+
+
+I'm starting to lean in favor of a system where 'events' are a separate thing, like devices and servers, and devices can 'notify/signal'?
+So there'd be a normal directory called '/events/', and in it would be some kind of organization which I haven't decided on yet.  When a
+device received some data, it would call a function somewhere in the event system, which would then run all the event objects that match.
+All events (by convention) would be in '/events/', but not all would be activated.
+
+    "events": {
+        "irtest": {
+            "N:628": {
+                "__type__": "events/Event",
+                "code": "nerve.query('/devices/player/toggle')"
+            },
+            "N:690": {
+                "__type__": "events/Event",
+                "code": "nerve.query('/devices/player/next')"
+            },
+            "N:650": {
+                "__type__": "events/Event",
+                "code": "nerve.query('/devices/player/previous')"
+            }
+        }
+    }
+
+
+    "events": {
+        "ir": {
+            "irrecv": {
+                "toggle": {
+                    "__type__": "events/Event",
+                    "trigger": "N:628",
+                    "code": "nerve.query('/devices/player/toggle')"
+                },
+                "next": {
+                    "__type__": "events/Event",
+                    "trigger": "N:690",
+                    "code": "nerve.query('/devices/player/next')"
+                },
+                "previous": {
+                    "__type__": "events/Event",
+                    "trigger": "N:650",
+                    "code": "nerve.query('/devices/player/previous')"
+                }
+            }
+        }
+    }
+
+If the second method was used, would the event system have to traverse the whole tree to find events that match the trigger?  Or would it
+correspond to the data value of the notification?  In the latter, the device would emit a signal '/events/ir/irrecv', with the data
+corresponding to the code received (or the new value of a sensor).  The event dispatch thingamasystem would then call all the events in
+'/events/ir/irrecv/*' that have the appropriate trigger (the trigger mechanism could be an argument thing that is automatically handled in
+Event.__call__().  The names of the events inside /events/ir/irrecv would be whatever you want it to be.
+
+So now my question is, where does the signal go?  The device has to call a method somewhere.  Should that be a special notification method?
+Should it be global (and have it call a method on EventThreadPool?) or should it even just be a regular query?  The argument against a
+query, is that there'd have to be special support (in the form of a __call__ method on the directory object) that would then run all the
+events in the directory...  oh hmm... thoughts...
+
+There is an ambiguity here in function, in that if you wanted to query all the objects, and it was possible to query a parent directory
+and have it query all sub objects, this could be really bad if you *don't* want to query everything but accidentally try to query a
+directory.  It wouldn't be hard to have this go through a special function, like nerve.notify(), that will have the query-everything
+functionality, but would this be useful to have as a generic thing, that could be done on any queryable object?  What if you used the
+* (wildcard) notation though, in a regular query: nerve.query("/events/ir/irrecv/*", "N:690"), and then it would query each object in
+/events/ir/irrecv, with the same arguments ("N:690")?  It's not ambiguous with the other functionality, although it would have to be
+treated as a special case, I guess, in nerve.query.
+
+That or you just have nerve.notify("/events/ir/irrecv", "N:690"), or it could be named nerve.query_multiple() or something like that...
+more generic/ordinary sounding.  What if you still had the wildcard syntax, such that you could specify it in different places
+
+nerve.notify("/events/ir/irrecv/*", "N:690")
+nerve.notify("/events/*/irrecv/*", "N:690")
+
+nerve.notify("/devices/player/*/stop")      # stop each individual player object
+
+On a side note, the advantage of having all generic directory objects instead of special 'directories' that have additional methods, is
+that it's easy to maintain with filesystem style commands.
+
 
 

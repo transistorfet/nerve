@@ -27,7 +27,7 @@ $(document).ready(function ()
                     }
                     fields += '</select>';
                 }
-                else if (response[setting].datatype == 'string' || response[setting].datatype == 'number')
+                else if (response[setting].datatype == 'str' || response[setting].datatype == 'int' || response[setting].datatype == 'float')
                     fields += '<input type="text" name="' + response[setting].name + '" value="' + response[setting].default + '" />';
                 else if (response[setting].datatype == 'bool')
                     fields += '<input type="checkbox" name="' + response[setting].name + '" ' + ( response[setting].default ? 'checked' : '' ) + '" />';
@@ -42,7 +42,7 @@ $(document).ready(function ()
     function _pack_values(form) {
         var postvars = { };
 
-        $(form).find('.nerve-form-item input[type="text"]').each(function () {
+        $(form).find('.nerve-form-item input[type="text"],textarea').each(function () {
             postvars[$(this).attr('name')] = $(this).val();
         });
 
@@ -66,7 +66,8 @@ $(document).ready(function ()
         $.post('/config/create', postvars, function (response) {
 	    if (response.status == 'success') {
 		$(form).find('#nerve-error').hide();
-		$(form).find('#nerve-notice').html("Created successfully").show();
+		$(form).find('#nerve-notice').hide();
+                location.reload();
             }
 	    else {
 		$(form).find('#nerve-notice').hide();
@@ -93,6 +94,26 @@ $(document).ready(function ()
 		$(form).find('#nerve-error').html(response.message).show();
             }
         }, 'json');
+    });
+
+    $('.object-delete').click(function (e) {
+        e.preventDefault();
+
+        var form = $(this).parent().parent();
+
+        if (confirm("Are you sure you want to delete " + $(this).attr('data-object'))) {
+            $.post('/config/delete', { 'objectname' : $(this).attr('data-object') }, function (response) {
+                if (response.status == 'success') {
+                    $(form).find('#nerve-error').hide();
+                    $(form).find('#nerve-notice').hide();
+                    location.reload();
+                }
+                else {
+                    $(form).find('#nerve-notice').hide();
+                    $(form).find('#nerve-error').html(response.message).show();
+                }
+            }, 'json');
+        }
     });
 });
 

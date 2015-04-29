@@ -3,6 +3,7 @@
 
 import nerve
 
+import lxml.html
 import requests
 
 class YouTubeAggregator (nerve.Device):

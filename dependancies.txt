@@ -5,11 +5,16 @@ everything:
     python3-apsw
     python3-requests
 
+aggregator:
+    python3-lxml
+
 serial:
     python3-serial
 
 medialib:
-    python3-mutagen
+    #python3-mutagen
+    python-kaa-metadata     # ok... I switched to kaa even though it's python2 only atm, because it handles many more formats more
+                            # easily, and kaa comes with a command like, mminfo, which is what the code actually uses
 
 xmms2:
     python-xmmsclient

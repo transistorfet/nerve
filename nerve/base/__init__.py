@@ -7,6 +7,8 @@ from .controllers.query import QueryController
 from .controllers.pyexec import PyExecController
 from .controllers.shell import ShellController
 
+from .devices.realtime import RealtimeDevice
+
 from .servers.console import Console
 from .servers.tcpserver import TCPServer
 from .servers.udpserver import UDPServer

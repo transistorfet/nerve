@@ -45,7 +45,7 @@ class SerialDevice (nerve.Device):
         while not self.thread.stopflag.is_set():
             try:
                 self.do_idle()
-                (rl, wl, el) = select.select([ self.serial ], [ ], [ ], 0.1)
+                (rl, wl, el) = select.select([ self.serial ], [ ], [ ], 1)
                 if rl and self.serial in rl:
                     line = self.serial.readline()
                     line = line.strip().decode('utf-8')
@@ -67,41 +67,65 @@ class SerialDevice (nerve.Device):
                 nerve.log(traceback.format_exc())
 
 
+class NerveSerialQuery (object):
+    def __init__(self, dev, ref):
+        self.ready = threading.Event()
+        self.dev = dev
+        self.ref = ref
+        self.result = None
+
+    def __call__(self, *args, **kwargs):
+        args = list(args)
+        query_string = self.ref
+        for arg in [ 'a', 'b', 'c', 'd', 'e', 'f' ]:
+            if arg in kwargs:
+                args.append(kwargs[arg])
+            else:
+                break
+        if len(args) > 0:
+            query_string += ' ' + ' '.join(args)
+
+        self.ready.clear()
+        self.dev.enqueue_and_send(self, query_string)
+        if self.ready.wait(2) is True:
+            return self.result
+        return None
+
+
 class NerveSerialDevice (SerialDevice):
     def __init__(self, **config):
         SerialDevice.__init__(self, **config)
-        self.received = threading.Event()
-        self.data = None
+        self.lock = threading.Lock()
+        self.waiting = [ ]
 
     def __getattr__(self, name):
         try:
             return super().__getattr__(name)
         except AttributeError:
             pass
+        return NerveSerialQuery(self, name)
 
-        def serial_getter(*args, **kwargs):
-            args = list(args)
-            query_string = name
-            for arg in [ 'a', 'b', 'c', 'd', 'e', 'f' ]:
-                if arg in kwargs:
-                    args.append(kwargs[arg])
-                else:
-                    break
-            if len(args) > 0:
-                query_string += ' ' + ' '.join(args)
-            self.received.clear()
-            self.send(query_string)
-            if self.received.wait(2) is True:
-                result = self.data
-                self.data = None
-                self.received.clear()
-                return result
-            return None
-        return serial_getter
+    def enqueue_and_send(self, query, query_string):
+        nerve.log("SEND -> " + query_string)
+        with self.lock:
+            self.waiting.append(query)
+        self.send(query_string)
 
     def do_receive(self, line):
         (ref, _, args) = line.partition(" ")
-        self.data = args
-        self.received.set()
+        with self.lock:
+            for (i, query) in enumerate(self.waiting):
+                if query.ref == ref:
+                    self.waiting.pop(i)
+                    query.result = args
+                    query.ready.set()
+                    return
+
+        print("Received unmatched serial return: " + ref + " " + str(args))
+        nerve.query("/events/ir/irrecv/" + args)
+
+        #nerve.notify("/events/ir/irrecv")
+        # this would then call all the events in the irrecv 'directory'
+        # or would this just be a query...
 
 

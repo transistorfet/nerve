@@ -11,12 +11,11 @@ import traceback
 
 
 class TCPConnection (nerve.Server):
-    def __init__(self, server, socket, addr, controllers):
+    def __init__(self, server, socket, addr):
         nerve.Server.__init__(self)
         self.server = server
         self.socket = socket
         (self.host, self.port) = addr
-        self.controllers = controllers
 
         self.buffer = ""
 
@@ -57,7 +56,7 @@ class TCPConnection (nerve.Server):
                         self.thread.stopflag.set()
                     else:
                         request = nerve.Request(self, 'QUERY', "/", { 'queries[]' : [ data ] })
-                        controller = self.make_controller(request)
+                        controller = self.server.make_controller(request)
                         controller.handle_request(request)
                         self.send(controller.get_output())
 
@@ -106,7 +105,7 @@ class TCPServer (nerve.Server):
             while not self.thread.stopflag.is_set():
                 try:
                     sock, addr = self.socket.accept()
-                    conn = TCPConnection(self, sock, addr, self.controllers)
+                    conn = TCPConnection(self, sock, addr)
 
                 except socket.error as e:
                     nerve.log("Socket Error: " + str(e))

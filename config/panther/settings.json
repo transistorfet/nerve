@@ -1,124 +1,194 @@
 {
-    "modules": {
-        "__type__": "objects/ModulesDirectory",
-        "autoload": [
-            "base",
-            "computer",
-            "datalog",
-            "http",
-            "medialib",
-            "player.vlc",
-            "remote",
-            "serial"
-        ]
-    },
-    "devices": {
-        "medialib": {
-            "__type__": "medialib/MediaLib",
-	    "medialib_dirs": [
-		"/media/media/Music", 
-		"/media/media/Torrents"
-	    ],
-	    "youtube_playlists": [
-		"FL_VkJGWFV9ZEIv87E-0NM5w"
-	    ]
+    "__children__": {
+        "modules": {
+            "__type__": "objects/ModulesDirectory",
+            "autoload": [
+                "base",
+                "computer",
+                "datalog",
+                "http",
+                "medialib",
+                "player/vlc",
+                "remote",
+                "serial"
+            ]
         },
-        "computer": {
-            "__type__": "computer/SystemDevice"
-        },
-        "rgb": {
-            "baud": 19200,
-            "file": "/dev/ttyACM0",
-            "__type__": "serial/NerveSerialDevice"
-        },
-        "sensors": {
-            "baud": 19200,
-            "file": "/dev/ttyACM1",
-            "__type__": "serial/NerveSerialDevice"
-        },
-	"player": {
-	    "__type__": "player/vlc/VLCHTTP"
-	},
-        "datalogs": {
-            "manager": {
-                "__type__": "datalog/DatalogManager"
-            },
-            "temperature": {
-                "__type__": "datalog/DatalogDevice",
-                "datapoints": [
-                    {
-                        "datatype": "NUMERIC",
-                        "label": "Inside Temperature",
-                        "max": 50,
-                        "min": 0,
-                        "name": "inside_temp",
-                        "ref": "/devices/sensors/temp0",
-                        "units": "C"
-                    },
-                    {
-                        "datatype": "NUMERIC",
-                        "label": "Window Temperature",
-                        "max": 50,
-                        "min": 0,
-                        "name": "window_temp",
-                        "ref": "/devices/sensors/temp1",
-                        "units": "C"
-                    }
-                ],
-                "name": "temperatures",
-                "update_time": 60
-            }
-        }
-
-    },
-    "servers": {
-        "console": {
-            "controllers": {
-                "__default__": {
-                    "__type__": "base/ShellController"
-                }
-            },
-            "__type__": "base/Console"
-        },
-        "udp": {
-	    "port": 5959,
-            "controllers": {
-                "__default__": {
-                    "__type__": "base/QueryController"
-                }
-            },
-            "__type__": "base/UDPServer"
-        },
-        "http": {
-	    "username": "",
-	    "password": "",
-	    "port": 8888,
-            "controllers": {
-                "__default__": {
-                    "__type__": "base/FileController",
-		    "root" : "assets"
-                },
-                "assets": {
-                    "__type__": "base/FileController",
-		    "root" : "assets"
-                },
-                "query": {
-                    "__type__": "base/QueryController"
-                },
-                "config": {
-                    "__type__": "base/ConfigController"
-                },
+        "devices": {
+            "__children__": {
                 "medialib": {
-                    "__type__": "medialib/MediaLibController"
+                    "__type__": "medialib/MediaLib",
+                    "medialib_dirs": [
+                        "/media/media/Music", 
+                        "/media/media/Video", 
+                        "/media/media/Torrents"
+                    ],
+                    "youtube_playlists": [
+                        "FL_VkJGWFV9ZEIv87E-0NM5w"
+                    ]
                 },
-                "datalog": {
-                    "__type__": "datalog/DatalogController"
+                "computer": {
+                    "__type__": "computer/SystemDevice"
                 },
-                "remote": {
-                    "__type__": "remote/RemoteController"
+                "rgb": {
+                    "baud": 19200,
+                    "file": "/dev/ttyACM0",
+                    "__type__": "serial/NerveSerialDevice"
+                },
+                "sensors": {
+                    "baud": 19200,
+                    "file": "/dev/ttyACM1",
+                    "__type__": "serial/NerveSerialDevice"
+                },
+                "player": {
+                    "__type__": "player/vlc/VLCHTTP"
+                },
+                "datalogs": {
+                    "manager": {
+                        "__type__": "datalog/DatalogManager"
+                    },
+                    "temperature": {
+                        "__type__": "datalog/DatalogDevice",
+                        "datapoints": [
+                            {
+                                "datatype": "NUMERIC",
+                                "label": "Inside Temperature",
+                                "max": 50,
+                                "min": 0,
+                                "name": "inside_temp",
+                                "ref": "/devices/sensors/temp0",
+                                "units": "C"
+                            },
+                            {
+                                "datatype": "NUMERIC",
+                                "label": "Window Temperature",
+                                "max": 50,
+                                "min": 0,
+                                "name": "window_temp",
+                                "ref": "/devices/sensors/temp1",
+                                "units": "C"
+                            }
+                        ],
+                        "name": "temperatures",
+                        "update_time": 60
+                    }
                 }
-            },
-            "__type__": "http/HTTPServer"
+            }
+        },
+        "events": {
+            "__children__": {
+                "ir": {
+                    "__children__": {
+                        "irrecv": {
+                            "__children__": {
+                                "N:6F9E817": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/stereo/power')"
+                                },
+                                "N:AF5E817": {
+                                    "__type__": "events/Event",
+                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/power')"
+                                },
+                                "N:6F99C63": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/sensors/relay_toggle')"
+                                },
+                                "N:6F9827D": {
+                                    "__type__": "events/Event",
+                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/ps3')"
+                                },
+                                "N:6F942BD": {
+                                    "__type__": "events/Event",
+                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/netbook')"
+                                },
+                                "N:6F928D7": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/player/toggle')"
+                                },
+                                "N:6F9906F": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/player/next')"
+                                },
+                                "N:6F950AF": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/player/previous')"
+                                },
+                                "N:AF548B7": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/stereo/volup')"
+                                },
+                                "N:AF5A857": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/stereo/voldown')"
+                                },
+                                "N:AF59867": {
+                                    "__type__": "events/Event",
+                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/volup')"
+                                },
+                                "N:AF518E7": {
+                                    "__type__": "events/Event",
+                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/voldown')"
+                                },
+                                "N:6F9DC23": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/player/load_playlist?url=default')"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "servers": {
+            "__children__": {
+                "console": {
+                    "controllers": {
+                        "__default__": {
+                            "__type__": "base/ShellController"
+                        }
+                    },
+                    "__type__": "base/Console"
+                },
+                "udp": {
+                    "port": 5959,
+                    "controllers": {
+                        "__default__": {
+                            "__type__": "base/QueryController"
+                        }
+                    },
+                    "__type__": "base/UDPServer"
+                },
+                "http": {
+                    "username": "",
+                    "password": "",
+                    "port": 8888,
+                    "controllers": {
+                        "__default__": {
+                            "__type__": "base/FileController",
+                            "root" : "nerve/base/assets"
+                        },
+                        "assets": {
+                            "__type__": "base/FileController",
+                            "root" : "nerve/base/assets"
+                        },
+                        "query": {
+                            "__type__": "base/QueryController"
+                        },
+                        "config": {
+                            "__type__": "base/ConfigController"
+                        },
+                        "medialib": {
+                            "__type__": "medialib/MediaLibController"
+                        },
+                        "datalog": {
+                            "__type__": "datalog/DatalogController"
+                        },
+                        "remote": {
+                            "__type__": "remote/RemoteController"
+                        }
+                    },
+                    "__type__": "http/HTTPServer"
+                }
+            }
         }
     }
 }

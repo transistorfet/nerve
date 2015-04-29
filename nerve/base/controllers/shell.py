@@ -26,7 +26,10 @@ class ShellController (nerve.Controller):
             func = getattr(self, command)
             result = func(args)
         else:
-            result = nerve.query_string(self.pwd + "/" + command_line)
+            if command_line.startswith('/') or command_line.startswith('http:'):
+                result = nerve.query_string(command_line)
+            else:
+                result = nerve.query_string(self.pwd + "/" + command_line)
         return result
 
     def cmd_ls(self, args):
@@ -53,7 +56,7 @@ class ShellController (nerve.Controller):
         result = [ ]
         for devname in directory.keys():
             dev = getattr(directory, devname)
-            if isinstance(dev, nerve.ObjectDirectory):
+            if isinstance(dev, nerve.ObjectNode):
                 result.append("  %s/" % (devname,))
             else:
                 result.append("  %s" % (devname,))

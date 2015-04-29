@@ -42,7 +42,7 @@
 <div id="nerve-error" style="display: none;"></div>
 
 <div class="medialib-playlist">
-    <div>
+    <div class="nerve-form-item">
         <button type="submit" class="pl_delete">-</button>
         <select id="select-playlist">
             <% for name in list_of_playlists: %>
@@ -54,16 +54,20 @@
     </div>
 
     <div class="medialib-list">
-        <button type="submit" class="pl_remove">Remove Selected</button>
-        <button type="submit" class="pl_sort">Sort</button>
-        <button type="submit" class="pl_shuffle">Shuffle</button>
+        <div>
+            <button type="submit" class="pl_remove">Remove Selected</button>
+            <button type="submit" class="pl_sort">Sort</button>
+            <button type="submit" class="pl_shuffle">Shuffle</button>
+        </div>
 
         <div id="playlist-contents">
         </div>
 
-        <button type="submit" class="pl_remove">Remove Selected</button>
-        <button type="submit" class="pl_sort">Sort</button>
-        <button type="submit" class="pl_shuffle">Shuffle</button>
+        <div>
+            <button type="submit" class="pl_remove">Remove Selected</button>
+            <button type="submit" class="pl_sort">Sort</button>
+            <button type="submit" class="pl_shuffle">Shuffle</button>
+        </div>
     </div>
 </div>
 

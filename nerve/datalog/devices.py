@@ -35,11 +35,12 @@ class DatalogManager (nerve.Device):
     def run(self):
         while not self.thread.stopflag.wait(60):
             try:
-                datalogs = nerve.get_object('devices/datalogs')
-                for name in datalogs.keys():
-                    obj = getattr(datalogs, name)
-                    if isinstance(obj, DatalogDevice):
-                        obj._collect_data()
+                datalogs = nerve.get_object('/devices/datalogs')
+                if datalogs:
+                    for name in datalogs.keys():
+                        obj = getattr(datalogs, name)
+                        if isinstance(obj, DatalogDevice):
+                            obj._collect_data()
             except:
                 nerve.log(traceback.format_exc())
 
@@ -50,7 +51,7 @@ class DatalogDevice (nerve.Device):
 
         self.db = nerve.Database('datalog.sqlite')
         table_sql = "id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp NUMERIC"
-        for datapoint in self.datapoints:
+        for datapoint in self.get_setting('datapoints'):
             table_sql += ", %s %s" % (datapoint['name'], datapoint['datatype'])
         self.db.create_table(self.name, table_sql)
 

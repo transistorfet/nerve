@@ -1,142 +1,210 @@
 {
-    "modules" : {
-        "__type__": "objects/ModulesDirectory",
-        "autoload": [
-            "base",
-            "computer",
-            "datalog",
-            "http",
-            "medialib",
-            "player",
-            "remote",
-            "serial"
-        ]
-    },
-    "devices": {
-	"test": {
-	    "__type__": "objects/SymbolicLink",
-	    "link": "devices/datalogs"
-	},
-        "computer": {
-            "__type__": "computer/SystemDevice"
-        },
-        "datalogs": {
-            "manager": {
-                "__type__": "datalog/DatalogManager"
-            },
-            "testlog": {
-                "__type__": "datalog/DatalogDevice",
-                "datapoints": [
-                    {
-                        "datatype": "NUMERIC",
-                        "label": "kitty CPU Temperature",
-                        "max": 100,
-                        "min": 0,
-                        "name": "kitty_temp",
-                        "ref": "/devices/computer/cputemp",
-                        "units": "C"
-                    },
-                    {
-                        "datatype": "NUMERIC",
-                        "label": "kitty System Temperature #1",
-                        "max": 100,
-                        "min": 0,
-                        "name": "kitty_systemp1",
-                        "ref": "/devices/computer/systemp1",
-                        "units": "C"
-                    },
-                    {
-                        "datatype": "NUMERIC",
-                        "label": "kitty System Temperature #2",
-                        "max": 100,
-                        "min": 0,
-                        "name": "kitty_systemp2",
-                        "ref": "/devices/computer/systemp2",
-                        "units": "C"
-                    }
-                ],
-                "name": "testlog",
-                "update_time": 60
-            }
-        },
-        "medialib": {
-            "__type__": "medialib/MediaLib",
-            "medialib_dirs": [
-                "/media/media/Music",
-                "/media/media/Video",
-                "/media/media/Torrents"
-            ],
-            "youtube_playlists": [
-                "PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4",
-                "FL_VkJGWFV9ZEIv87E-0NM5w",
-                "PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0"
+    "__children__": {
+        "modules" : {
+            "__type__": "objects/ModulesDirectory",
+            "autoload": [
+                "base",
+                "computer",
+                "datalog",
+                "http",
+                "medialib",
+                "mysensors",
+                "player",
+                "remote",
+                "serial",
+                "player/xmms2cli"
             ]
         },
-        "player": {
-            "__type__": "player/PlayerDevice",
-            "backend": "player/vlc/VLCHTTP"
-        },
-        "rgb": {
-            "__type__": "serial/NerveSerialDevice",
-            "baud": 19200,
-            "file": "/dev/ttyACM1"
-        }
-    },
-    "servers": {
-        "default": {
-            "__type__": "core/Server",
-            "controllers": {
-                "__default__": {
-                    "__type__": "base/FileController",
-                    "root": "nerve/base/assets"
+        "devices": {
+            "__children__": {
+                "realtime": {
+                    "__type__": "base/RealtimeDevice"
                 },
-                "assets": {
-                    "__type__": "base/FileController",
-                    "root": "nerve/base/assets"
+                "test": {
+                    "__type__": "objects/SymbolicLink",
+                    "link": "devices/datalogs"
                 },
-                "config": {
-                    "__type__": "base/ConfigController"
+                "computer": {
+                    "__type__": "computer/SystemDevice"
                 },
-                "datalog": {
-                    "__type__": "datalog/DatalogController"
+                "datalogs": {
+                    "__children__": {
+                        "manager": {
+                            "__type__": "datalog/DatalogManager"
+                        },
+                        "testlog": {
+                            "__type__": "datalog/DatalogDevice",
+                            "datapoints": [
+                                {
+                                    "datatype": "NUMERIC",
+                                    "label": "kitty CPU Temperature",
+                                    "max": 100,
+                                    "min": 0,
+                                    "name": "kitty_temp",
+                                    "ref": "/devices/computer/cputemp",
+                                    "units": "C"
+                                },
+                                {
+                                    "datatype": "NUMERIC",
+                                    "label": "kitty System Temperature #1",
+                                    "max": 100,
+                                    "min": 0,
+                                    "name": "kitty_systemp1",
+                                    "ref": "/devices/computer/systemp1",
+                                    "units": "C"
+                                },
+                                {
+                                    "datatype": "NUMERIC",
+                                    "label": "kitty System Temperature #2",
+                                    "max": 100,
+                                    "min": 0,
+                                    "name": "kitty_systemp2",
+                                    "ref": "/devices/computer/systemp2",
+                                    "units": "C"
+                                }
+                            ],
+                            "name": "testlog",
+                            "update_time": 60
+                        }
+                    }
                 },
                 "medialib": {
-                    "__type__": "medialib/MediaLibController"
+                    "__type__": "medialib/MediaLib",
+                    "medialib_dirs": [
+                        "/media/media/Music",
+                        "/media/media/Video",
+                        "/media/media/Torrents"
+                    ],
+                    "youtube_playlists": [
+                        "PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4",
+                        "FL_VkJGWFV9ZEIv87E-0NM5w",
+                        "PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0"
+                    ]
                 },
-                "query": {
-                    "__type__": "base/QueryController"
+                "player": {
+                    "__type__": "player/PlayerDevice",
+                    "backend": "/modules/player/xmms2cli/Xmms2CLI"
                 },
-                "remote": {
-                    "__type__": "remote/RemoteController"
+                "rgb": {
+                    "__type__": "serial/NerveSerialDevice",
+                    "baud": 19200,
+                    "file": "/dev/ttyACM1"
+                },
+                "thing": {
+                    "__children__": {
+                        "test": {
+                            "__type__": "events/Event",
+                            "code": "print('Hey there')"
+                        },
+                        "spam": {
+                            "__type__": "events/Event",
+                            "code": "print('SPAM!')\nself.repeat_in(1.0)"
+                        },
+                        "lamp": {
+                            "__type__": "events/Event",
+                            "code": "time.sleep(2)\nnerve.query(\"http://dev:dev@localhost:8889/query/deskclock/relay_toggle\")"
+                        },
+                        "auto": {
+                            "__type__": "events/Event",
+                            "repeat": 1.0,
+                            "code": "#print('SPAM!')"
+                        }
+                    }
                 }
             }
         },
-        "default_shell": {
-            "__type__": "core/Server",
-            "controllers": {
-                "__default__": {
-                    "__type__": "base/ShellController"
+        "events": {
+            "__children__": {
+                "ir": {
+                    "__children__": {
+                        "irrecv": {
+                            "__children__": {
+                                "N:628": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/player/toggle')"
+                                },
+                                "N:690": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/player/next')"
+                                },
+                                "N:650": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/player/previous')"
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
-        "console": {
-            "__type__": "base/Console",
-            "parent": "/servers/default_shell",
-            "controllers": null
-        },
-        "shell": {
-            "__type__": "base/TCPServer",
-            "port": 6060,
-            "parent": "/servers/default_shell",
-            "controllers": null
-        },
-        "http": {
-            "__type__": "http/HTTPServer",
-            "parent": "/servers/default",
-            "password": "",
-            "port": 8888,
-            "username": "",
-            "controllers": null
+        "servers": {
+            "__children__": {
+                "default": {
+                    "__type__": "core/Server",
+                    "controllers": {
+                        "__default__": {
+                            "__type__": "base/FileController",
+                            "root": "nerve/base/assets"
+                        },
+                        "assets": {
+                            "__type__": "base/FileController",
+                            "root": "nerve/base/assets"
+                        },
+                        "config": {
+                            "__type__": "base/ConfigController"
+                        },
+                        "datalog": {
+                            "__type__": "datalog/DatalogController"
+                        },
+                        "medialib": {
+                            "__type__": "medialib/MediaLibController"
+                        },
+                        "query": {
+                            "__type__": "base/QueryController"
+                        },
+                        "remote": {
+                            "__type__": "remote/RemoteController"
+                        }
+                    }
+                },
+                "default_shell": {
+                    "__type__": "core/Server",
+                    "controllers": {
+                        "__default__": {
+                            "__type__": "base/ShellController"
+                        }
+                    }
+                },
+                "console": {
+                    "__type__": "base/Console",
+                    "parent": "/servers/default_shell",
+                    "controllers": null
+                },
+                "pyexec": {
+                    "__type__": "base/TCPServer",
+                    "port": 6061,
+                    "parent": "",
+                    "controllers": {
+                        "__default__": {
+                            "__type__": "base/PyExecController"
+                        }
+                    }
+                },
+                "shell": {
+                    "__type__": "base/TCPServer",
+                    "port": 6060,
+                    "parent": "/servers/default_shell",
+                    "controllers": null
+                },
+                "http": {
+                    "__type__": "http/HTTPServer",
+                    "parent": "/servers/default",
+                    "password": "",
+                    "port": 8888,
+                    "username": "",
+                    "controllers": null
+                }
+            }
         }
     }
 }

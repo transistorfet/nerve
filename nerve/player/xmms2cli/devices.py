@@ -42,8 +42,8 @@ class Xmms2CLI (nerve.Device):
     def update_info(self):
         proc = subprocess.Popen(["xmms2", "current"], stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
-        parts = out.decode('utf-8').split(':', 2)
-        (self.current_song, _, _) = parts[1].strip().rpartition('.')
+        parts = out.decode('utf-8').split(': ', 2)
+        self.current_song = parts[1]
         (self.artist, _, self.title) = self.current_song.partition(" - ")
 
     def load_playlist(self, url):

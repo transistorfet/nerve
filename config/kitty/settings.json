@@ -1,84 +1,90 @@
 {
-    "modules": {
-        "__type__": "objects/ModulesDirectory",
-        "autoload": [
-            "base",
-            "computer",
-            "http",
-            "medialib",
-            "player.xmms2cli",
-            "remote",
-            "serial"
-        ]
-    },
-    "devices": {
-        "computer": {
-            "__type__": "computer/SystemDevice"
+    "__children__": {
+        "modules": {
+            "__type__": "objects/ModulesDirectory",
+            "autoload": [
+                "base",
+                "computer",
+                "http",
+                "medialib",
+                "player/xmms2cli",
+                "remote",
+                "serial"
+            ]
         },
-        "rgb": {
-            "baud": 19200,
-            "file": "/dev/ttyACM1",
-            "__type__": "serial/NerveSerialDevice"
-        },
-	"player": {
-	    "__type__": "player/xmms2cli/Xmms2CLI"
-	},
-        "medialib": {
-            "__type__": "medialib/MediaLib",
-	    "medialib_dirs": [
-		"/media/media/Music", 
-		"/media/media/Torrents"
-	    ],
-	    "youtube_playlists": [
-		"FL_VkJGWFV9ZEIv87E-0NM5w"
-	    ]
-        }
-    },
-    "servers": {
-        "console": {
-            "controllers": {
-                "__default__": {
-                    "__type__": "base/QueryController"
-                }
-            },
-            "__type__": "base/Console"
-        },
-        "udp": {
-	    "port": 5959,
-            "controllers": {
-                "__default__": {
-                    "__type__": "base/QueryController"
-                }
-            },
-            "__type__": "base/UDPServer"
-        },
-        "http": {
-	    "username" : "dev",
-	    "password" : "dev",
-	    "port": 8889,
-            "controllers": {
-                "__default__": {
-                    "__type__": "base/FileController",
-		    "root" : "assets"
+        "devices": {
+            "__children__": {
+                "computer": {
+                    "__type__": "computer/SystemDevice"
                 },
-                "assets": {
-                    "__type__": "base/FileController",
-		    "root" : "assets"
+                "rgb": {
+                    "baud": 19200,
+                    "file": "/dev/ttyACM1",
+                    "__type__": "serial/NerveSerialDevice"
                 },
-                "query": {
-                    "__type__": "base/QueryController"
-                },
-                "config": {
-                    "__type__": "base/ConfigController"
+                "player": {
+                    "__type__": "player/xmms2cli/Xmms2CLI"
                 },
                 "medialib": {
-                    "__type__": "medialib/MediaLibController"
-                },
-                "remote": {
-                    "__type__": "remote/RemoteController"
+                    "__type__": "medialib/MediaLib",
+                    "medialib_dirs": [
+                        "/media/media/Music", 
+                        "/media/media/Torrents"
+                    ],
+                    "youtube_playlists": [
+                        "FL_VkJGWFV9ZEIv87E-0NM5w"
+                    ]
                 }
-            },
-            "__type__": "http/HTTPServer"
+            }
+        },
+        "servers": {
+            "__children__": {
+                "console": {
+                    "controllers": {
+                        "__default__": {
+                            "__type__": "base/QueryController"
+                        }
+                    },
+                    "__type__": "base/Console"
+                },
+                "udp": {
+                    "port": 5959,
+                    "controllers": {
+                        "__default__": {
+                            "__type__": "base/QueryController"
+                        }
+                    },
+                    "__type__": "base/UDPServer"
+                },
+                "http": {
+                    "username" : "dev",
+                    "password" : "dev",
+                    "port": 8889,
+                    "controllers": {
+                        "__default__": {
+                            "__type__": "base/FileController",
+                            "root" : "nerve/base/assets"
+                        },
+                        "assets": {
+                            "__type__": "base/FileController",
+                            "root" : "nerve/base/assets"
+                        },
+                        "query": {
+                            "__type__": "base/QueryController"
+                        },
+                        "config": {
+                            "__type__": "base/ConfigController"
+                        },
+                        "medialib": {
+                            "__type__": "medialib/MediaLibController"
+                        },
+                        "remote": {
+                            "__type__": "remote/RemoteController"
+                        }
+                    },
+                    "__type__": "http/HTTPServer"
+                }
+            }
         }
     }
 }

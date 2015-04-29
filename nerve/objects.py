@@ -22,17 +22,9 @@ class ConfigInfo (object):
                 del self.settings[i]
                 break
 
+        # other valid datatypes are: textarea
         if not datatype:
-            if type(default) in (float, int):
-                datatype = 'number'
-            elif type(default) is bool:
-                datatype = 'bool'
-            elif type(default) in (list, tuple):
-                datatype = 'list'
-            elif type(default) is dict:
-                datatype = 'dict'
-            else:
-                datatype = 'string'
+            datatype = type(default).__name__
 
         self.settings.append({
             'name' : name,
@@ -56,11 +48,12 @@ class ConfigInfo (object):
         return defaults
 
     def get_proper_names(self):
-        return [ [ setting['name'], setting['propername'], setting['datatype'] ] for setting in self.settings ]
+        return [ (setting['name'], setting['propername'], setting['datatype']) for setting in self.settings ]
 
 
 class ObjectNode (object):
     def __init__(self, **config):
+        self.children = { }
         self.set_config_data(config)
 
     @staticmethod
@@ -69,8 +62,11 @@ class ObjectNode (object):
 
     def set_config_data(self, config):
         self.config = config
+        if '__children__' in config:
+            self.children = self.make_object_table(config['__children__'])
 
     def get_config_data(self):
+        self.config['__children__'] = self.save_object_table(self.children)
         return self.config
 
     def set_setting(self, name, value):
@@ -84,27 +80,35 @@ class ObjectNode (object):
             return self.config[name]
         return None
 
-    # TODO maybe you should get rid of this? *shrug*
-    def __getattr__(self, name):
-        try:
-            return self.__dict__['config'][name]
-        except KeyError:
-            raise AttributeError("'%s' object has no attribute '%s'" % (str(self), name))
 
-    def __getitem__(self, index):
-        return getattr(self, index)
-
-    def __setitem__(self, index, obj):
-        setattr(self, index, obj)
-
-    def __delitem__(self, index):
-        delattr(self, index)
+    def __getattr__(self, index):
+        if index in self.__dict__['children']:
+            return self.__dict__['children'][index]
+        if 'config' in self.__dict__ and index in self.__dict__['config']:
+            return self.__dict__['config'][index]
+        raise AttributeError("'%s' object has no attribute '%s'" % (str(self), index))
 
     def keys(self):
-        return [ name for name in dir(self) if name[0] != '_' ] + list(self.config.keys())
+        return list(self.children.keys()) + list(self.config.keys()) #+ [ name for name in dir(self) if name[0] != '_' ]
 
-    def query_keys(self):
-        return [ name for name in list(self.__class__.__dict__.keys()) + list(self.config.keys()) if name[0] != '_' ]
+
+    def get_child(self, index):
+        if index in self.__dict__['children']:
+            return self.__dict__['children'][index]
+        return None
+
+    def set_child(self, index, obj):
+        self.children[index] = obj
+
+    def del_child(self, index):
+        if index in self.children:
+            del self.children[index]
+            return True
+        return False
+
+
+    def keys_children(self):
+        return list(self.children.keys())
 
     def get_object(self, name):
         obj = self
@@ -123,28 +127,16 @@ class ObjectNode (object):
         (*segments, leaf) = name.split('/')        
         for segment in segments:
             root = getattr(root, segment)
-        #setattr(root, leaf, obj)
-        root[leaf] = obj
+        #root[leaf] = obj
+        root.set_child(leaf, obj)
 
-    def load_config(self, filename):
-        config = self.get_config_info().get_defaults()
+    def del_object(self, name):
+        root = self
+        (*segments, leaf) = name.split('/')        
+        for segment in segments:
+            root = getattr(root, segment)
+        return root.del_child(leaf)
 
-        if os.path.exists(filename):
-            try:
-                with open(filename, 'r') as f:
-                    config = json.load(f)
-                    nerve.log("config loaded from " + filename)
-            except:
-                nerve.log("error loading config from " + filename + "\n\n" + traceback.format_exc())
-                return False
-        modules = ModulesDirectory(**config['modules'])
-        self.set_config_data(config)
-        return True
-
-    def save_config(self, filename):
-        config = self.get_config_data()
-        with open(filename, 'w') as f:
-            json.dump(config, f, sort_keys=True, indent=4, separators=(',', ': '))
 
     @staticmethod
     def make_object(typeinfo, config):
@@ -158,44 +150,10 @@ class ObjectNode (object):
 
     @staticmethod
     def get_class_config_info(typeinfo):
-        classtype = Modules.get_module(typeinfo)
-        #if not isinstance(classtype, ObjectNode):
+        classtype = ModulesDirectory.get_module(typeinfo)
+        #if not issubclass(classtype, ObjectNode):
         #    raise TypeError("POOP")
         return classtype.get_config_info()
-
-
-class ObjectDirectory (ObjectNode):
-    def __init__(self, **config):
-        self.objects = { }
-        ObjectNode.__init__(self, **config)
-
-    @staticmethod
-    def get_config_info():
-        config_info = nerve.ObjectNode.get_config_info()
-        return config_info
-
-    def set_config_data(self, config):
-        self.objects = self.make_object_table(config)
-
-    def get_config_data(self):
-        config = self.save_object_table(self.objects)
-        return config
-
-    def __getattr__(self, name):
-        if name in self.objects:
-            return self.objects[name]
-
-    def __getitem__(self, index):
-        return self.objects[index]
-
-    def __setitem__(self, index, obj):
-        self.objects[index] = obj
-
-    def __delitem__(self, index):
-        delattr(self.objects, index)
-
-    def keys(self):
-        return self.objects.keys()
 
     @staticmethod
     def make_object_table(config):
@@ -203,7 +161,7 @@ class ObjectDirectory (ObjectNode):
         for objname in config.keys():
             if objname != '__type__':
                 if '__type__' not in config[objname]:
-                    typeinfo = "objects/ObjectDirectory"
+                    typeinfo = "objects/ObjectNode"
                 else:
                     typeinfo = config[objname]['__type__']
                 obj = ObjectNode.make_object(typeinfo, config[objname])
@@ -225,6 +183,17 @@ class SymbolicLink (ObjectNode):
         config_info.add_setting('link', "Link", default="")
         return config_info
 
+    def __getitem__(self, index):
+        link = self.get_setting('link')
+        return nerve.get_object(link + '/' + str(index))
+
+    def __setitem__(self, index, obj):
+        link = self.get_setting('link')
+        nerve.set_object(link + '/' + str(index), obj)
+
+    #def __delitem__(self, index):
+    #    delattr(self.objects, index)
+
 
 class Module (ObjectNode):
     @staticmethod
@@ -234,47 +203,40 @@ class Module (ObjectNode):
         return config_info
 
 
-class ModulesDirectory (ObjectDirectory):
+class ModulesDirectory (ObjectNode):
     @staticmethod
     def get_config_info():
-        config_info = nerve.ObjectDirectory.get_config_info()
+        config_info = nerve.ObjectNode.get_config_info()
         config_info.add_setting('autoload', "Auto Load", default=[ 'base' ])
         return config_info
 
     def set_config_data(self, config):
-        super(ObjectDirectory, self).set_config_data(config)
+        #super(ObjectNode, self).set_config_data(config)
+        ObjectNode.set_config_data(self, config)
         self.autoload_modules()
 
-    def get_config_data(self):
-        return super(ObjectDirectory, self).config
-
     """
+    def get_config_data(self):
+        return self.config
+    """
+
     def __getattr__(self, name):
         res = getattr(nerve, name)
         return res
 
-    def __getitem__(self, index):
-        return getattr(nerve, index)
-
-    def __setitem__(self, index, obj):
-        pass
-
-    def __delitem__(self, index):
-        pass
-
     def keys(self):
         return dir(nerve)
-    """
 
     def autoload_modules(self):
         modules = self.get_setting('autoload')
         if modules:
             print ("loading modules")
             for name in modules:
-                ModulesDirectory.import_module(name)
+                ModulesDirectory.import_module(name.replace('/', '.'))
 
-    def get_types(self, classtype=None):
-        types = [ 'objects/ObjectDirectory' ]
+    def get_types(self, classtype=None, module=None):
+        """
+        types = [ 'objects/ObjectDirectory', 'events/Event' ]
         modules = self.get_setting('autoload')
         if modules:
             for name in modules:
@@ -284,6 +246,24 @@ class ModulesDirectory (ObjectDirectory):
                     if isinstance(attrib, type) and issubclass(attrib, classtype):
                         types.append(name.replace('.', '/') + '/' + typename)
         return types
+        """
+
+        if not module:
+            module = nerve
+
+        typelist = [ ]
+        modulename = module.__name__
+        for typename in dir(module):
+            attrib = getattr(module, typename)
+
+            if isinstance(attrib, type) and issubclass(attrib, classtype):
+                typelist.append(modulename.replace('.', '/') + '/' + typename)
+            elif isinstance(attrib, type(nerve)) and attrib.__package__.startswith(modulename):
+                typelist.extend(self.get_types(classtype, attrib))
+
+        # TODO holy fuck bad hack
+        return [ typename.lstrip("nerve/") for typename in typelist ]
+        #return typelist
 
     def get_modules(self):
         autoload = self.get_setting('autoload')
@@ -300,6 +280,7 @@ class ModulesDirectory (ObjectDirectory):
 
     @staticmethod
     def import_module(modulename):
+        modulename = modulename.replace('/', '.')
         #self.set_object(modulename.replace('.', '/'), Module(name=modulename))
         try:
             nerve.log("loading module " + modulename)

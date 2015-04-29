@@ -5,6 +5,7 @@ import nerve
 
 import io
 import json
+import time
 import traceback
 import mimetypes
 import urllib.parse
@@ -145,10 +146,12 @@ class Server (nerve.ObjectNode):
     def get_config_info():
         config_info = nerve.ObjectNode.get_config_info()
         config_info.add_setting('parent', "Parent Server", default='')
+        """
         servers = nerve.get_object('/servers')
         if servers:
             for option in servers.keys():
                 config_info.add_option('parent', option, '/servers/' + option)
+        """
         config_info.add_setting('controllers', "Controllers", default=dict())
         return config_info
 
@@ -207,53 +210,24 @@ class Device (Model):
     """
 
 
-
-"""
-
-import Queue
-import time
-
-class Something (object):
-    dispatch_queue = Queue.PriorityQueue()
-
-    @staticmethod
-    #def request(url, *args, delay=0, callback=None):
-    def request(url, args, delay=0, callback=None):
-        entry = (time.time() + delay, url, args, callback)
-        Something.dispatch_queue.put(entry)
-
-
-    def dispatch_request(self, url, args):
-        urldata = urllib.parse.urlparse(url)
-        # TODO do all the rest
-
-    def run(self):
-        while not self.thread.stopflag.wait(1):
-            try:
-                entry = Something.dispatch_queue.get(True, 1.0)
-
-                ## If the next entry is scheduled for the future, then put it back and wait a bit
-                if time.time() > entry[0]:
-                    Something.dispatch_queue.put(entry)
-                    time.sleep(0.1)
-
-                ## Otherwise, disptach the request
-                else:
-                    result = self.disptach_request(entry[1], entry[2])
-                    if entry[3] is not None:
-                        entry[3](result)
-
-                Something.dispatch_queue.task_done()
-            except queue.Empty as e:
-                pass
-"""
-
-
+# TODO is this not redundant with objects/SymbolicLink
 class AliasDevice (Device):
     def __init__(self, **config):
         Device.__init__(self, **config)
 
     def __getattr__(self, name):
         pass
+
+
+class SingleQuery (nerve.ObjectNode):
+    @staticmethod
+    def get_config_info():
+        config_info = nerve.ObjectNode.get_config_info()
+        config_info.add_setting('code', "Python Code", default='')
+        return config_info
+
+    def __call__(self, *args):
+        code = self.get_setting('code')
+        exec(code)
 
 

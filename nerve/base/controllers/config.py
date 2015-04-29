@@ -19,11 +19,6 @@ class ConfigController (nerve.http.Controller):
         # TODO can you for this path without refering directly to the module (ie. using what's in the request)
         self.load_view("nerve/base/views/config/settings.pyhtml", data)
 
-    def assets(self, request):
-        # TODO This is a possible idea
-        #self.write_file("nerve/base/assets" + request.remaining_segments())
-        pass
-
     def types(self, request):
         if request.reqtype != "POST":
             self.write_json({ 'status' : 'error', 'message' : "Unrecognized request type: " + request.reqtype })
@@ -71,6 +66,33 @@ class ConfigController (nerve.http.Controller):
         nerve.save_config()
         self.write_json({ 'status' : 'success' })
 
+    def rename(self, request):
+        if request.reqtype != "POST":
+            self.write_json({ 'status' : 'error', 'message' : "Unrecognized request type: " + request.reqtype })
+            return False
+
+        # TODO you totally don't validate these names enough
+        oldname = request.arg('oldname')
+        newname = request.arg('newname')
+
+        if not oldname or not nerve.has_object(oldname):
+            self.write_json({ 'status' : 'error', 'message' : "The directory you've specified is invalid." })
+            return False
+        if not newname:
+            self.write_json({ 'status' : 'error', 'message' : "The new name given is invalid." })
+            return False
+        if nerve.has_object(newname):
+            self.write_json({ 'status' : 'error', 'message' : "An object of that name already exists." })
+            return False
+
+        obj = nerve.get_object(oldname)
+        if not nerve.del_object(oldname):
+            self.write_json({ 'status' : 'error', 'message' : "Unable to rename this object." })
+            return False
+        nerve.set_object(newname, obj)
+        nerve.save_config()
+        self.write_json({ 'status' : 'success' })
+
     def save(self, request):
         # TODO do authorization check
         if request.reqtype != "POST":
@@ -86,10 +108,33 @@ class ConfigController (nerve.http.Controller):
         nerve.save_config()
         self.write_json({ 'status' : 'success' })
 
+    def delete(self, request):
+        # TODO do authorization check
+        if request.reqtype != "POST":
+            self.write_json({ 'status' : 'error', 'message' : "Unrecognized request type: " + request.reqtype })
+            return False
+
+        objectname = request.args['objectname']
+        if not objectname or not nerve.has_object(objectname):
+            self.write_json({ 'status' : 'error', 'message' : "The object you've specified doesn't exist." })
+            return False
+
+        result = nerve.del_object(objectname)
+        if result:
+            nerve.save_config()
+            self.write_json({ 'status' : 'success' })
+        else:
+            self.write_json({ 'status' : 'error', 'message' : "Unable to delete object." })
+
     def _unpack_values(self, defaults, config, args):
         for setting in defaults.settings:
             if setting['name'] in args:
                 # TODO also check sanity and convert to int if necessary
-                config[setting['name']] = args[setting['name']]
+                if setting['datatype'] == 'int':
+                    config[setting['name']] = int(args[setting['name']])
+                elif setting['datatype'] == 'float':
+                    config[setting['name']] = float(args[setting['name']])
+                else:
+                    config[setting['name']] = args[setting['name']]
         return config
 

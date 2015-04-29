@@ -30,6 +30,7 @@ class DeskClock (nerve.serial.SerialDevice):
 
         player = nerve.get_object("/devices/player")
         if player != None:
+            player.getsong()
             title = player.title.ljust(16)
             title = title[0:16]
             self.send('L1=' + title + '\n')
@@ -38,25 +39,22 @@ class DeskClock (nerve.serial.SerialDevice):
 
     def do_receive(self, line):
         #print line
-        if line == "B7=0" or line == 'I0=A2C8':
+        if line == "B7=0" or line == 'I0=N:A25DC837':
             nerve.query("/devices/player/next")
-        elif line == "B6=0" or line == 'I0=A2A8':
+        elif line == "B6=0" or line == 'I0=N:A25DA857':
             nerve.query("/devices/player/toggle")
-        elif line == "B5=0" or line == 'I0=A298':
+        elif line == "B5=0" or line == 'I0=N:A25D9867':
             nerve.query("/devices/player/previous")
         elif line == "B4=0":
-            rgb = nerve.get_object("/devices/rgb")
-            rgb.send('key 248')
-        elif line == "B3=0" or line == 'I0=A207':
+            nerve.query("/devices/rgb/key", "0x248")
+        elif line == "B3=0" or line == 'I0=N:A25D07F8':
             self.relay_toggle()
-            #self.relay_toggle(msg)
         elif line == "B0=0":
             nerve.query("/devices/player/shuffle")
         elif line == "B1=0":
             nerve.query("/devices/player/sort")
-        elif line[0:5] == 'I0=A2':
-            rgb = nerve.get_object("/devices/rgb")
-            rgb.send('key 2' + line[5:7])
+        elif line.startswith('I0=N:A25D'):
+            nerve.query("/devices/rgb/key", "0x2" + line[9:11])
 
 nerve.set_object('/devices/deskclock', DeskClock(file="/dev/ttyACM0", baud=19200))
 

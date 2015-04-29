@@ -133,3 +133,25 @@ config = {
     }
 }
 
+
+
+class SpecialEvent (nerve.Event):
+    def __init__(self, **config):
+        config['repeat'] = 1.0
+        super().__init__(**config)
+        self.high = False
+
+    def run(self):
+        temp = nerve.query("http://192.168.1.180:8888/query/sensors/temp0")
+        if not self.high and float(temp) > 24:
+            self.high = True
+            print("HEY IT HAPPENED")
+
+        if self.high and float(temp) < 23:
+            self.high = False
+            print("IT'S NOT HAPPENING")
+
+#nerve.set_object("/devices/thing/special", SpecialEvent())
+
+
+
