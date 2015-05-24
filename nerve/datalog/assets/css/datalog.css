@@ -21,6 +21,12 @@
     margin-left: 2em;
 }
 
+.nerve-graph .legend-item > label
+{
+    display: inline-block;
+    width: 12em;
+}
+
 .nerve-graph .legend-colour
 {
     display: inline-block;
@@ -30,6 +36,14 @@
     border: 1px solid black;
     margin-left: 4px;
     margin-right: 2px;
+}
+
+.nerve-graph .legend-value
+{
+    display: inline-block;
+    text-align: right;
+    width: 6em;
+    margin-right: 3px;
 }
 
 #select-datalog {

@@ -9,7 +9,7 @@ class PyExecController (nerve.Controller):
         result = None
         if 'queries[]' in request.args:
             result = [ ]
-            global_dict = nerve.main().devices.objects.copy()
+            global_dict = nerve.main().devices.children.copy()
             global_dict['nerve'] = nerve
             for querystr in request.args['queries[]']:
                 result.append(eval(querystr, global_dict))

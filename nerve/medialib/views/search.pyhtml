@@ -39,6 +39,7 @@
         <a href="/medialib/search?mode=album&order=modified">By Modified Date</a>
         <a href="/medialib/search?mode=album&order=modified&recent=52">Most Recent</a>
         <a href="/medialib/search?mode=album&order=random">Random</a>
+        <a href="/medialib/search_youtube">YouTube</a>
     </div>
 
     <div class="medialib-links">
@@ -47,25 +48,25 @@
         <% end %>
     </div>
 
-    <div>
-        <select id="mode">
+    <form action="/medialib/search" method="GET">
+        <select name="mode">
             <option value="title" <%= ' selected' if mode == 'title' else '' %>>title</option>
             <option value="artist" <%= ' selected' if mode == 'artist' else '' %>>artist</option>
             <option value="album" <%= ' selected' if mode == 'album' else '' %>>album</option>
             <option value="genre" <%= ' selected' if mode == 'genre' else '' %>>genre</option>
         </select>
 
-        <select id="media_type">
+        <select name="media_type">
             <option value="" <%= ' selected' if not media_type else '' %>>any</option>
             <option value="audio" <%= ' selected' if media_type == 'audio' else '' %>>audio</option>
             <option value="video" <%= ' selected' if media_type == 'video' else '' %>>video</option>
         </select>
 
-        <input type="text" id="recent" value="<%= recent if recent else '' %>">
+        <input type="text" name="recent" value="<%= recent if recent else '' %>">
 
         <br />
 
-        <select id="order">
+        <select name="order">
             <option value="artist" <%= ' selected' if order == 'artist' else '' %>>artist</option>
             <option value="album" <%= ' selected' if order == 'album' else '' %>>album</option>
             <option value="title" <%= ' selected' if order == 'title' else '' %>>title</option>
@@ -75,11 +76,13 @@
             <option value="random" <%= ' selected' if order == 'random' else '' %>>random</option>
             <option value="filename" <%= ' selected' if order == 'filename' else '' %>>filename</option>
         </select>
-        <input type="text" id="search" value="<%= search if search else '' %>">
-        <button type="submit" id="pl_search" value="">Search</button>
-    </div>
+        <input type="text" name="search" value="<%= search if search else '' %>">
+        <button type="submit" name="pl_search" value="">Search</button>
+    </form>
 
-    <div id="search-table" style="display: none;">
+    <div id="search-table">
+        <% if media_list: %>
+
         <hr>
         <div>
             <select id="select-playlist">
@@ -94,12 +97,71 @@
         </div>
 
         <div id="search-results">
+            <%
+            has_album = True if 'album' in media_list[0] else False
+            has_genre = True if 'genre' in media_list[0] else False
+            has_title = True if 'title' in media_list[0] else False
+            has_track_num = True if 'track_num' in media_list[0] else False
+            %>
+
+            <div class="medialib-list">
+                <table>
+                <thead><tr>
+                    <th></th>
+                    <th>Artist</th>
+                    <% if has_title: %>
+                        <th>Title</th>
+                    <% end %>
+                    <% if has_album: %>
+                        <th>Album</th>
+                    <% end %>
+                    <% if has_track_num: %>
+                        <th>#</th>
+                    <% end %>
+                    <% if has_genre: %>
+                        <th>Genre</th>
+                    <% end %>
+                </tr></thead>
+                <tbody>
+                    <% for media in media_list: %>
+                        <tr>
+                            <%
+                            if mode == 'artist':
+                                dataval = 'artist=' + urlencode(media['artist'])
+                            elif mode == 'album' or mode == 'genre':
+                                dataval = 'artist=' + urlencode(media['artist']) + '&album=' + urlencode(media['album'])
+                            elif mode == 'title' or mode == 'tags':
+                                dataval = 'id=' + str(media['id'])
+                            end
+                            %>
+                            <td><input type="checkbox" name="media" value="<%= dataval %>" /></td>
+                            <!-- <td><a href="<%= py._PATH %>?mode=title&order=artist&search=<%= urlencode(media['artist']) %>"><%= media['artist'] %></a></td> -->
+                            <td><a href="<%= py._PATH %>?mode=title&order=artist&search=<%= urlencode(media['artist']) %>"><%= media['artist'] %></a></td>
+                            <% if has_title: %>
+                                <td><%= media['title'] %></td>
+                            <% end %>
+                            <% if has_album: %>
+                                <td><%= media['album'] %></td>
+                            <% end %>
+                            <% if has_track_num: %>
+                                <td><%= media['track_num'] %></td>
+                            <% end %>
+                            <% if has_genre: %>
+                                <td><%= media['genre'] %></td>
+                            <% end %>
+                        </tr>
+                    <% end %>
+                </tbody>
+                </table>
+            </div>
         </div>
 
         <button type="submit" class="pl_replace" value="1">Replace</button>
         <button type="submit" class="pl_enqueue" value="1">Enqueue</button>
         <button type="submit" class="pl_playnow" value="1">Play Now</button>
         <a href="#top">Top</a>
+
+        <% end %>
     </div>
 </div>
 

@@ -103,7 +103,7 @@ class Main (nerve.ObjectNode):
             except:
                 nerve.log("error loading config from " + filename + "\n\n" + traceback.format_exc())
                 return False
-        modules = nerve.ModulesDirectory(**config['__children__']['modules'])
+        #nerve.ModulesDirectory.preload_modules(config['__children__']['modules']['autoload'])
         self.set_config_data(config)
         return True
 
@@ -227,14 +227,13 @@ def query_string(text):
     return query(ref, *args)
 
 def notify(querystring, *args, **kwargs):
-    global mainloops
-    path = '/'
-    for segment in querystring.lstrip('/').split('/'):
-        if segment == '*':
-            pass
-        else:
-            path += segment
-        
+    if not querystring.endswith('/*'):
+        raise Exception("Invalid notify query: " + querystring)
+    parent = nerve.get_object(querystring[:-2])
+    for objname in parent.keys_children():
+        obj = parent.get_child(objname)
+        if callable(obj):
+            obj(*args, **kwargs)
 
 def read_config_file(filename):
     global mainloops

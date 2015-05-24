@@ -55,6 +55,11 @@ class DatalogDevice (nerve.Device):
             table_sql += ", %s %s" % (datapoint['name'], datapoint['datatype'])
         self.db.create_table(self.name, table_sql)
 
+        column_names = [ column[1] for column in self.db.get_column_info(self.name) ]
+        for datapoint in self.get_setting('datapoints'):
+            if datapoint['name'] not in column_names:
+                self.db.add_column(self.name, datapoint['name'], datapoint['datatype'], default='')
+
     @staticmethod
     def get_config_info():
         config_info = nerve.Device.get_config_info()
@@ -117,7 +122,11 @@ class DatalogDevice (nerve.Device):
         #data['timestamp'] = time.strftime("%Y-%m-%d %H:%M:%S")
         data['timestamp'] = time.time()
         for datapoint in self.datapoints:
-            data[datapoint['name']] = nerve.query(datapoint['ref'])
+            try:
+                data[datapoint['name']] = nerve.query(datapoint['ref'])
+            except Exception as exc:
+                nerve.log("error collecting ref: " + str(datapoint['ref']) + ": " + repr(exc))
+                data[datapoint['name']] = None
         self.db.insert(self.name, data)
 
 

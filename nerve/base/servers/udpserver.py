@@ -25,7 +25,7 @@ class UDPServer (nerve.Server):
         config_info.add_setting('port', "Port", default=5959)
         config_info.add_setting('controllers', "Controllers", default={
             '__default__' : {
-                'type' : 'base/QueryController'
+                '__type__' : 'base/QueryController'
             }
         })
         return config_info

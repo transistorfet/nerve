@@ -41,6 +41,11 @@ class Database (object):
     def create_table(self, table, columns):
         self.query("CREATE TABLE IF NOT EXISTS %s (%s)" % (table, columns))
 
+    def get_column_info(self, table):
+        dbcursor = self.dbcon.cursor()
+        result = dbcursor.execute("PRAGMA table_info(" + table + ")")
+        return list(result)
+
     def add_column(self, table, column, datatype, default=None):
         self.query("ALTER TABLE %s ADD COLUMN %s %s" % (table, column, datatype))
 

@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C/DTD HTML 4.01//EN">
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/theme.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/widgets.css" />
+    <link rel="stylesheet" type="text/css" href="/medialib/assets/css/medialib.css" />
+
+    <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/assets/js/widgets.js"></script>
+    <script type="text/javascript" src="/medialib/assets/js/medialib.js"></script>
+</head>
+<body>
+
+<div class="nerve-tabs">
+    <div class="tab" data-content="/remote">Remote</div>
+    <div class="tab" data-content="/medialib">Playlists</div>
+    <div class="tab selected" data-content="/medialib/search">Media Search</div>
+    <div class="tab" data-content="/datalog/graph">Datalogs</div>
+    <div class="tab" data-content="/config">Config</div>
+    <div style="clear: both;"></div>
+</div>
+
+<hr>
+
+<div id="nerve-notice" style="display: none;"></div>
+<div id="nerve-error" style="display: none;"></div>
+
+<form method="GET" action="<%= py._PATH %>">
+    <input type="text" name="search" value="<%= py.ARGS('search') %>" />
+    <button type="submit" name="yt_search" value="1">Search</button>
+</form>
+
+<div class="medialib-search">
+
+<% if media_list and 'results' in media_list['responseData']: %>
+    <div id="search-table">
+        <hr>
+        <div>
+            <select id="select-playlist">
+            <% for name in list_of_playlists: %>
+                <option value="<%= name %>"><%= name %></option>
+            <% end %>
+            </select>
+
+            <button type="submit" class="pl_replace" value="1">Replace</button>
+            <button type="submit" class="pl_enqueue" value="1">Enqueue</button>
+            <button type="submit" class="pl_playnow" value="1">Play Now</button>
+        </div>
+
+        <div id="search-results">
+            <table>
+            <thead><tr>
+                <th></th>
+                <th></th>
+                <th>Title</th>
+            </tr></thead>
+            <tbody>
+                <% for media in media_list['responseData']['results']: %>
+                    <tr>
+                        <td><input type="checkbox" name="media" value="url=<%= urlencode(media['url']) %>&title=<%= urlencode(media['title']) %>&album=YouTube&duration=<%= media['duration'] %>" /></td>
+                        <td><img src="<%= media['tbUrl'] %>"></td>
+                        <td><%= media['title'] %></td>
+                    </tr>
+                <% end %>
+            </tbody>
+            </table>
+            </div>
+        </div>
+
+        <button type="submit" class="pl_replace" value="1">Replace</button>
+        <button type="submit" class="pl_enqueue" value="1">Enqueue</button>
+        <button type="submit" class="pl_playnow" value="1">Play Now</button>
+        <a href="#top">Top</a>
+    </div>
+
+<% elif py.POST('yt_search'): %>
+    <div style="font-size: 0.8em;">
+        There are no search results
+    </div>
+<% end %>
+
+</div>
+
+</body>
+</html> 
+ 

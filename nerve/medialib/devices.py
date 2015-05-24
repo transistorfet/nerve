@@ -104,6 +104,16 @@ class MediaLib (nerve.Device):
         return result
 
     def get_media_query(self, criteria):
+        if 'url' in criteria:
+            return [{
+                'id': -1,
+                'filename': criteria['url'][0],
+                'artist': criteria['artist'][0] if 'artist' in criteria else '',
+                'album': criteria['album'][0] if 'album' in criteria else '',
+                'title': criteria['title'][0] if 'title' in criteria else '',
+                'duration': criteria['duration'][0] if 'duration' in criteria else 0
+            }]
+
         self.db.select('id,filename,artist,album,title,duration')
         if 'artist' in criteria:
             self.db.where('artist', criteria['artist'][0])

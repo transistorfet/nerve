@@ -84,7 +84,7 @@ class TCPServer (nerve.Server):
         config_info.add_setting('port', "Port", default=12345)
         config_info.add_setting('controllers', "Controllers", default={
             '__default__' : {
-                'type' : 'base/ShellController'
+                '__type__' : 'base/ShellController'
             }
         })
         return config_info

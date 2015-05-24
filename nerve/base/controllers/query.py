@@ -18,10 +18,8 @@ class QueryController (nerve.Controller):
             result = nerve.query(self.get_setting('root') + '/' + querystr, **request.args)
         elif 'queries[]' in request.args:
             result = { }
-            for querystr in request.args['queries[]']:
-                args = querystr.split()
-                tag = args.pop(0)
-                result[tag] = nerve.query(self.get_setting('root') + '/' + tag, *args)
+            for i, querystr in enumerate(request.args['queries[]']):
+                result[i] = nerve.query(self.get_setting('root') + '/' + querystr)
         self.write_json(result)
 
 

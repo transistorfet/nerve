@@ -22,12 +22,12 @@ class PlayerDevice (nerve.Device):
 
         backend_name = self.get_setting('backend')
         try:
-            (empty, sep, module_name) = backend_name.partition("/modules/player/")
-            if empty == '' and sep and module_name:
-                print(module_name)
-                (module_name, sep, player_obj) = module_name.rpartition('/')
+            (empty, sep, type_name) = backend_name.partition("/modules/player/")
+            if empty == '' and sep and type_name:
+                print(type_name)
+                (module_name, sep, player_obj) = type_name.rpartition('/')
                 nerve.ModulesDirectory.import_module("player." + module_name.replace('/', '.'))
-                self.backend_dev = nerve.ObjectNode.make_object(backend_name, config)
+                self.backend_dev = nerve.ObjectNode.make_object("player/" + type_name, config)
         except:
             nerve.log("failed to initialize player backend: " + backend_name)
             nerve.log(traceback.format_exc())

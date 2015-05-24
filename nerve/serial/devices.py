@@ -4,6 +4,7 @@
 import nerve
 
 import sys
+import time
 import serial
 import select
 import traceback
@@ -15,13 +16,15 @@ class SerialDevice (nerve.Device):
 
         self.file = config['file']
         self.baud = config['baud']
-        self.serial = serial.Serial(self.file, self.baud)
+
+        self.thread = nerve.Task('SerialTask', self.run)
 
         if sys.platform == 'win32':
-            self.thread = nerve.Task('SerialTask', self.run_win32)
             self.thread.daemon = True
+            self.readline_func = self.readline_win32
         else:
-            self.thread = nerve.Task('SerialTask', self.run_posix)
+            self.readline_func = self.readline_posix
+
         self.thread.start()
 
     @staticmethod
@@ -41,30 +44,40 @@ class SerialDevice (nerve.Device):
     def do_idle(self):
         pass
 
-    def run_posix(self):
+    def readline_posix(self):
+        (rl, wl, el) = select.select([ self.serial ], [ ], [ ], 1)
+        if rl and self.serial in rl:
+            return self.serial.readline()
+        else:
+            return None
+
+    def readline_win32(self):
+        return self.serial.readline()
+
+    def run(self):
         while not self.thread.stopflag.is_set():
             try:
-                self.do_idle()
-                (rl, wl, el) = select.select([ self.serial ], [ ], [ ], 1)
-                if rl and self.serial in rl:
-                    line = self.serial.readline()
-                    line = line.strip().decode('utf-8')
-                    nerve.log("RECV <- " + self.file + ": " + line)
-                    self.do_receive(line)
+                self.serial = serial.Serial(self.file, self.baud)
 
-            except:
-                nerve.log(traceback.format_exc())
+            except serial.serialutil.SerialException as exc:
+                nerve.log("serial error: " + str(exc))
+                self.thread.stopflag.wait(30)
 
-    def run_win32(self):
-        while not self.thread.stopflag.is_set():
-            try:
-                line = self.serial.readline()
-                line = line.strip()
-                nerve.log("RECV <- " + self.file + ": " + line)
-                self.do_receive(line)
+            else:
+                while not self.thread.stopflag.is_set():
+                    try:
+                        self.do_idle()
+                        line = self.readline_func()
+                        if line:
+                            line = line.decode('utf-8').strip()
+                            self.do_receive(line)
 
-            except:
-                nerve.log(traceback.format_exc())
+                    except serial.serialutil.SerialException as exc:
+                        nerve.log("serial error: " + repr(exc))
+                        break
+
+                    except:
+                        nerve.log(traceback.format_exc())
 
 
 class NerveSerialQuery (object):
@@ -112,7 +125,10 @@ class NerveSerialDevice (SerialDevice):
         self.send(query_string)
 
     def do_receive(self, line):
+        nerve.log("RECV <- " + self.file + ": " + line)
         (ref, _, args) = line.partition(" ")
+        if not ref:
+            return
         with self.lock:
             for (i, query) in enumerate(self.waiting):
                 if query.ref == ref:
@@ -121,6 +137,8 @@ class NerveSerialDevice (SerialDevice):
                     query.ready.set()
                     return
 
+        if not args:
+            return
         print("Received unmatched serial return: " + ref + " " + str(args))
         nerve.query("/events/ir/irrecv/" + args)
 

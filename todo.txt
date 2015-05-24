@@ -1,49 +1,43 @@
 
-* how should asset files be references (as well as view files).  What should the root dir be, especially if we have a place for extended code in the config dir.
-  Should references be agnostic as to where the module is located?  Which of the above examples looks and means the best?  What is the most logical format given
-  how a controller can serve up those files.  Should there be a special assets-server-uper in each controller?  It wouldn't add much overhead I don't think.  You'd
-  just have a function in the controller called assets(self, request), which would then call a method to load any files in the local assets directory.  We wouldn't
-  need a seperate special controller to serve up assets at all.  We'd just need to move the code in FileController to a common location like the Controller class
-  itself (I figure it's a generic enough function that it can go there instead of on the http controller)
-* make thing to be able to specify js and css files
-
+* I'm thinking about a widgets system as a generalized concept for building web-based views, like the remote control page now, or
+  for example, a page that displays weather/temp and various daily info type stuff, a page at a glance.  It might be reasonably
+  easy/possible to have all 'pages' be a collection of widgets (which they already are in an HTML sense, but there could be an editor
+  for it, so there'd have to be some generic way of declaring all the widgety parts needed).  Everything would be a widget like it is
+  now (the buttons and editor and stuff), but the view/assets/controller part of datalog would also be a single-ish widget, and you could
+  make widgets of widgets (the collection of buttons for a media player, or for a lights control), etc etc.  The page editor thing would
+  then allow you to select widgets from a list to place, specify config options for those widgtes (like the data query of a button, or
+  the device that a player control widget should talk to).  I guess the pages could be stored in HTML directly, since it's possible to
+  parse what's needed easily enough in python, but it could also be stored in the settings file (maybe shouldn't rely so much on that...
+  separate files are easier to mix and backup and edit manually than one big file).  Advanced mode then would be HTML editing?  That is
+  to say, the actual specification and configuration of the widget is always and only in the HTML file, and the rest of it (css, js,
+  controller, additional view pyhtml) would automatically work?  Can that work and can it be good enough without being too complicated?
 
 * change module type references to include the '/modules/' part
-* do you have a special ObjectNode object for each module, or just the module variable itself?  How do objects with objects work? Like the Modules class itself...
-  It has subobjects but they are 'virtually created' (not saved in the settings file)
-* implement symbolic link style redirect.  It has to be really versitile...
-* it's possible to enter anything after a url.  It doesn't throw an error, which it probably should (a 404 error)
+* implement symbolic link style redirect.  It has to be really versitile...  Right now it doesn't work with remote references because
+  it implements the getattr, so it has to be able to reference a real object.  It's possible to create a special redirect object though,
+  that's returned when trying to get any subobject from a SymbolicLink object
+* it's possible to enter anything after a url.  It doesn't throw an error, which it probably should (a 404 error), but some things use
+  this feature to implement subreferences
 
 * make it so that you can basically save your spot watching a movie (or playlist), and then restore it, like switching contexts.  This
   would be most handy when watching F1 stuff, but I want to switch to music for a bit, and then later continue watching F1
-
 * you could have one updater thread and multiple 'updater/fetchers' or something rather than a thread for each, or possible some other
   way to make sure they don't all run at the same time
-* rules, routines, events, triggers... these are various names that other systems have for basically making something happen when
-  certain conditions are met.  I need something like this, which would provide the thread that would handle something happening, like
-  an ir code being received through serial.  I still don't know how the serial thread will deal with receiving those unrequested messages,
-  but this would be the general mechanism by which the system could do something in response (the mapping between a given ircode and
-  the various things that get controller)
-* of course, this mechanism would have means of doing complex stuff as well, like time delays and that.  It will just use python code to
-  define the behaviour for now, and that could possibly be extended to a more user friendly system later on
-* add the ability to make some kind of timed scripted event thing... I'm thinking like a particular pattern being played on rgb node
-  without it being programmed into the device itself... like "rgb/fade ff0000 10s; delay 15s; rgb/fade 00ff00 10s; ..."
-* add a query discovery thing to nerve serial devices to get the list of queries
+* add a means of browsing (or searching) the medialib by some other means, like according to path, so that you can look at specifically
+  documentary videos in the documentaries directory, for example
+* it should be possible to easily remove items from the current playlist (like delete current song/delete all by artist/delete previous song)
+  The changes should take effect immediately.  Possibly could have a list of recently played songs to delete
 
+* add a query discovery thing to nerve serial devices to get the list of queries
 * fix the race condition in console better
 
 * add run and config instructions to the readme (so that somebody could actually run the thing)
 * should the name of the 'controllers' dict in servers be called something different, like 'paths' or 'handlers' or something?
 
-* add a means of browsing (or searching) the medialib by some other means, like according to path, so that you can look at specifically
-  documentary videos in the documentaries directory, for example
-
-* it should be possible to easily remove items from the current playlist (like delete current song/delete all by artist/delete previous song)
-  The changes should take effect immediately.  Possibly could have a list of recently played songs to delete
-
-* get savable config page working
 * the file controller doesn't properly return an error message when a file isn't found, since it doesn't throw an exception
 * change all code to use super() instead of referring to the class (maybe?)
+* how should view files be referenced relative to?  Right now it's nerve/module/views/view.pyhtml but it should be easier to reference
+  the parent module (so the code doesn't have that hardcoded) and also how will this work with the possibility of a second module location
 
 * add is-playing animated icon next to the song title (info to be sent with getsong())
 * make it possible to paste a link (youtube video or playlist link) to play the link on the server end of things
@@ -62,6 +56,7 @@
 
 * add a theme system
 * add a user system.  Users can have their own themes, remote control layouts, and so on
+* make thing to be able to specify js and css files
 
 * make it as much like a generic hmi/plc/data disemination/control thing as possible.  Make it so that it's easy to have it automatically
   query the server to fill in data fields.

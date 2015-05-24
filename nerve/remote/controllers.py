@@ -19,6 +19,12 @@ class RemoteController (nerve.http.Controller):
         data['contents'] = nerve.read_config_file('html/remote.html')
         self.load_view('nerve/remote/views/index.pyhtml', data)
 
+    # TODO this is temporary
+    def summary(self, request):
+        data = { }
+        data['contents'] = nerve.read_config_file('html/summary.html')
+        self.load_view('nerve/remote/views/index.pyhtml', data)
+
     def player(self, request):
         player = nerve.get_object('/devices/player')
         if request.reqtype == "POST":

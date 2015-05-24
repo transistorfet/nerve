@@ -53,6 +53,7 @@ class ConfigInfo (object):
 
 class ObjectNode (object):
     def __init__(self, **config):
+        self.parent = None
         self.children = { }
         self.set_config_data(config)
 
@@ -62,6 +63,8 @@ class ObjectNode (object):
 
     def set_config_data(self, config):
         self.config = config
+        #self.config['__type__'] = self.__class__.__module__.replace('nerve.', '').replace('.', '/') + "/" + self.__class__.__name__
+        #print(self.config['__type__'])
         if '__children__' in config:
             self.children = self.make_object_table(config['__children__'])
 
@@ -82,14 +85,15 @@ class ObjectNode (object):
 
 
     def __getattr__(self, index):
-        if index in self.__dict__['children']:
-            return self.__dict__['children'][index]
+        attrib = self.get_child(index)
+        if attrib:
+            return attrib
         if 'config' in self.__dict__ and index in self.__dict__['config']:
             return self.__dict__['config'][index]
         raise AttributeError("'%s' object has no attribute '%s'" % (str(self), index))
 
     def keys(self):
-        return list(self.children.keys()) + list(self.config.keys()) #+ [ name for name in dir(self) if name[0] != '_' ]
+        return self.keys_children() + list(self.config.keys()) #+ [ name for name in dir(self) if name[0] != '_' ]
 
 
     def get_child(self, index):
@@ -98,6 +102,8 @@ class ObjectNode (object):
         return None
 
     def set_child(self, index, obj):
+        if isinstance(obj, ObjectNode):
+            obj.parent = self
         self.children[index] = obj
 
     def del_child(self, index):
@@ -106,9 +112,9 @@ class ObjectNode (object):
             return True
         return False
 
-
     def keys_children(self):
         return list(self.children.keys())
+
 
     def get_object(self, name):
         obj = self
@@ -141,18 +147,19 @@ class ObjectNode (object):
     @staticmethod
     def make_object(typeinfo, config):
         classtype = ModulesDirectory.get_module(typeinfo)
-        #if not issubclass(classtype, ObjectNode):
-        #    raise TypeError("")
+        if not issubclass(classtype, ObjectNode):
+            raise TypeError(str(typeinfo) + " is not a subclass of ObjectNode")
         config_data = classtype.get_config_info().get_defaults()
         config_data.update(config)
+        config_data['__type__'] = typeinfo
         obj = classtype(**config_data)
         return obj
 
     @staticmethod
     def get_class_config_info(typeinfo):
         classtype = ModulesDirectory.get_module(typeinfo)
-        #if not issubclass(classtype, ObjectNode):
-        #    raise TypeError("POOP")
+        if not issubclass(classtype, ObjectNode):
+            raise TypeError(str(typeinfo) + " is not a subclass of ObjectNode")
         return classtype.get_config_info()
 
     @staticmethod
@@ -204,29 +211,53 @@ class Module (ObjectNode):
 
 
 class ModulesDirectory (ObjectNode):
+    loaded_modules = { }
+
+    """
     @staticmethod
     def get_config_info():
         config_info = nerve.ObjectNode.get_config_info()
         config_info.add_setting('autoload', "Auto Load", default=[ 'base' ])
         return config_info
+    """
 
+    """
     def set_config_data(self, config):
         #super(ObjectNode, self).set_config_data(config)
         ObjectNode.set_config_data(self, config)
-        self.autoload_modules()
-
+        #self.autoload_modules()
     """
+
     def get_config_data(self):
         return self.config
-    """
 
+    """
     def __getattr__(self, name):
         res = getattr(nerve, name)
         return res
+    """
 
+    """
     def keys(self):
         return dir(nerve)
+    """
 
+    def get_child(self, index):
+        if index in ModulesDirectory.loaded_modules:
+            return ModulesDirectory.loaded_modules[index]
+        return None
+
+    def set_child(self, index, obj):
+        pass
+
+    def del_child(self, index):
+        return False
+
+    def keys_children(self):
+        return list(ModulesDirectory.loaded_modules.keys())
+
+
+    """
     def autoload_modules(self):
         modules = self.get_setting('autoload')
         if modules:
@@ -234,24 +265,19 @@ class ModulesDirectory (ObjectNode):
             for name in modules:
                 ModulesDirectory.import_module(name.replace('/', '.'))
 
-    def get_types(self, classtype=None, module=None):
-        """
-        types = [ 'objects/ObjectDirectory', 'events/Event' ]
-        modules = self.get_setting('autoload')
-        if modules:
-            for name in modules:
-                module = ObjectNode.get_object(nerve, name)
-                for typename in dir(module):
-                    attrib = getattr(module, typename)
-                    if isinstance(attrib, type) and issubclass(attrib, classtype):
-                        types.append(name.replace('.', '/') + '/' + typename)
-        return types
-        """
+    @staticmethod
+    def preload_modules(modules):
+        print ("preloading modules")
+        for name in modules:
+            ModulesDirectory.import_module(name)
+    """
 
+    def get_types(self, classtype=None, module=None):
+        typelist = [ ]
         if not module:
             module = nerve
+            typelist = [ 'objects/ObjectNode', 'core/SingleQuery', 'events/Event' ]
 
-        typelist = [ ]
         modulename = module.__name__
         for typename in dir(module):
             attrib = getattr(module, typename)
@@ -262,7 +288,7 @@ class ModulesDirectory (ObjectNode):
                 typelist.extend(self.get_types(classtype, attrib))
 
         # TODO holy fuck bad hack
-        return [ typename.lstrip("nerve/") for typename in typelist ]
+        return [ typename.replace('nerve/', '') for typename in typelist ]
         #return typelist
 
     def get_modules(self):
@@ -275,26 +301,38 @@ class ModulesDirectory (ObjectNode):
 
     @staticmethod
     def get_module(modulename):
-        return ObjectNode.get_object(nerve, modulename)
+        #return ObjectNode.get_object(nerve, modulename)
         #return nerve.get_object("/modules/" + modulename)
+        (modulename, _, objname) = modulename.rpartition('/')
+        modulename = modulename.replace('/', '.')
+        if modulename not in ModulesDirectory.loaded_modules:
+            ModulesDirectory.import_module(modulename)
+        return getattr(ModulesDirectory.loaded_modules[modulename], objname)
+
 
     @staticmethod
     def import_module(modulename):
         modulename = modulename.replace('/', '.')
-        #self.set_object(modulename.replace('.', '/'), Module(name=modulename))
-        try:
-            nerve.log("loading module " + modulename)
-            code = 'import nerve.%s\n#nerve.%s.init()' % (modulename, modulename)
-            exec(code, globals(), globals())
-            return eval("nerve." + modulename)
-            #return globals()[modulename]
-        except ImportError as e:
-            # TODO this is a temporary hack...
-            #nerve.log("error loading module " + modulename + "\n\n" + traceback.format_exc())
-            nerve.log("loading module " + modulename)
-            code = 'import local.%s\n#%s.init()' % (modulename, modulename)
-            exec(code, globals(), globals())
-            return eval("local." + modulename)
-            #raise e
+        if modulename not in ModulesDirectory.loaded_modules:
+            try:
+                module = eval("nerve." + modulename)
+            except:
+                module = None
 
+            if module and type(module) == type(nerve):
+                ModulesDirectory.loaded_modules[modulename] = module
+            else:
+                try:
+                    nerve.log("loading module " + modulename)
+                    code = 'import nerve.%s\n#nerve.%s.init()' % (modulename, modulename)
+                    exec(code, globals(), globals())
+                    ModulesDirectory.loaded_modules[modulename] = eval("nerve." + modulename)
+                except ImportError as e:
+                    # TODO this is a temporary hack...
+                    #nerve.log("error loading module " + modulename + "\n\n" + traceback.format_exc())
+                    nerve.log("loading module " + modulename)
+                    code = 'import local.%s\n#%s.init()' % (modulename, modulename)
+                    exec(code, globals(), globals())
+                    ModulesDirectory.loaded_modules[modulename] = eval("local." + modulename)
+        return ModulesDirectory.loaded_modules[modulename]
 

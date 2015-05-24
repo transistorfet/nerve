@@ -35,41 +35,105 @@
                     "__type__": "serial/NerveSerialDevice"
                 },
                 "sensors": {
-                    "baud": 19200,
+                    "__children__": {
+                        "relay_toggle": {
+                            "__type__": "events/Event",
+                            "code": "if nerve.query('/devices/mysensors/12/1'):\n  nerve.query('/devices/mysensors/12/1', 0)\nelse:\n  nerve.query('/devices/mysensors/12/1', 1)"
+                        }
+                    }
+                },
+                "mysensors": {
+                    "baud": 115200,
                     "file": "/dev/ttyACM1",
-                    "__type__": "serial/NerveSerialDevice"
+                    "__type__": "mysensors/MySensorsSerialGateway"
                 },
                 "player": {
                     "__type__": "player/vlc/VLCHTTP"
                 },
                 "datalogs": {
-                    "manager": {
-                        "__type__": "datalog/DatalogManager"
-                    },
-                    "temperature": {
-                        "__type__": "datalog/DatalogDevice",
-                        "datapoints": [
-                            {
-                                "datatype": "NUMERIC",
-                                "label": "Inside Temperature",
-                                "max": 50,
-                                "min": 0,
-                                "name": "inside_temp",
-                                "ref": "/devices/sensors/temp0",
-                                "units": "C"
-                            },
-                            {
-                                "datatype": "NUMERIC",
-                                "label": "Window Temperature",
-                                "max": 50,
-                                "min": 0,
-                                "name": "window_temp",
-                                "ref": "/devices/sensors/temp1",
-                                "units": "C"
-                            }
-                        ],
-                        "name": "temperatures",
-                        "update_time": 60
+                    "__children__": {
+                        "manager": {
+                            "__type__": "datalog/DatalogManager"
+                        },
+                        "temperature": {
+                            "__type__": "datalog/DatalogDevice",
+                            "datapoints": [
+                                {
+                                    "datatype": "NUMERIC",
+                                    "label": "Mantle Temperature",
+                                    "max": 50,
+                                    "min": 0,
+                                    "name": "inside_temp",
+                                    "ref": "/devices/mysensors/12/20",
+                                    "units": "C"
+                                },
+                                {
+                                    "datatype": "NUMERIC",
+                                    "label": "Computer Temperature",
+                                    "max": 50,
+                                    "min": 0,
+                                    "name": "computer_temp",
+                                    "ref": "/devices/mysensors/12/21",
+                                    "units": "C"
+                                },
+                                {
+                                    "datatype": "NUMERIC",
+                                    "label": "Central Temperature",
+                                    "max": 50,
+                                    "min": 0,
+                                    "name": "central_temp",
+                                    "ref": "/devices/mysensors/11/20",
+                                    "units": "C"
+                                },
+                                {
+                                    "datatype": "NUMERIC",
+                                    "label": "Indoor Humidity",
+                                    "max": 100,
+                                    "min": 0,
+                                    "name": "indoor_humidity",
+                                    "ref": "/devices/mysensors/12/40",
+                                    "units": "%"
+                                },
+                                {
+                                    "datatype": "NUMERIC",
+                                    "label": "Outdoor Temperature",
+                                    "max": 50,
+                                    "min": 0,
+                                    "name": "outdoor_temp",
+                                    "ref": "/devices/mysensors/13/20",
+                                    "units": "C"
+                                },
+                                {
+                                    "datatype": "NUMERIC",
+                                    "label": "Outdoor Humidity",
+                                    "max": 100,
+                                    "min": 0,
+                                    "name": "outdoor_humidity",
+                                    "ref": "/devices/mysensors/13/40",
+                                    "units": "%"
+                                },
+                                {
+                                    "datatype": "NUMERIC",
+                                    "label": "Barometric Pressure",
+                                    "max": 5000,
+                                    "min": 1000,
+                                    "name": "outdoor_pressure",
+                                    "ref": "/devices/mysensors/13/60",
+                                    "units": "mbar"
+                                },
+                                {
+                                    "datatype": "NUMERIC",
+                                    "label": "Outdoor Light Level",
+                                    "max": 10000,
+                                    "min": 0,
+                                    "name": "outdoor_lux",
+                                    "ref": "/devices/mysensors/13/80",
+                                    "units": "lux"
+                                }
+                            ],
+                            "name": "temperatures",
+                            "update_time": 60
+                        }
                     }
                 }
             }
@@ -80,26 +144,6 @@
                     "__children__": {
                         "irrecv": {
                             "__children__": {
-                                "N:6F9E817": {
-                                    "__type__": "events/Event",
-                                    "code": "nerve.query('/devices/stereo/power')"
-                                },
-                                "N:AF5E817": {
-                                    "__type__": "events/Event",
-                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/power')"
-                                },
-                                "N:6F99C63": {
-                                    "__type__": "events/Event",
-                                    "code": "nerve.query('/devices/sensors/relay_toggle')"
-                                },
-                                "N:6F9827D": {
-                                    "__type__": "events/Event",
-                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/ps3')"
-                                },
-                                "N:6F942BD": {
-                                    "__type__": "events/Event",
-                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/netbook')"
-                                },
                                 "N:6F928D7": {
                                     "__type__": "events/Event",
                                     "code": "nerve.query('/devices/player/toggle')"
@@ -112,13 +156,73 @@
                                     "__type__": "events/Event",
                                     "code": "nerve.query('/devices/player/previous')"
                                 },
-                                "N:AF548B7": {
+                                "N:6F9DC23": {
                                     "__type__": "events/Event",
-                                    "code": "nerve.query('/devices/stereo/volup')"
+                                    "code": "nerve.query('/devices/player/load_playlist?url=default')"
                                 },
-                                "N:AF5A857": {
+                                "N:6F99C63": {
                                     "__type__": "events/Event",
-                                    "code": "nerve.query('/devices/stereo/voldown')"
+                                    "code": "nerve.query('/devices/sensors/relay_toggle')"
+                                },
+                                "N:679E817": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/rgb/power')"
+                                },
+                                "N:6799867": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/rgb/key?a=0x258')"
+                                },
+                                "N:67918E7": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/rgb/key?a=0x278')"
+                                },
+                                "N:679B04F": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/rgb/channel?a=1')"
+                                },
+                                "N:679708F": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/rgb/channel?a=2')"
+                                },
+                                "N:679F00F": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/rgb/channel?a=3')"
+                                },
+                                "N:67938C7": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/rgb/channel?a=4')"
+                                },
+                                "N:679B847": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/rgb/channel?a=5')"
+                                },
+                                "N:6797887": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/rgb/channel?a=6')"
+                                },
+                                "N:679F807": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/rgb/channel?a=7')"
+                                },
+                                "N:67920DF": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/rgb/channel?a=8')"
+                                },
+                                "N:679A05F": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/rgb/channel?a=9')"
+                                },
+                                "N:AF5E817": {
+                                    "__type__": "events/Event",
+                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/power')"
+                                },
+                                "N:6F9827D": {
+                                    "__type__": "events/Event",
+                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/ps3')"
+                                },
+                                "N:6F942BD": {
+                                    "__type__": "events/Event",
+                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/netbook')"
                                 },
                                 "N:AF59867": {
                                     "__type__": "events/Event",
@@ -128,9 +232,17 @@
                                     "__type__": "events/Event",
                                     "code": "time.sleep(0.2)\nnerve.query('/devices/tv/voldown')"
                                 },
-                                "N:6F9DC23": {
+                                "N:6F9E817": {
                                     "__type__": "events/Event",
-                                    "code": "nerve.query('/devices/player/load_playlist?url=default')"
+                                    "code": "nerve.query('/devices/stereo/power')"
+                                },
+                                "N:AF548B7": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/stereo/volup')"
+                                },
+                                "N:AF5A857": {
+                                    "__type__": "events/Event",
+                                    "code": "nerve.query('/devices/stereo/voldown')"
                                 }
                             }
                         }
@@ -147,6 +259,15 @@
                         }
                     },
                     "__type__": "base/Console"
+                },
+                "pyexec": {
+                    "port": 6060,
+                    "controllers": {
+                        "__default__": {
+                            "__type__": "base/PyExecController"
+                        }
+                    },
+                    "__type__": "base/TCPServer"
                 },
                 "udp": {
                     "port": 5959,

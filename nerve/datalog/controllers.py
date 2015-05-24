@@ -22,7 +22,7 @@ class DatalogController (nerve.http.Controller):
         remain = request.remaining_segments().lstrip('/')
         # TODO if remain contains a / then raise an error
 
-        datalogs = nerve.get_object('devices/datalogs')
+        datalogs = nerve.get_object('/devices/datalogs')
 
         data = { }
         data['datalog_name'] = remain

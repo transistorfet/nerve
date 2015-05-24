@@ -72,13 +72,22 @@ function NerveQuery(element)
 
 function NerveQueryBlock(element)
 {
+    var obj = this;
+
     this.query = function ()
     {
-        var query = $(element).attr('data-query');
+        var queries = [ ];
+        var elements = [ ];
         var parent = $(element);
-        $.post('/query/'+query, {}, function(response) {
-            for (var key in response) {
-                $('.' + key, parent).html(response[key])
+
+        $(element).find('.nerve-query-item').each(function (i, e) {
+            queries.push($(e).attr('data-query'));
+            elements.push(e);
+        });
+
+        $.post('/query', { 'queries[]': queries }, function(response) {
+            for (var i in response) {
+                $(elements[i]).html(response[i])
             }
         }, 'json');
     }

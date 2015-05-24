@@ -54,7 +54,7 @@ class ShellController (nerve.Controller):
 
     def print_ls(self, directory):
         result = [ ]
-        for devname in directory.keys():
+        for devname in sorted(directory.keys()):
             dev = getattr(directory, devname)
             if isinstance(dev, nerve.ObjectNode):
                 result.append("  %s/" % (devname,))

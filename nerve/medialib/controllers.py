@@ -8,6 +8,8 @@ import nerve.medialib
 import urllib
 import urllib.parse
 
+import json
+import requests
 
 class MediaLibController (nerve.http.Controller):
 
@@ -35,12 +37,18 @@ class MediaLibController (nerve.http.Controller):
         data['order'] = request.arg('order', default='artist')
         data['offset'] = request.arg('offset', default=0)
         data['limit'] = request.arg('limit', default=1000)
-        data['search'] = request.arg('search', default='%')
+        data['search'] = request.arg('search', default='')
         data['recent'] = request.arg('recent', default=None)
         data['media_type'] = request.arg('media_type', default=None)
 
+        if request.arg('mode'):
+            data['media_list'] = medialib.get_media_list(data['mode'], data['order'], data['offset'], data['limit'], data['search'], data['recent'], data['media_type'])
+        else:
+            data['media_list'] = None
+
         self.load_view('nerve/medialib/views/search.pyhtml', data)
 
+    """
     def get_search_results(self, request):
         medialib = nerve.get_object('/devices/medialib')
 
@@ -56,6 +64,24 @@ class MediaLibController (nerve.http.Controller):
         data['media_list'] = medialib.get_media_list(mode, order, offset, limit, search, recent, media_type)
         data['mode'] = mode
         self.load_view('nerve/medialib/views/search-data.pyhtml', data)
+    """
+
+    def search_youtube(self, request):
+        medialib = nerve.get_object('/devices/medialib')
+
+        data = { }
+        data['list_of_playlists'] = medialib.get_playlist_list()
+        data['media_list'] = None
+        data['search'] = request.arg('search', default='')
+
+        if data['search']:
+            url = "http://ajax.googleapis.com/ajax/services/search/video?v=1.0&rsz=large&q=%s" % (data['search'],)
+            r = requests.get(url)
+            if r.text:
+                data['media_list'] = json.loads(r.text)
+                #print(json.dumps(data['media_list'], sort_keys=True, indent=4, separators=(',', ':')))
+
+        self.load_view('nerve/medialib/views/search_youtube.pyhtml', data)
 
     def shuffle_playlist(self, request):
         medialib = nerve.get_object('/devices/medialib')

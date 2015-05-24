@@ -2,8 +2,8 @@
 function NerveGraph(element)
 {
     var graphobj = this;
-    var datalog_name = $('#select-datalog').val();
 
+    var graphData;
     var canvas = $(element).find('#graph')[0];
     var height = canvas.height;
     var width = canvas.width;
@@ -15,31 +15,32 @@ function NerveGraph(element)
     var originX = leftMargin;
     var areaHeight = height - 100;
     var areaWidth = width - 100;
+    var cursorPosition = 0;
 
     var end_time = Math.ceil((new Date().getTime() / 1000) / 3600) * 3600;
     var domain = 86400;
     var rangeSteps = 5;
     var domainSteps = 6;
 
-    var colours = [ "red", "blue", "green", "purple", "yellow", "brown", "orange" ];
+    var colours = [ "red", "blue", "green", "purple", "gray", "orange", "teal", "brown" ];
 
     this.update_graph = function ()
     {
 	var postvars = { };
-	postvars.datalog = datalog_name;
+	postvars.datalog = $('#select-datalog').val();
 	postvars.start_time = end_time - domain;
 	postvars.length = domain;
 
 	//var query = $(element).attr('data-query');
 	$.post('/datalog/get_data', postvars, function(response) {
-	    graphobj.draw_graph(response);
+	    var c = canvas.getContext('2d');
+            graphData = response;
+	    graphobj.draw_graph(c, response);
 	}, 'json');
     }
 
-    this.draw_graph = function (data)
+    this.draw_graph = function (c, data)
     {
-	var c = canvas.getContext('2d');
-
 	c.clearRect(0, 0, width, height);
 	this.update_legend(data);
 	this.draw_axes(c, data, 2);
@@ -47,8 +48,10 @@ function NerveGraph(element)
 	var legend_div = $(element).find('.legend');
 	for (var i = 2; i < data.columns.length; i++) {
 	    if ($(legend_div).find('#'+data.columns[i].name).prop('checked'))
-		this.graph_line(c, data, i, colours[i - 2]);
+		this.graph_line(c, data, i, colours[(i - 2) % colours.length]);
 	}
+
+        this.draw_cursor(c);
     }
 
     this.draw_axes = function (c, data, column)
@@ -82,7 +85,7 @@ function NerveGraph(element)
                    
                     c.beginPath();
                     c.moveTo(originX, offsetY);
-                    c.lineTo(originX - 4, offsetY);
+                    c.lineTo(originX - 4 + ((j % 2) * 2) - ( j == 5 ? 4 : 0 ), offsetY);
                     c.stroke();
                 }
             }
@@ -123,6 +126,19 @@ function NerveGraph(element)
 	c.stroke();
     }
 
+    this.draw_cursor = function (c) {
+
+	c.lineWidth = 1;
+	c.strokeStyle = 'black';
+
+        if (cursorPosition > 0) {
+            c.beginPath();
+            c.moveTo(cursorPosition, topMargin);
+            c.lineTo(cursorPosition, bottomMargin);
+            c.stroke();
+        }
+    }
+
     this.update_legend = function (data) {
 	var legend_div = $(element).find('.legend');
 
@@ -136,12 +152,46 @@ function NerveGraph(element)
 	legend_div.html('');
 
 	for (var i = 2; i < data.columns.length; i++) {
-	    $(legend_div).append('<div><input type="checkbox" id="' + data.columns[i].name + '" ' + checks[i - 2] + '/><span class=".nerve-graph legend-colour" style="background: ' + colours[i - 2] + ';"></span><label>' + data.columns[i].label + '</label></div>');
+	    $(legend_div).append(
+                  '<div class="legend-item">'
+                + '<input type="checkbox" id="' + data.columns[i].name + '" ' + checks[i - 2] + '/>'
+                + '<span class="legend-colour" style="background: ' + colours[(i - 2) % colours.length] + ';"></span>'
+                + '<label>' + data.columns[i].label + '</label>'
+                + '<span class="legend-value">' + parseFloat(Math.round(this.get_value_at_cursor(data, i) * 100) / 100).toFixed(2) + '</span><span>' + data.columns[i].units + '</span>'
+                + '</div>'
+            );
 	}
     }
 
+    this.get_value_at_cursor = function (data, column) {
+        if (cursorPosition <= 0)
+            return data.data[data.data.length - 1][column]
+
+        var timestamp = end_time - domain + (domain * ((cursorPosition - leftMargin) / areaWidth));
+	for (var i = 0; i < data.data.length; i++) {
+            if (data.data[i][1] > timestamp)
+                return data.data[i][column];
+        }
+        return data.data[data.data.length - 1][column]
+    }
+
+    canvas.addEventListener("mousedown", function (e) {
+        var x = e.pageX - canvas.offsetLeft;
+        var y = e.pageY - canvas.offsetTop;
+
+        if (x > leftMargin && x < rightMargin && y > bottomMargin)
+            cursorPosition = x;
+        else
+            cursorPosition = 0;
+
+	var c = canvas.getContext('2d');
+        graphobj.draw_graph(c, graphData);
+    }, false);
+
+
     $(element).delegate('.legend', 'change', function () {
-	graphobj.update_graph();
+	var c = canvas.getContext('2d');
+        graphobj.draw_graph(c, graphData);
     });
 
     $(element).find('#oldest').click(function () {
@@ -170,14 +220,11 @@ function NerveGraph(element)
 
     this.interval = setInterval(this.update_graph, 60000)
     this.update_graph();
+
+    $('#select-datalog').change(graphobj.update_graph);
 }
 
 $(document).ready(function () {
-    var graph = NerveGraph('.nerve-graph');
-
-    $('#select-datalog').change(function (e) {
-	graph.datalog_name = e.val();
-	graph.update_graph();
-    });
+    NerveGraph('.nerve-graph');
 });
 
