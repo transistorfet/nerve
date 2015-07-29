@@ -8,8 +8,8 @@ import nerve
 import time
 
 class Winamp (nerve.Device):
-    def __init__(self):
-        nerve.Device.__init__(self)
+    def __init__(self, **config):
+        super().__init__(**config)
         self.winamp = winampapi.Winamp()
 
     def next(self):

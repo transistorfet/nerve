@@ -4,17 +4,17 @@
             "__children__": {
                 "computer": {
                     "__children__": {},
-                    "__type__": "computer/SystemDevice"
+                    "__type__": "system/SystemDevice"
                 },
                 "datalogs": {
                     "__children__": {
                         "manager": {
                             "__children__": {},
-                            "__type__": "datalog/DatalogManager"
+                            "__type__": "datalog/devices/DatalogManager"
                         },
                         "testlog": {
                             "__children__": {},
-                            "__type__": "datalog/DatalogDevice",
+                            "__type__": "datalog/devices/DatalogDevice",
                             "datapoints": [
                                 {
                                     "datatype": "NUMERIC",
@@ -46,39 +46,13 @@
                             ],
                             "name": "testlog",
                             "update_time": 60
-                        },
-                        "mysensors": {
-                            "__children__": {},
-                            "__type__": "datalog/DatalogDevice",
-                            "datapoints": [
-                                {
-                                    "datatype": "NUMERIC",
-                                    "label": "Living Room Temperature",
-                                    "max": 100,
-                                    "min": 0,
-                                    "name": "living_temp",
-                                    "ref": "/devices/mysensors/11/11",
-                                    "units": "C"
-                                },
-                                {
-                                    "datatype": "NUMERIC",
-                                    "label": "Living Room Humidity",
-                                    "max": 100,
-                                    "min": 0,
-                                    "name": "living_humidity",
-                                    "ref": "/devices/mysensors/12/40",
-                                    "units": "%"
-                                }
-                            ],
-                            "name": "mysensors",
-                            "update_time": 60
                         }
-
-                    }
+                    },
+                    "__type__": "objects/ObjectNode"
                 },
                 "medialib": {
                     "__children__": {},
-                    "__type__": "medialib/MediaLib",
+                    "__type__": "medialib/devices/MediaLib",
                     "medialib_dirs": [
                         "/media/media/Music",
                         "/media/media/Video",
@@ -92,52 +66,18 @@
                 },
                 "player": {
                     "__children__": {},
-                    "__type__": "player/PlayerDevice",
+                    "__type__": "player/devices/PlayerDevice",
                     "backend": "/modules/player/xmms2cli/Xmms2CLI"
                 },
                 "realtime": {
                     "__children__": {},
-                    "__type__": "base/RealtimeDevice"
+                    "__type__": "base/devices/realtime/RealtimeDevice"
                 },
                 "rgb": {
                     "__children__": {},
-                    "__type__": "serial/NerveSerialDevice",
+                    "__type__": "serial/devices/NerveSerialDevice",
                     "baud": 19200,
                     "file": "/dev/ttyACM1"
-                },
-                "mysensors": {
-                    "__children__": {
-                        "11": {
-                            "__children__": {
-                                "1": {
-                                    "__children__": {},
-                                    "__type__": "mysensors/MySensorsSensor",
-                                    "sensorid": 1,
-                                    "type": 20,
-                                    "version": "1.4.1"
-                                },
-                                "20": {
-                                    "__children__": {},
-                                    "__type__": "mysensors/MySensorsSensor",
-                                    "sensorid": 20,
-                                    "type": 0,
-                                    "version": ""
-                                },
-                                "255": {
-                                    "__children__": {},
-                                    "__type__": "mysensors/MySensorsSensor",
-                                    "sensorid": 255,
-                                    "type": 18,
-                                    "version": "1.4.1"
-                                }
-                            },
-                            "__type__": "mysensors/MySensorsNode",
-                            "nodeid": 11
-                        }
-                    },
-                    "__type__": "mysensors/MySensorsSerialGateway",
-                    "baud": 115200,
-                    "file": "/dev/ttyACM2"
                 },
                 "test": {
                     "__children__": {},
@@ -174,9 +114,11 @@
                             "repeat": 0.0,
                             "trigger": ""
                         }
-                    }
+                    },
+                    "__type__": "objects/ObjectNode"
                 }
-            }
+            },
+            "__type__": "objects/ObjectNode"
         },
         "events": {
             "__children__": {
@@ -205,18 +147,20 @@
                                     "repeat": 0.0,
                                     "trigger": ""
                                 }
-                            }
+                            },
+                            "__type__": "objects/ObjectNode"
                         }
-                    }
+                    },
+                    "__type__": "objects/ObjectNode"
                 }
-            }
+            },
+            "__type__": "objects/ObjectNode"
         },
         "modules": {
             "__children__": {},
             "__type__": "objects/ModulesDirectory",
             "autoload": [
                 "base",
-                "computer",
                 "datalog",
                 "http",
                 "medialib",
@@ -224,6 +168,7 @@
                 "player",
                 "remote",
                 "serial",
+                "system",
                 "player/xmms2cli"
             ]
         },
@@ -231,7 +176,7 @@
             "__children__": {
                 "console": {
                     "__children__": {},
-                    "__type__": "base/Console",
+                    "__type__": "base/servers/console/Console",
                     "controllers": null,
                     "parent": "/servers/default_shell"
                 },
@@ -246,6 +191,9 @@
                         "assets": {
                             "__type__": "base/FileController",
                             "root": "nerve/base/assets"
+                        },
+                        "pages": {
+                            "__type__": "pages/PagesController"
                         },
                         "config": {
                             "__type__": "base/ConfigController"
@@ -277,7 +225,7 @@
                 },
                 "http": {
                     "__children__": {},
-                    "__type__": "http/HTTPServer",
+                    "__type__": "http/servers/HTTPServer",
                     "controllers": null,
                     "parent": "/servers/default",
                     "password": "",
@@ -288,7 +236,7 @@
                 },
                 "pyexec": {
                     "__children__": {},
-                    "__type__": "base/TCPServer",
+                    "__type__": "base/servers/tcpserver/TCPServer",
                     "controllers": {
                         "__default__": {
                             "__type__": "base/PyExecController"
@@ -299,12 +247,14 @@
                 },
                 "shell": {
                     "__children__": {},
-                    "__type__": "base/TCPServer",
+                    "__type__": "base/servers/tcpserver/TCPServer",
                     "controllers": null,
                     "parent": "/servers/default_shell",
                     "port": 6060
                 }
-            }
+            },
+            "__type__": "objects/ObjectNode"
         }
-    }
+    },
+    "__type__": "main/Main"
 }

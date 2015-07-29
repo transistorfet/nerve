@@ -20,7 +20,7 @@ import fcntl
 
 class MediaUpdaterTask (nerve.Task):
     def __init__(self, path):
-        nerve.Task.__init__(self, 'MediaUpdaterTask')
+        super().__init__('MediaUpdaterTask')
         self.db = nerve.Database('medialib.sqlite')
         self.path = path        #nerve.get_config("medialib_dirs")
         self.run_update = threading.Event()

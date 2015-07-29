@@ -23,6 +23,7 @@ mainloops = [ ]
 class Main (nerve.ObjectNode):
     def __init__(self):
         super().__init__()
+        self.exitcode = 0
         self.stopflag = threading.Event()
 
         parser = argparse.ArgumentParser(prog='nerve', formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='Nerve Control Server')
@@ -51,9 +52,13 @@ class Main (nerve.ObjectNode):
         signal.signal(signal.SIGINT, self.signal_handler)
 
         try:
+            users = nerve.Users()
+
             if not self.load_config(os.path.join(self.configdir, 'settings.json')):
                 self.shutdown()
             if not self.run_init():
+                self.shutdown()
+            if not self.start_all_servers():
                 self.shutdown()
 
             #print (dir(nerve))
@@ -68,12 +73,17 @@ class Main (nerve.ObjectNode):
     def signal_handler(self, signal, frame):
         self.stopflag.set()
 
+    def restart(self):
+        self.exitcode = 42
+        self.stopflag.set()
+
     def shutdown(self):
+        self.stopflag.set()
         nerve.log("shutting down all threads")
         nerve.Task.stop_all()
         nerve.Task.join_all()
         os.system('stty sane')
-        sys.exit(0)
+        sys.exit(self.exitcode)
 
     def run_init(self):
         filename = os.path.join(self.configdir, 'init.py')
@@ -112,6 +122,10 @@ class Main (nerve.ObjectNode):
         with open(filename, 'w') as f:
             json.dump(config, f, sort_keys=True, indent=4, separators=(',', ': '))
 
+    def start_all_servers(self):
+        # TODO start all servers here, but how do you get a list of servers?
+        return True
+
     def read_config_file(self, filename):
         filename = os.path.join(self.configdir, filename)
         (path, _, _) = filename.rpartition('/')
@@ -132,12 +146,6 @@ class Main (nerve.ObjectNode):
         with open(filename, 'w') as f:
             f.write(contents)
 
-
-"""
-def log(text):
-    global stdout
-    stdout.write(time.strftime("%Y-%m-%d %H:%M") + " " + text + "\n")
-"""
 
 def loop():
     global mainloops

@@ -17,8 +17,8 @@ import json
 
 class PlayerDevice (nerve.Device):
     def __init__(self, **config):
-        nerve.Device.__init__(self, **config)
-        self.backend_dev = None
+        super().__init__(**config)
+        self.driver = None
 
         backend_name = self.get_setting('backend')
         try:
@@ -27,10 +27,12 @@ class PlayerDevice (nerve.Device):
                 print(type_name)
                 (module_name, sep, player_obj) = type_name.rpartition('/')
                 nerve.ModulesDirectory.import_module("player." + module_name.replace('/', '.'))
-                self.backend_dev = nerve.ObjectNode.make_object("player/" + type_name, config)
+                self.driver = nerve.ObjectNode.make_object("player/" + type_name, config)
         except:
             nerve.log("failed to initialize player backend: " + backend_name)
             nerve.log(traceback.format_exc())
+
+        self.playlist = []
 
     @staticmethod
     def get_config_info():
@@ -46,7 +48,7 @@ class PlayerDevice (nerve.Device):
             return super().__getattr__(name)
         except AttributeError:
             pass
-        return getattr(self.backend_dev, name)
+        return getattr(self.driver, name)
 
     """
     def next(self):

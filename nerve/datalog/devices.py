@@ -14,7 +14,7 @@ import random
 
 class DatalogManager (nerve.Device):
     def __init__(self, **config):
-        nerve.Device.__init__(self, **config)
+        super().__init__(**config)
         #self.db = nerve.Database('datalog.sqlite')
         #self.db.create_table('media', "id INTEGER PRIMARY KEY, filename TEXT, artist TEXT, album TEXT, title TEXT, track_num NUMERIC, genre TEXT, tags TEXT, duration NUMERIC, media_type TEXT, file_hash TEXT, file_size INT, file_last_modified INT")
         #self.db.create_table('info', "name TEXT PRIMARY KEY, value TEXT")
@@ -47,7 +47,8 @@ class DatalogManager (nerve.Device):
 
 class DatalogDevice (nerve.Device):
     def __init__(self, **config):
-        nerve.Device.__init__(self, **config)
+        super().__init__(**config)
+        self.name = self.get_setting('name')
 
         self.db = nerve.Database('datalog.sqlite')
         table_sql = "id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp NUMERIC"
@@ -95,13 +96,14 @@ class DatalogDevice (nerve.Device):
         }
 
         self.db.add_column(self.name, column_name, datatype)
-        self.datapoints.append(entry)
+        datapoints = self.get_setting('datapoints')
+        datapoints.append(entry)
 
     def remove_datapoint(self, column_name):
         pass
 
     def get_datapoint_info(self, name):
-        for datapoint in self.datapoints:
+        for datapoint in self.get_setting('datapoints'):
             if name == datapoint['name']:
                 return datapoint
         return { 'name': name }
@@ -121,7 +123,7 @@ class DatalogDevice (nerve.Device):
         data = { }
         #data['timestamp'] = time.strftime("%Y-%m-%d %H:%M:%S")
         data['timestamp'] = time.time()
-        for datapoint in self.datapoints:
+        for datapoint in self.get_setting('datapoints'):
             try:
                 data[datapoint['name']] = nerve.query(datapoint['ref'])
             except Exception as exc:

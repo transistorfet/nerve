@@ -164,8 +164,9 @@ class Database (object):
         insert = 'INSERT' if replace is False else 'INSERT OR REPLACE'
         query = "%s INTO %s (%s) VALUES (%s)" % (insert, table, ','.join(columns), ','.join(values))
         #print (query)
-        self.query(query)
+        result = self.query(query)
         self.reset_cache()
+        return result
 
     def update(self, table, data, where=None):
         if where is not None:
@@ -185,22 +186,11 @@ class Database (object):
     def delete(self, table, where=None):
         if where is None:
             where = self.cache_where
-            self.reset_cache()
+
         query = "DELETE FROM %s WHERE %s" % (table, where)
 
         result = self.query(query)
+        self.reset_cache()
         return result
-
-    """
-    def select(self, table, values=None, where=None, whereval=None, order_by=None):
-        if values is None:
-            values = '*'
-        query = "SELECT %s FROM %s " % (values, table)
-        if where is not None:
-            query += "WHERE %s='%s' " % (where, self.escape(whereval))
-        if order_by is not None:
-            query += "ORDER BY %s " % (order_by,)
-        return self.query(query)
-    """
 
  

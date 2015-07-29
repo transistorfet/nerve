@@ -11,7 +11,7 @@ import json
 
 class YoutubePlaylistFetcher (nerve.Task):
     def __init__(self, path):
-        nerve.Task.__init__(self, 'YoutubePlaylistFetcher')
+        super().__init__('YoutubePlaylistFetcher')
         self.db = nerve.Database('medialib.sqlite')
         self.json = None
         self.list_ids = path        #nerve.get_config("youtube_playlists")

@@ -65,11 +65,11 @@
                         <label><%= setting[1] %></label>
                         <span>
                             <% if setting[2] == 'bool': %>
-                            <input type="checkbox" name="<%= setting[0] %>" value="1" <%= ' checked' if getattr(obj, setting[0]) else '' %> />
+                            <input type="checkbox" name="<%= setting[0] %>" value="1" <%= ' checked' if obj.get_setting(setting[0]) else '' %> />
                             <% elif setting[2] == 'textarea': %>
-                            <textarea name="<%= setting[0] %>"><%= getattr(obj, setting[0]) %></textarea>
+                            <textarea name="<%= setting[0] %>"><%= obj.get_setting(setting[0]) %></textarea>
                             <% else: %>
-                            <input type="text" name="<%= setting[0] %>" value="<%= getattr(obj, setting[0]) %>" />
+                            <input type="text" name="<%= setting[0] %>" value="<%= obj.get_setting(setting[0]) %>" />
                             <% end %>
                         </span>
                     </div></li>
@@ -79,9 +79,9 @@
 
             for setting in config_info:
                 if setting[2] in ('list', 'tuple'):
-                    output_list_treeview(getattr(obj, setting[0]), setting[0])
+                    output_list_treeview(obj.get_setting(setting[0]), setting[0])
                 elif setting[2] in ('dict',):
-                    output_dict_treeview(getattr(obj, setting[0]), setting[0])
+                    output_dict_treeview(obj.get_setting(setting[0]), setting[0])
                 end
             end
 

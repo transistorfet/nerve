@@ -135,8 +135,8 @@
                             end
                             %>
                             <td><input type="checkbox" name="media" value="<%= dataval %>" /></td>
-                            <!-- <td><a href="<%= py._PATH %>?mode=title&order=artist&search=<%= urlencode(media['artist']) %>"><%= media['artist'] %></a></td> -->
-                            <td><a href="<%= py._PATH %>?mode=title&order=artist&search=<%= urlencode(media['artist']) %>"><%= media['artist'] %></a></td>
+                            <!-- <td><a href="<%= py.PATH %>?mode=title&order=artist&search=<%= urlencode(media['artist']) %>"><%= media['artist'] %></a></td> -->
+                            <td><a href="<%= py.PATH %>?mode=title&order=artist&search=<%= urlencode(media['artist']) %>"><%= media['artist'] %></a></td>
                             <% if has_title: %>
                                 <td><%= media['title'] %></td>
                             <% end %>

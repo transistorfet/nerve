@@ -9,7 +9,7 @@ import mimetypes
 
 class FileController (nerve.Controller):
     def __init__(self, **config):
-        nerve.Controller.__init__(self, **config)
+        super().__init__(**config)
 
     @staticmethod
     def get_config_info():
@@ -18,20 +18,19 @@ class FileController (nerve.Controller):
         return config_info
 
     def do_request(self, request):
-        filename = os.path.join(self.get_setting('root'), request.remaining_segments())
+        filename = os.path.join(self.get_setting('root'), request.get_remaining_segments())
 
         if os.path.isdir(filename):
             filename = os.path.join(filename, "index.html")
 
         if not os.path.isfile(filename):
-            self.write_text("Error file not found: " + filename)
-            raise Exception("Error file not found: " + filename)
+            raise nerve.NotFoundException("Error file not found: " + filename)
 
         (_, _, extension) = filename.rpartition('.')
 
         if extension == 'pyhtml':
             self.set_mimetype('text/html')
-            engine = PyHTML(filename, request)
+            engine = PyHTML(request, None, filename)
             contents = engine.evaluate()
             self.write_text(contents)
         else:

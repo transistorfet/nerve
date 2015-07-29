@@ -19,7 +19,7 @@ class DatalogController (nerve.http.Controller):
         self.redirect_to('/%s/graph' % (request.segments[0],))
 
     def graph(self, request):
-        remain = request.remaining_segments().lstrip('/')
+        remain = request.get_remaining_segments().lstrip('/')
         # TODO if remain contains a / then raise an error
 
         datalogs = nerve.get_object('/devices/datalogs')

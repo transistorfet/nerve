@@ -151,8 +151,8 @@ class MySensorsSensor (nerve.Device):
     """
 
     def send_msg(self, subtype, val):
-        node = self.parent
-        serialdev = node.parent
+        node = self._parent
+        serialdev = node._parent
         serialdev.send("%s;%s;1;0;%d;%s" % (node.nodeid, self.sensorid, int(subtype), str(val)))
 
     def set_child(self, index, obj):
@@ -174,6 +174,9 @@ class MySensorsSensor (nerve.Device):
         if val is not None:
             self.set_value(val, subtype)
         else:
+            if time.time() > self.last_recv + 3600:
+                # TODO you should probably send a message to the node or something... reset it perhaps?
+                return None
             return self.last_value
 
     def last_recv(self):

@@ -48,24 +48,6 @@ class MediaLibController (nerve.http.Controller):
 
         self.load_view('nerve/medialib/views/search.pyhtml', data)
 
-    """
-    def get_search_results(self, request):
-        medialib = nerve.get_object('/devices/medialib')
-
-        mode = request.arg('mode')
-        order = request.arg('order')
-        offset = request.arg('offset', default=0)
-        limit = request.arg('limit', default=1000)
-        search = request.arg('search', default='')
-        recent = request.arg('recent', default='')
-        media_type = request.arg('media_type', default='')
-
-        data = { }
-        data['media_list'] = medialib.get_media_list(mode, order, offset, limit, search, recent, media_type)
-        data['mode'] = mode
-        self.load_view('nerve/medialib/views/search-data.pyhtml', data)
-    """
-
     def search_youtube(self, request):
         medialib = nerve.get_object('/devices/medialib')
 

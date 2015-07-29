@@ -23,7 +23,7 @@ import urllib.parse
 
 class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
     protocol_version = 'HTTP/1.1'
-    server_version = "Nerve HTTP/0.2"
+    server_version = "Nerve HTTP/0.3"
 
     def log_message(self, format, *args):
         nerve.log(self.address_string() + ' ' + format % args)
@@ -48,7 +48,7 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
         if not self.is_valid_path(self.path):
             self.send_404()
 
-        request = nerve.Request(self, 'GET', self.path, None)
+        request = nerve.Request(self, None, 'GET', self.path, None)
         self.do_request(request)
 
     def do_POST(self):
@@ -74,7 +74,7 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
         else:
             postvars = {}
 
-        request = nerve.Request(self, 'POST', self.path, postvars)
+        request = nerve.Request(self, None, 'POST', self.path, postvars)
         self.do_request(request)
 
     def do_request(self, request):
@@ -89,7 +89,7 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
         if redirect:
             self.send_content(302, mimetype, output, [ ('Location', redirect) ])
         else:
-            self.send_content(200 if not error else 404, mimetype, output)
+            self.send_content(200 if not error else 404 if type(error) is nerve.NotFoundException else 500, mimetype, output)
         return
 
     def send_content(self, errcode, mimetype, content, headers=None):

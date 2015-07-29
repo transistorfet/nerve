@@ -3,6 +3,7 @@
 
 import nerve
 
+import sys
 import time
 import json
 import readline
@@ -10,7 +11,7 @@ import traceback
 
 class Console (nerve.Server):
     def __init__(self, **config):
-        nerve.Server.__init__(self, **config)
+        super().__init__(**config)
         self.thread = nerve.Task('ConsoleTask', target=self.run)
         self.thread.daemon = True
         self.thread.start()
@@ -26,7 +27,7 @@ class Console (nerve.Server):
         return config_info
 
     def send(self, text):
-        print (text)
+        print(text)
 
     def run(self):
         # TODO this is to fix a race condition where the parent server object, /servers/default_shell, hasn't been created yet, and
@@ -34,24 +35,26 @@ class Console (nerve.Server):
         # created
         time.sleep(3)
 
-        controller = self.make_controller(nerve.Request(self, 'QUERY', "/", { }))
+        controller = self.make_controller(nerve.Request(self, None, 'QUERY', "/", { }))
         while True:
         #while not self.thread.stopflag.is_set():
             try:
+                #print(">> ", end='', flush=True)
+                #line = sys.stdin.readline().strip()
                 line = input(">> ")
                 if line == 'quit':
                     nerve.quit()
                     break
-                elif (line):
-                    request = nerve.Request(self, 'QUERY', "/", { 'queries[]' : [ line ] })
+                elif line:
+                    request = nerve.Request(self, None, 'QUERY', "/", { 'queries[]' : [ line ] })
                     controller.handle_request(request)
                     if controller.get_mimetype() == 'application/json':
                         output = controller.get_output().decode('utf-8')
                         data = json.loads(output)
                         if data and data[0]:
-                            print ('\n'.join([ str(val) for val in data ]))
+                            print('\n'.join([ str(val) for val in data ]))
                     else:
-                        print (controller.get_output().decode('utf-8'))
+                        print(controller.get_output().decode('utf-8'))
 
             except EOFError:
                 nerve.log("Console received EOF. Exiting...")

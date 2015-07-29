@@ -4,17 +4,21 @@
             "__type__": "objects/ModulesDirectory",
             "autoload": [
                 "base",
-                "computer",
                 "datalog",
                 "http",
                 "medialib",
                 "player/vlc",
                 "remote",
-                "serial"
+                "serial",
+                "system"
             ]
         },
         "devices": {
             "__children__": {
+                "restart": {
+                    "__type__": "core/QueryObject",
+                    "code": "nerve.query('/restart')"
+                },
                 "medialib": {
                     "__type__": "medialib/MediaLib",
                     "medialib_dirs": [
@@ -27,7 +31,7 @@
                     ]
                 },
                 "computer": {
-                    "__type__": "computer/SystemDevice"
+                    "__type__": "system/SystemDevice"
                 },
                 "rgb": {
                     "baud": 19200,
@@ -45,7 +49,77 @@
                 "mysensors": {
                     "baud": 115200,
                     "file": "/dev/ttyACM1",
-                    "__type__": "mysensors/MySensorsSerialGateway"
+                    "__type__": "mysensors/MySensorsSerialGateway",
+                    "__children__": {
+                        "11": {
+                            "__children__": {
+                                "1": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/MySensorsSensor",
+                                    "sensorid": "1",
+                                    "type": 20,
+                                    "version": "1.4.1"
+                                },
+                                "20": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/MySensorsSensor",
+                                    "sensorid": "20",
+                                    "type": 6,
+                                    "version": "1.4.1"
+                                },
+                                "255": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/MySensorsSensor",
+                                    "sensorid": "255",
+                                    "type": 18,
+                                    "version": "1.4.1"
+                                }
+                            },
+                            "__type__": "mysensors/MySensorsNode",
+                            "nodeid": "11"
+                        },
+                        "12": {
+                            "__children__": {
+                                "1": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/MySensorsSensor",
+                                    "sensorid": "1",
+                                    "type": 3,
+                                    "version": "1.4.1"
+                                },
+                                "20": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/MySensorsSensor",
+                                    "sensorid": "20",
+                                    "type": 6,
+                                    "version": "1.4.1"
+                                },
+                                "21": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/MySensorsSensor",
+                                    "sensorid": "21",
+                                    "type": 6,
+                                    "version": "1.4.1"
+                                },
+                                "255": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/MySensorsSensor",
+                                    "sensorid": "255",
+                                    "type": 18,
+                                    "version": "1.4.1"
+                                },
+                                "40": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/MySensorsSensor",
+                                    "sensorid": "40",
+                                    "type": 7,
+                                    "version": "1.4.1"
+                                }
+                            },
+                            "__type__": "mysensors/MySensorsNode",
+                            "nodeid": "12"
+                        }
+                    }
                 },
                 "player": {
                     "__type__": "player/vlc/VLCHTTP"
@@ -115,7 +189,7 @@
                                 {
                                     "datatype": "NUMERIC",
                                     "label": "Barometric Pressure",
-                                    "max": 5000,
+                                    "max": 1100,
                                     "min": 1000,
                                     "name": "outdoor_pressure",
                                     "ref": "/devices/mysensors/13/60",
@@ -124,7 +198,7 @@
                                 {
                                     "datatype": "NUMERIC",
                                     "label": "Outdoor Light Level",
-                                    "max": 10000,
+                                    "max": 4000,
                                     "min": 0,
                                     "name": "outdoor_lux",
                                     "ref": "/devices/mysensors/13/80",

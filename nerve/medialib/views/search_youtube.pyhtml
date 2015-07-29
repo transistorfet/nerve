@@ -29,8 +29,8 @@
 <div id="nerve-notice" style="display: none;"></div>
 <div id="nerve-error" style="display: none;"></div>
 
-<form method="GET" action="<%= py._PATH %>">
-    <input type="text" name="search" value="<%= py.ARGS('search') %>" />
+<form method="GET" action="<%= py.PATH %>">
+    <input type="text" name="search" value="<%= search %>" />
     <button type="submit" name="yt_search" value="1">Search</button>
 </form>
 

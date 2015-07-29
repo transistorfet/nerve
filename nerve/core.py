@@ -12,8 +12,9 @@ import urllib.parse
 
 
 class Request (object):
-    def __init__(self, server, reqtype, urlstring, args):
+    def __init__(self, server, user, reqtype, urlstring, args):
         self.server = server
+        self.user = user
         self.reqtype = reqtype
         (self.url, self.args) = self.parse_query(urlstring, args)
 
@@ -31,18 +32,21 @@ class Request (object):
                 args[name] = args[name][0]
         return (url, args)
 
-    def next_segment(self):
+    def next_segment(self, default=None):
         if self.current_segment < len(self.segments):
             seg = self.segments[self.current_segment]
             self.current_segment += 1
             return seg
-        return ''
+        return default
 
     def back_segment(self):
         if self.current_segment > 0:
             self.current_segment -= 1
 
-    def remaining_segments(self):
+    def segments_left(self):
+        return len(self.segments) - self.current_segment
+
+    def get_remaining_segments(self):
         if self.current_segment < len(self.segments):
             seg = '/'.join(self.segments[self.current_segment:])
             self.current_segment = len(self.segments)
@@ -55,9 +59,12 @@ class Request (object):
         return default
 
 
+class NotFoundException (Exception): pass
+
+
 class Controller (nerve.ObjectNode):
     def __init__(self, **config):
-        nerve.ObjectNode.__init__(self, **config)
+        super().__init__(**config)
         self.error = None
         self.redirect = None
         self.output = None
@@ -76,8 +83,13 @@ class Controller (nerve.ObjectNode):
             raise Exception('mimetype', "in nerve.Controller, attempting to change mimetype after output has been written")
         self.mimetype = mimetype
 
+    # depreciated??
     def report_error(self, typename, message):
         self.error = Exception(typename, message)
+
+    # depreciated??
+    def report_not_found(self, message):
+        self.error = NotFoundException(message)
 
     def redirect_to(self, location):
         self.redirect = location
@@ -118,11 +130,13 @@ class Controller (nerve.ObjectNode):
         self.initialize()
         try:
             self.do_request(request)
-        except:
+
+        except Exception as e:
             tb = traceback.format_exc()
             nerve.log(tb)
             self.write_text(tb)
-            self.report_error('internal', tb)
+            self.error = e
+
         finally:
             self.finalize()
 
@@ -134,13 +148,18 @@ class Controller (nerve.ObjectNode):
         name = request.next_segment()
         if not name:
             name = 'index'
-        func = getattr(self, name)
+
+        try:
+            func = getattr(self, name)
+        except AttributeError:
+            raise NotFoundException("Page not found: " + name) from None
+
         func(request)
 
 
 class Server (nerve.ObjectNode):
     def __init__(self, **config):
-        nerve.ObjectNode.__init__(self, **config)
+        super().__init__(**config)
 
     @staticmethod
     def get_config_info():
@@ -190,36 +209,14 @@ class Model (nerve.ObjectNode):
 
 class Device (Model):
     def __init__(self, **config):
-        nerve.ObjectNode.__init__(self, **config)
+        super().__init__(**config)
         self.callbacks = { }
 
     def on_update(self, attrib, func):
         self.callbacks[attrib] = func
 
-    """
-    def query(self, ref, *args, **kwargs):
-        (name, sep, remain) = ref.partition('.')
-        if name and name[0] == '_':
-            raise AttributeError("cannot access underscore attributes through a query: '" + name + "'")
-        if remain:
-            dev = getattr(self, name)
-            return dev.query(remain, *args, **kwargs)
-        else:
-            func = getattr(self, name)
-            return func(*args, **kwargs)
-    """
 
-
-# TODO is this not redundant with objects/SymbolicLink
-class AliasDevice (Device):
-    def __init__(self, **config):
-        Device.__init__(self, **config)
-
-    def __getattr__(self, name):
-        pass
-
-
-class SingleQuery (nerve.ObjectNode):
+class QueryObject (nerve.ObjectNode):
     @staticmethod
     def get_config_info():
         config_info = nerve.ObjectNode.get_config_info()

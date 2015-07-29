@@ -53,8 +53,8 @@ class ConfigInfo (object):
 
 class ObjectNode (object):
     def __init__(self, **config):
-        self.parent = None
-        self.children = { }
+        self._parent = None
+        self._children = { }
         self.set_config_data(config)
 
     @staticmethod
@@ -62,25 +62,26 @@ class ObjectNode (object):
         return ConfigInfo()
 
     def set_config_data(self, config):
-        self.config = config
-        #self.config['__type__'] = self.__class__.__module__.replace('nerve.', '').replace('.', '/') + "/" + self.__class__.__name__
-        #print(self.config['__type__'])
+        self._config = config
+        self._config['__type__'] = self.__class__.__module__.replace('nerve.', '').replace('.', '/') + "/" + self.__class__.__name__
         if '__children__' in config:
-            self.children = self.make_object_table(config['__children__'])
+            self._children = self.make_object_table(config['__children__'])
+            for objname in self._children.keys():
+                self._children[objname].parent = self
 
     def get_config_data(self):
-        self.config['__children__'] = self.save_object_table(self.children)
-        return self.config
+        self._config['__children__'] = self.save_object_table(self._children)
+        return self._config
 
     def set_setting(self, name, value):
         try:
-            self.config[name] = value
+            self._config[name] = value
         except:
             print (traceback.format_exc())
 
     def get_setting(self, name, typename=None):
-        if name in self.config:
-            return self.config[name]
+        if name in self._config:
+            return self._config[name]
         return None
 
 
@@ -88,32 +89,32 @@ class ObjectNode (object):
         attrib = self.get_child(index)
         if attrib:
             return attrib
-        if 'config' in self.__dict__ and index in self.__dict__['config']:
-            return self.__dict__['config'][index]
+        #if '_config' in self.__dict__ and index in self.__dict__['_config']:
+        #    return self.__dict__['_config'][index]
         raise AttributeError("'%s' object has no attribute '%s'" % (str(self), index))
 
     def keys(self):
-        return self.keys_children() + list(self.config.keys()) #+ [ name for name in dir(self) if name[0] != '_' ]
+        return self.keys_children() # + list(self._config.keys()) #+ [ name for name in dir(self) if name[0] != '_' ]
 
 
     def get_child(self, index):
-        if index in self.__dict__['children']:
-            return self.__dict__['children'][index]
+        if index in self.__dict__['_children']:
+            return self.__dict__['_children'][index]
         return None
 
     def set_child(self, index, obj):
         if isinstance(obj, ObjectNode):
             obj.parent = self
-        self.children[index] = obj
+        self._children[index] = obj
 
     def del_child(self, index):
-        if index in self.children:
-            del self.children[index]
+        if index in self._children:
+            del self._children[index]
             return True
         return False
 
     def keys_children(self):
-        return list(self.children.keys())
+        return list(self._children.keys())
 
 
     def get_object(self, name):
@@ -229,7 +230,7 @@ class ModulesDirectory (ObjectNode):
     """
 
     def get_config_data(self):
-        return self.config
+        return self._config
 
     """
     def __getattr__(self, name):
@@ -276,7 +277,7 @@ class ModulesDirectory (ObjectNode):
         typelist = [ ]
         if not module:
             module = nerve
-            typelist = [ 'objects/ObjectNode', 'core/SingleQuery', 'events/Event' ]
+            typelist = [ 'objects/ObjectNode', 'core/QueryObject', 'events/Event' ]
 
         modulename = module.__name__
         for typename in dir(module):
@@ -328,11 +329,14 @@ class ModulesDirectory (ObjectNode):
                     exec(code, globals(), globals())
                     ModulesDirectory.loaded_modules[modulename] = eval("nerve." + modulename)
                 except ImportError as e:
+                    """
                     # TODO this is a temporary hack...
                     #nerve.log("error loading module " + modulename + "\n\n" + traceback.format_exc())
                     nerve.log("loading module " + modulename)
                     code = 'import local.%s\n#%s.init()' % (modulename, modulename)
                     exec(code, globals(), globals())
                     ModulesDirectory.loaded_modules[modulename] = eval("local." + modulename)
+                    """
+                    nerve.log("error loading module " + modulename + "\n\n" + traceback.format_exc())
         return ModulesDirectory.loaded_modules[modulename]
 

@@ -13,13 +13,15 @@ class QueryController (nerve.Controller):
 
     def do_request(self, request):
         result = None
-        querystr = request.remaining_segments()
+        querystr = request.get_remaining_segments()
         if querystr != '':
             result = nerve.query(self.get_setting('root') + '/' + querystr, **request.args)
         elif 'queries[]' in request.args:
             result = { }
             for i, querystr in enumerate(request.args['queries[]']):
-                result[i] = nerve.query(self.get_setting('root') + '/' + querystr)
+                if querystr[0] != '/' and not querystr.startswith('http:'):
+                    querystr = self.get_setting('root') + '/' + querystr
+                result[i] = nerve.query(querystr)
         self.write_json(result)
 
 

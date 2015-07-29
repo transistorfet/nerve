@@ -7,7 +7,7 @@ import shlex
 
 class ShellController (nerve.Controller):
     def __init__(self, **config):
-        nerve.Controller.__init__(self, **config)
+        super().__init__(**config)
         self.pwd = '/devices'
 
     def do_request(self, request):

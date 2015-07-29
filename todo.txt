@@ -1,4 +1,20 @@
 
+* test speed differences of PyHTML using different template methods
+
+* perhaps PyHTML could be renamed PyHP, or the filename extension could be .pyhp so it's a bit shorter or something
+
+* would it be useful (or more complicated) to add a 'parent' or 'template' field to pages in the pages module, so that a parent
+  page can be specified other than '__default__'?
+* should there be a way to process the contents of a variable as pyhtml from within a pyhtml code?  Could it even just be a function
+  on the PyHTML file that reinvokes itself, using the current global dict?  <% py.evalutate(contents) %>  The execute_code() function
+  would just have to be re-enterable somehow
+* add a way to evaluate pyhtml code contained in a variable (nested code of some kind)
+
+* add a user system that stores user data in a users.db database.  Depending on the user name and password sent along with the HTTP
+  request, the system would display according to their preferences (so that multiple users can use the system, customize their own
+  remote control layouts, and have those changes only apply to their usage).  This might mean that some of the system data needs to be
+  stored on a per-user basis somehow (exactly how would we implement that?) (remote control layouts, theme info, etc)
+
 * I'm thinking about a widgets system as a generalized concept for building web-based views, like the remote control page now, or
   for example, a page that displays weather/temp and various daily info type stuff, a page at a glance.  It might be reasonably
   easy/possible to have all 'pages' be a collection of widgets (which they already are in an HTML sense, but there could be an editor
@@ -28,14 +44,12 @@
 * it should be possible to easily remove items from the current playlist (like delete current song/delete all by artist/delete previous song)
   The changes should take effect immediately.  Possibly could have a list of recently played songs to delete
 
-* add a query discovery thing to nerve serial devices to get the list of queries
+* add a query discovery thing to nerve serial devices to get the list of queries that device can respond to
 * fix the race condition in console better
 
 * add run and config instructions to the readme (so that somebody could actually run the thing)
 * should the name of the 'controllers' dict in servers be called something different, like 'paths' or 'handlers' or something?
 
-* the file controller doesn't properly return an error message when a file isn't found, since it doesn't throw an exception
-* change all code to use super() instead of referring to the class (maybe?)
 * how should view files be referenced relative to?  Right now it's nerve/module/views/view.pyhtml but it should be easier to reference
   the parent module (so the code doesn't have that hardcoded) and also how will this work with the possibility of a second module location
 
@@ -50,13 +64,10 @@
 
 * make more advanced widgets for various things (ideas?)
 * possibly have more specific widgets like one for a player, etc
-* you could have a remote control app where you can configure which widgets or blocks of widgets should appear (kind of like how it used to be
-  in the android app).  You could have a 'customize' mode where it shows a button to remove widgets/panels, or add them using a list
 * there could be a way to automatically minify js and css files on the fly
 
 * add a theme system
 * add a user system.  Users can have their own themes, remote control layouts, and so on
-* make thing to be able to specify js and css files
 
 * make it as much like a generic hmi/plc/data disemination/control thing as possible.  Make it so that it's easy to have it automatically
   query the server to fill in data fields.
@@ -73,6 +84,11 @@ MISC:
 STRUCTURAL:
 
 POSSIBLE FEATURES:
+    * you could have some system of assign a mood or energy level to a song, possibly something automatic or something manually
+      assigned (or at the least manually adjustable).  Then you can randomly generate a playlist using certain rules of what
+      types of songs should come after which, to more intelligently currate a playlist.  It could also use data from the
+      environment to select songs to play.
+
     * you could add an auto discovery feature where the phone sends a broadcast message to the default port number and all the
       servers respond.  It could be used for some normal operations even, and the server would just send a message back like
       it normally would, in response to the request.  It could also be for config though, to know what servers are around

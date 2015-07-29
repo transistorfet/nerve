@@ -16,7 +16,8 @@ class RemoteController (nerve.http.Controller):
 
     def index(self, request):
         data = { }
-        data['contents'] = nerve.read_config_file('html/remote.html')
+        #data['contents'] = nerve.read_config_file('html/remote.html')
+        data['contents'] = self.load_view_as_string(nerve.configdir() + '/html/remote.html')
         self.load_view('nerve/remote/views/index.pyhtml', data)
 
     # TODO this is temporary

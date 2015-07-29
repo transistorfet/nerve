@@ -12,7 +12,7 @@ import traceback
 
 class TCPConnection (nerve.Server):
     def __init__(self, server, socket, addr):
-        nerve.Server.__init__(self)
+        super().__init__()
         self.server = server
         self.socket = socket
         (self.host, self.port) = addr
@@ -55,7 +55,7 @@ class TCPConnection (nerve.Server):
                     if data == 'quit':
                         self.thread.stopflag.set()
                     else:
-                        request = nerve.Request(self, 'QUERY', "/", { 'queries[]' : [ data ] })
+                        request = nerve.Request(self, None, 'QUERY', "/", { 'queries[]' : [ data ] })
                         controller = self.server.make_controller(request)
                         controller.handle_request(request)
                         self.send(controller.get_output())
@@ -72,7 +72,7 @@ class TCPConnection (nerve.Server):
 
 class TCPServer (nerve.Server):
     def __init__(self, **config):
-        nerve.Server.__init__(self, **config)
+        super().__init__(**config)
 
         self.thread = nerve.Task('TCPServerTask', self.run)
         self.thread.daemon = True
@@ -90,9 +90,10 @@ class TCPServer (nerve.Server):
         return config_info
 
     def listen(self):
-        nerve.log("starting tcp server on port " + str(self.port))
+        port = self.get_setting('port')
+        nerve.log("starting tcp server on port " + str(port))
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.bind(('', self.port))
+        self.socket.bind(('', port))
         self.socket.listen(5)
 
     def close(self):

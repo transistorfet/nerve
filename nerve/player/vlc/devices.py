@@ -17,7 +17,7 @@ import json
 
 class VLCHTTP (nerve.Device):
     def __init__(self, **config):
-        nerve.Device.__init__(self, **config)
+        super().__init__(**config)
         self.proc = None
         self.status = None
         self.lastplid = 0
@@ -26,6 +26,9 @@ class VLCHTTP (nerve.Device):
 
         self.server = 'localhost:8081'
         self.auth = ('', 'test')
+
+        content = nerve.read_config_file('player-states.json')
+        self.saved_states = json.loads(content) if content else [ ]
 
         self.thread = nerve.Task('VLCTask', self.run)
         self.thread.start()
@@ -118,6 +121,52 @@ class VLCHTTP (nerve.Device):
         # TODO read the playlist position so that you can have the playlist display and anchor in the playlist webpage
         pass
 
+    def get_current_track(self, key='uri'):
+        r = requests.get('http://%s/requests/playlist.json' % (self.server,), auth=('', 'test'))
+        self.playlist = json.loads(r.text)
+        
+        for sublist in self.playlist['children']:
+            if sublist['name'] == "Playlist":
+                for media in sublist['children']:
+                    if 'current' in media:
+                        if key is None:
+                            return media
+                        else:
+                            return media[key]
+
+    def save_state(self):
+        if self.status is None or 'information' not in self.status:
+            return
+        meta = self.status['information']['category']['meta']
+
+        uri = self.get_current_track(key='uri')
+        if uri.startswith('http') and 'url' in meta:
+            uri = meta['url']
+
+        self.saved_states.append({
+            'time' : time.time(),
+            'position' : self.status['position'],
+            'length' : self.status['length'],
+            'currentplid' : self.status['currentplid'],
+            'title' : meta['filename'],
+            'uri' : uri
+        })
+        nerve.write_config_file('player-states.json', json.dumps(self.saved_states, sort_keys=True, indent=4, separators=(',', ': ')))
+
+    def load_state(self, i):
+        state = self.saved_states[int(i)]
+        #self.playlist_seek(state['currentplid'])
+        self.play(state['uri'])
+        time.sleep(0.4)
+        self._send_command('seek', int(float(state['position']) * float(state['length'])))
+
+    def delete_state(self, i):
+        del self.saved_states[int(i)]
+        nerve.write_config_file('player-states.json', json.dumps(self.saved_states, sort_keys=True, indent=4, separators=(',', ': ')))
+
+    def get_states(self):
+        return self.saved_states
+
     def playlist_seek(self, id):
         url = 'http://%s/requests/status.json?command=pl_play&id=%s' % (self.server, id)
         r = requests.get(url, auth=('', 'test'))
@@ -139,6 +188,16 @@ class VLCHTTP (nerve.Device):
             self.proc.kill()
             self.proc = None
             self.next_update = time.time()
+
+    def delete(self, id):
+        url = 'http://%s/requests/status.json?command=pl_delete&id=%s' % (self.server, id)
+        r = requests.get(url, auth=('', 'test'))
+
+    def delete_current(self):
+        media = self.get_current_track(key=None)
+        self.delete(media['id'])
+        #medialib = nerve.get_object('/devices/medialib')
+        #TODO you can't do this yet because you don't know what the current playlist is
 
     """
     def command(self, msg):

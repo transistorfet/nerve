@@ -12,7 +12,7 @@ import threading
 
 class SerialDevice (nerve.Device):
     def __init__(self, **config):
-        nerve.Device.__init__(self, **config)
+        super().__init__(**config)
 
         self.file = config['file']
         self.baud = config['baud']
@@ -107,7 +107,7 @@ class NerveSerialQuery (object):
 
 class NerveSerialDevice (SerialDevice):
     def __init__(self, **config):
-        SerialDevice.__init__(self, **config)
+        super().__init__(**config)
         self.lock = threading.Lock()
         self.waiting = [ ]
 

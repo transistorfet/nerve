@@ -13,7 +13,7 @@ import string
 
 class UDPServer (nerve.Server):
     def __init__(self, **config):
-        nerve.Server.__init__(self, **config)
+        super().__init__(**config)
 
         self.thread = nerve.Task('UDPServerTask', target=self.run)
         self.thread.daemon = True
@@ -32,7 +32,7 @@ class UDPServer (nerve.Server):
 
     def open(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.bind(('', self.port))
+        self.socket.bind(('', self.get_setting('port')))
 
     def close(self):
         addr, port = self.socket.getsockname()
@@ -43,7 +43,7 @@ class UDPServer (nerve.Server):
     def receive(self):
         data, addr = self.socket.recvfrom(8192)
         if not data:
-            raise socket.error("UDP socket closed on port " + self.port)
+            raise socket.error("UDP socket closed on port " + self.get_setting('port'))
         return data, addr
 
     def send(self, data, addr):
@@ -63,7 +63,7 @@ class UDPServer (nerve.Server):
                     (host, port) = addr
                     if data:
                         nerve.log("RECV <- " + str(host) + ":" + str(port) + ": " + data)
-                        request = nerve.Request(self, 'QUERY', "/", { 'queries[]' : [ data ] })
+                        request = nerve.Request(self, None, 'QUERY', "/", { 'queries[]' : [ data ] })
                         controller = self.make_controller(request)
                         controller.handle_request(request)
                         self.send(controller.get_output() + '\n', addr)

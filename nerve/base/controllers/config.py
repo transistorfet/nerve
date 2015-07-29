@@ -6,7 +6,7 @@ import nerve.http
 
 class ConfigController (nerve.http.Controller):
     def __init__(self, **config):
-        nerve.http.Controller.__init__(self, **config)
+        super().__init__(**config)
         #self.load_header("nerve/base/views/header.pyhtml", dict(tab="Config", title="Nerve Configuration"))
         #self.load_footer("nerve/base/views/footer.pyhtml")
 
@@ -17,7 +17,8 @@ class ConfigController (nerve.http.Controller):
         data = { }
         #self.load_default_data(data)
         # TODO can you for this path without refering directly to the module (ie. using what's in the request)
-        self.load_view("nerve/base/views/config/settings.pyhtml", data)
+        #self.load_view("nerve/base/views/config/settings.pyhtml", data)
+        self.load_view("nerve/base/views/config/settings-template.pyhtml", data)
 
     def types(self, request):
         if request.reqtype != "POST":

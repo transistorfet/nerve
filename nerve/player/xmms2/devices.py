@@ -10,7 +10,7 @@ import nerve
 
 class Xmms2 (nerve.Device):
     def __init__(self, **config):
-        nerve.Device.__init__(self, **config)
+        super().__init__(**config)
 
         self.xmms = None
         self.artist = ""

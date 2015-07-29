@@ -5,8 +5,12 @@ function NerveButton(element)
     this.submit = function ()
     {
         var query = $(element).attr('data-query');
-        $.post('/query/'+query, { }, function(response) {
-        }, 'json');
+        if (query) {
+            if (query[0] == '/' || query.indexOf('http://') == 0)
+                $.post('/query', { 'queries[]': [ query ] }, function(response) {}, 'json');
+            else
+                $.post('/query/'+query, {}, function(response) {}, 'json');
+        }
     }
 
     $(element).click(this.submit);
@@ -18,8 +22,10 @@ function NerveSlider(element)
     {
         var query = $(element).attr('data-query');
         var value = $(element).val();
-        $.post('/query/'+query, { 'a' : value }, function(response) {
-        }, 'json');
+        if (query) {
+            $.post('/query/'+query, { 'a' : value }, function(response) {
+            }, 'json');
+        }
     }
 
     $(element).on('change input', this.send_change);
@@ -31,7 +37,7 @@ function NerveInputSubmit(element)
         var sourceid = $(element).attr('data-source');
         var query = $(element).attr('data-query');
         var data = $('#'+sourceid).val();
-        if (data) {
+        if (query && data) {
             $.post('/query/'+query, { 'a' : data }, function(response) {
             }, 'json');
         }
@@ -130,9 +136,11 @@ function NerveEditor(element)
 
     this.load = function () {
         var url = editor_area.attr('data-source');
-        $.get(url, { }, function (response) {
-            editor_area.val(response);
-        }, 'html');
+        if (url) {
+            $.get(url, { }, function (response) {
+                editor_area.val(response);
+            }, 'html');
+        }
     }
 
     save_button.click(this.save);
@@ -142,6 +150,16 @@ function NerveEditor(element)
 function NerveTabs(element)
 {
     var container = $(element).attr('data-container');
+
+    // highlight the initially selected tab
+    $(element).find('.tab').each(function() {
+        var data_content = $(this).attr('data-content');
+
+        if (data_content == window.location.pathname) {
+            $(element).find('.tab').removeClass('selected');
+            $(this).addClass('selected');
+        }
+    });
 
     $(element).find('.tab').click(function() {
         var data_content = $(this).attr('data-content');

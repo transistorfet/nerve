@@ -119,9 +119,9 @@ function NerveGraph(element)
 	c.strokeStyle = colour;
 
 	c.beginPath();
-	c.moveTo(originX + ((data.data[0][1] - start_time) * domainRes), originY - (data.data[0][column] * rangeRes));
+	c.moveTo(originX + ((data.data[0][1] - start_time) * domainRes), originY - ((data.data[0][column] - base) * rangeRes));
 	for (var i = 1; i < data.data.length && data.data[i][1] - start_time < domain; i++) {
-	    c.lineTo(originX + ((data.data[i][1] - start_time) * domainRes), originY - (data.data[i][column] * rangeRes));
+	    c.lineTo(originX + ((data.data[i][1] - start_time) * domainRes), originY - ((data.data[i][column] - base) * rangeRes));
 	}
 	c.stroke();
     }
@@ -141,6 +141,7 @@ function NerveGraph(element)
 
     this.update_legend = function (data) {
 	var legend_div = $(element).find('.legend');
+	var cursor_date = new Date((end_time - domain + (domain * ((cursorPosition - leftMargin) / areaWidth))) * 1000);
 
 	var checks = [ ];
 	for (var i = 2; i < data.columns.length; i++)
@@ -161,6 +162,7 @@ function NerveGraph(element)
                 + '</div>'
             );
 	}
+	$(legend_div).append('<div>Timestamp: &nbsp;&nbsp;&nbsp;&nbsp;' + cursor_date.toLocaleDateString() + '  ' + cursor_date.toLocaleTimeString() + '</div>');
     }
 
     this.get_value_at_cursor = function (data, column) {
