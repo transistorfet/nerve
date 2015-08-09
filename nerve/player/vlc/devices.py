@@ -27,7 +27,7 @@ class VLCHTTP (nerve.Device):
         self.server = 'localhost:8081'
         self.auth = ('', 'test')
 
-        content = nerve.read_config_file('player-states.json')
+        content = nerve.load_file('player-states.json')
         self.saved_states = json.loads(content) if content else [ ]
 
         self.thread = nerve.Task('VLCTask', self.run)
@@ -151,7 +151,7 @@ class VLCHTTP (nerve.Device):
             'title' : meta['filename'],
             'uri' : uri
         })
-        nerve.write_config_file('player-states.json', json.dumps(self.saved_states, sort_keys=True, indent=4, separators=(',', ': ')))
+        nerve.save_file('player-states.json', json.dumps(self.saved_states, sort_keys=True, indent=4, separators=(',', ': ')))
 
     def load_state(self, i):
         state = self.saved_states[int(i)]
@@ -162,7 +162,7 @@ class VLCHTTP (nerve.Device):
 
     def delete_state(self, i):
         del self.saved_states[int(i)]
-        nerve.write_config_file('player-states.json', json.dumps(self.saved_states, sort_keys=True, indent=4, separators=(',', ': ')))
+        nerve.save_file('player-states.json', json.dumps(self.saved_states, sort_keys=True, indent=4, separators=(',', ': ')))
 
     def get_states(self):
         return self.saved_states

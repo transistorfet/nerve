@@ -1,99 +1,141 @@
 
-* test speed differences of PyHTML using different template methods
+    * change server's 'controllers' to 'mappings' to allow multiple parts in the path name ("/things/stuff/config" -> "config controller")
+    * add a mechanism for specifying access controls, even if it could be circumvented.  It should at least be hard to mess up the system
+    * add validation to ConfigInfo (to move it out of config controller), and maybe have option to add new types
+    * could you use ConfigInfo in part as a form validation system?  at least for config values
+    * should Model actually inherit from object, and Device would be an ObjectNode that's also a Model? (multiple inheritence)
+    * should medialib be a model instead of a device?
+    * should there be a generic system based on View, such that any object, including blocks defined in pages, and pyhtml code and all those
+      things are all treated as view objects, and have a means of rendering views, and views inside views. (eg. a view to show config objects,
+      a view to show a form, a view to show a block, a view to show medialib functions; each of which can be added to a page or template or
+      something using the common means)
 
-* perhaps PyHTML could be renamed PyHP, or the filename extension could be .pyhp so it's a bit shorter or something
+    * add full row select for playlist and media search, so you can click anywhere to check the box
+    * add a loading thing to search.  You can probably just turn off display of the previous results and put a loading icon up
+    * add mysensors info webpage things, means of more easily managing sensor network (like buttons to reset each device, when last msg received, etc)
+    * make mud using a special module
+    * add a system of notifications/messages that's global to the system but specific to a user
+    * add irc/chat sort of things?
 
-* would it be useful (or more complicated) to add a 'parent' or 'template' field to pages in the pages module, so that a parent
-  page can be specified other than '__default__'?
-* should there be a way to process the contents of a variable as pyhtml from within a pyhtml code?  Could it even just be a function
-  on the PyHTML file that reinvokes itself, using the current global dict?  <% py.evalutate(contents) %>  The execute_code() function
-  would just have to be re-enterable somehow
-* add a way to evaluate pyhtml code contained in a variable (nested code of some kind)
+    * use @querymethod everywhere
+    * add command/path completion to shell
+    * should you overload print instead of redirecting stdout in pyhtml??  This wont work for code in other files that use print, since they have the global vars of their scope
+    * there needs to be a way to convert a normal module into a Module object if it contains 'get_config_data'...  Right now, only modules
+      that have config data in the settings file get created as Module objects, and the rest are just regular modules
+    * move module stuff to it's own file??
+    * move the make_object stuff to Module??
+    * allow logging to be output to a file
+    * add levels/types to log messages, and possibly add means of muting certain messages
 
-* add a user system that stores user data in a users.db database.  Depending on the user name and password sent along with the HTTP
-  request, the system would display according to their preferences (so that multiple users can use the system, customize their own
-  remote control layouts, and have those changes only apply to their usage).  This might mean that some of the system data needs to be
-  stored on a per-user basis somehow (exactly how would we implement that?) (remote control layouts, theme info, etc)
+    * things that have a static singleton: tasks, events, datalog, users
+    * tasks, servers, starting/stopping, background threads per module (instead of per device/server/object), module init() is the answer??
+    * for now I've made eventpool and users be simple attributes on Main, but maybe they should be added to objfs?
+    * you could have tasks be added to the ObjectFS... you could have tasks be started automatically (or some tasks at least), after
+      everything initializes.  Then you could have the EventThreadPool and mediaupdater threads be essentially loose threads in the system,
+      started by the system, and accessible through the config system, with config options for them?... Well EventThreadPool is still
+      a static object created by the system rather than a configurable object... 
+    * perhaps you could make it so that servers can be individually stopped and started
 
-* I'm thinking about a widgets system as a generalized concept for building web-based views, like the remote control page now, or
-  for example, a page that displays weather/temp and various daily info type stuff, a page at a glance.  It might be reasonably
-  easy/possible to have all 'pages' be a collection of widgets (which they already are in an HTML sense, but there could be an editor
-  for it, so there'd have to be some generic way of declaring all the widgety parts needed).  Everything would be a widget like it is
-  now (the buttons and editor and stuff), but the view/assets/controller part of datalog would also be a single-ish widget, and you could
-  make widgets of widgets (the collection of buttons for a media player, or for a lights control), etc etc.  The page editor thing would
-  then allow you to select widgets from a list to place, specify config options for those widgtes (like the data query of a button, or
-  the device that a player control widget should talk to).  I guess the pages could be stored in HTML directly, since it's possible to
-  parse what's needed easily enough in python, but it could also be stored in the settings file (maybe shouldn't rely so much on that...
-  separate files are easier to mix and backup and edit manually than one big file).  Advanced mode then would be HTML editing?  That is
-  to say, the actual specification and configuration of the widget is always and only in the HTML file, and the rest of it (css, js,
-  controller, additional view pyhtml) would automatically work?  Can that work and can it be good enough without being too complicated?
+    * implement symbolic link style redirect.  It has to be really versitile...  Right now it doesn't work with remote references because
+      it implements the getattr, so it has to be able to reference a real object.  It's possible to create a special redirect object though,
+      that's returned when trying to get any subobject from a SymbolicLink object, or AliasObject??
+    * fix query() to do something consistent with the arguments passed to it when for an HTTP request in particular.
+    * in Request, should the parser only de-listify the query string arguments rather than also doing the ones passed by kwargs?  I guess
+      in a POST received from the server, it will pass already parsed kwargs to Request, and they might not be de-listified?  What affect
+      would this have on arguments passed through query via a call?
+    * should you change as many private variables to _leading notation?  I've already done this for ObjectNode because self.config was conflicting
+      with path names used by controllers.  In light of the filter that prevents _leading queries to be issued, this might be effective at
+      enforcing attribute access permissions.  This rule could be enforced more strictly
+    * re-evaluate use of getattr for getting objects on ObjectNode and stuff... does it cause too many potential conflicts? or does
+      it simplify objects such as Main where attributes are directly on the object but should also be accessible through the ObjectNode
+      system
+    * make sure when loading config with saved module data that it gets used
 
-* change module type references to include the '/modules/' part
-* implement symbolic link style redirect.  It has to be really versitile...  Right now it doesn't work with remote references because
-  it implements the getattr, so it has to be able to reference a real object.  It's possible to create a special redirect object though,
-  that's returned when trying to get any subobject from a SymbolicLink object
-* it's possible to enter anything after a url.  It doesn't throw an error, which it probably should (a 404 error), but some things use
-  this feature to implement subreferences
+    * could you make either tcpserver, or a clone of it, that will act like a terminal (perhaps console even), that will respond to arrow
+      keys, completion, and so on, just like console does
 
-* make it so that you can basically save your spot watching a movie (or playlist), and then restore it, like switching contexts.  This
-  would be most handy when watching F1 stuff, but I want to switch to music for a bit, and then later continue watching F1
-* you could have one updater thread and multiple 'updater/fetchers' or something rather than a thread for each, or possible some other
-  way to make sure they don't all run at the same time
-* add a means of browsing (or searching) the medialib by some other means, like according to path, so that you can look at specifically
-  documentary videos in the documentaries directory, for example
-* it should be possible to easily remove items from the current playlist (like delete current song/delete all by artist/delete previous song)
-  The changes should take effect immediately.  Possibly could have a list of recently played songs to delete
+    * make sure it can start when no config dir by the given name exists (by creating a defaults one)
+    * add run and config instructions to the readme (so that somebody could actually run the thing)
+    * update projects website
 
-* add a query discovery thing to nerve serial devices to get the list of queries that device can respond to
-* fix the race condition in console better
+    * perhaps add a separater field to page configuration, that is inserted between blocks when multiple blocks are used in the same
+      section.  eg. having multiple controls blocks in the content section, or having multiple link blocks in the sidebar
+    * would it be useful (or more complicated) to add a 'parent' or 'template' field to pages in the pages module, so that a parent
+      page can be specified other than '__default__'?
+    * make it so that if a block is renamed, it's references in page definitions is updated
 
-* add run and config instructions to the readme (so that somebody could actually run the thing)
-* should the name of the 'controllers' dict in servers be called something different, like 'paths' or 'handlers' or something?
+    * add a user system that stores user data in a users.db database.  Depending on the user name and password sent along with the HTTP
+      request, the system would display according to their preferences (so that multiple users can use the system, customize their own
+      remote control layouts, and have those changes only apply to their usage).  (remote control layouts, theme info, etc)
 
-* how should view files be referenced relative to?  Right now it's nerve/module/views/view.pyhtml but it should be easier to reference
-  the parent module (so the code doesn't have that hardcoded) and also how will this work with the possibility of a second module location
+    * add a means of browsing (or searching) the medialib by some other means, like according to path, so that you can look at specifically
+      documentary videos in the documentaries directory, for example
+    * it should be possible to easily remove items from the current playlist (like delete current song/delete all by artist/delete previous song)
+      The changes should take effect immediately.  Possibly could have a list of recently played songs to delete
 
-* add is-playing animated icon next to the song title (info to be sent with getsong())
-* make it possible to paste a link (youtube video or playlist link) to play the link on the server end of things
+    * add a theme system
+    * add is-playing animated icon next to the song title (info to be sent with getsong())
+    * make it possible to paste a link (youtube video or playlist link) to play the link on the server end of things
 
-* should devices, at least their source files, be renamed drivers?  Basically the class/definition is the driver and the instantiated
-  object itself is the device
+    * add SSL support to HTTP server
+    * make more advanced widgets for various things (ideas?)
+    * possibly have more specific widgets like one for a player, etc
+    * there could be a way to automatically minify js and css files on the fly
+    * add support for running nerve using WSGI (PEP 3333), so that apache or something else can launch nerve to handle a web request.  It would
+      have to bypass the normal main loop, but that should be doable by not creating Main(), creating a different class like Main()
 
-* make all threads use the same method of invocation, if possible
-* perhaps you could make it so that servers can be individually stopped and started
+    * make it as much like a generic hmi/plc/data disemination/control thing as possible.  Make it so that it's easy to have it automatically
+      query the server to fill in data fields.
 
-* make more advanced widgets for various things (ideas?)
-* possibly have more specific widgets like one for a player, etc
-* there could be a way to automatically minify js and css files on the fly
 
-* add a theme system
-* add a user system.  Users can have their own themes, remote control layouts, and so on
+STRUCTURAL/REFACTORING:
 
-* make it as much like a generic hmi/plc/data disemination/control thing as possible.  Make it so that it's easy to have it automatically
-  query the server to fill in data fields.
+    * change module type references to include the '/modules/' part
+    * should the name of the 'controllers' dict in servers be called something different, like 'paths' or 'handlers' or something?
+    * how should view files be referenced relative to?  Right now it's nerve/module/views/view.pyhtml but it should be easier to reference
+      the parent module (so the code doesn't have that hardcoded) and also how will this work with the possibility of a second module location
+    * if you convert jquery files to send post requests as json, then it will preserve the numeric/string type distinction.  Without it,
+      any method called through that mechanism must be cognizant and convert strings to numeric if needed.
+
+    * should devices, at least their source files, be renamed drivers?  Basically the class/definition is the driver and the instantiated
+      object itself is the device
+    * make all threads use the same method of invocation, if possible??  Or at least clean them up a bit
+
+    * perhaps PyHTML could be renamed PyHP, or the filename extension could be .pyhp so it's a bit shorter or something
+
+
+BUGS:
+    * it's possible to enter anything after a url.  It doesn't throw an error, which it probably should (a 404 error), but some things use
+      this feature to implement subreferences
 
 
 ANDROID:
     * change the theme of the preferences to be the dark android theme
     * try to move settings button/action bar into bottom bar, or something... maybe you can make it hide itself
+    * add a refresh button to the menu, to reload the current page
 
-MISC:
+
+ARDUINO:
+    * add a query discovery thing to nerve serial devices to get the list of queries that device can respond to
+    * should you switch to sending queries as query strings instead of as positional arguments?
+    * add share-to link, so that in other apps, you can share a link to nerve, which sends the link to the server to eg. enqueue a youtube link
+
+
+OTHER APPLICATIONS:
     * when vlc plays a youtube link, it converts the link to the direct link to the flv, but that link expires, and causes an error when played
     * with vlc, is there a way to not receive the json when sending a command (to speed up commands)
 
-STRUCTURAL:
 
 POSSIBLE FEATURES:
-    * you could have some system of assign a mood or energy level to a song, possibly something automatic or something manually
-      assigned (or at the least manually adjustable).  Then you can randomly generate a playlist using certain rules of what
-      types of songs should come after which, to more intelligently currate a playlist.  It could also use data from the
-      environment to select songs to play.
-
     * you could add an auto discovery feature where the phone sends a broadcast message to the default port number and all the
       servers respond.  It could be used for some normal operations even, and the server would just send a message back like
       it normally would, in response to the request.  It could also be for config though, to know what servers are around
     * you could add a mechanism for registering for 'push notifications' by something like rgb.* <- wildcard so that all rgb
       messages would be automatically sent to that endpoint
+
+    * make a vlc extension that interacts better with nerve, particularly being able to push media info to nerve
+    * how possible would it be to make like a gtk app window to act as a player control.  I'm thinking if vlc was replaced with
+      gstreamer, we'd still want the player window, with any video to be played (basically like the ob gtk thing)
 
     * for an IR/Remote Control Emulation type device, you could program the system such that... you take a picture of the remote
       control you're adding, you could take a picture on your phone of the remote control (maybe there could be image recognition
@@ -101,8 +143,34 @@ POSSIBLE FEATURES:
       the computer mouse or touch, and then it waits for an IR code, which you can then press on the remote, and it will record
       what button produces what code for each button.  You can then refer to that table to send the code you want (somehow)
 
-    * make a vlc extension that interacts better with nerve, particularly being able to push media info to nerve
+    * make it so that you can basically save your spot watching a movie (or playlist), and then restore it, like switching contexts.  This
+      would be most handy when watching F1 stuff, but I want to switch to music for a bit, and then later continue watching F1
+    * make a mysensors node for the fridge to monitor temperature
 
-    * how possible would it be to make like a gtk app window to act as a player control.  I'm thinking if vlc was replaced with
-      gstreamer, we'd still want the player window, with any video to be played (basically like the ob gtk thing)
+    * you could have some system of assign a mood or energy level to a song, possibly something automatic or something manually
+      assigned (or at the least manually adjustable).  Then you can randomly generate a playlist using certain rules of what
+      types of songs should come after which, to more intelligently currate a playlist.  It could also use data from the
+      environment to select songs to play.
+    * a datasource that gives you information on the phases of the moon, position of planets, possibly space weather and so on
+
+    * irc server (or device driver) that reports on data of IRC server, recently said things in particular channels, and possibly also an
+      interface so users on IRC can query things inside nerve (a controller running on the IRC connection)
+    * add recognition of clapping signals (beepish?) and/or voice commands to control things
+    * add gstreamer media player (the big thing is how difficult would it be to make gstreamer play youtube files?)
+
+
+
+DONE?:
+    * I'm thinking about a widgets system as a generalized concept for building web-based views, like the remote control page now, or
+      for example, a page that displays weather/temp and various daily info type stuff, a page at a glance.  It might be reasonably
+      easy/possible to have all 'pages' be a collection of widgets (which they already are in an HTML sense, but there could be an editor
+      for it, so there'd have to be some generic way of declaring all the widgety parts needed).  Everything would be a widget like it is
+      now (the buttons and editor and stuff), but the view/assets/controller part of datalog would also be a single-ish widget, and you could
+      make widgets of widgets (the collection of buttons for a media player, or for a lights control), etc etc.  The page editor thing would
+      then allow you to select widgets from a list to place, specify config options for those widgtes (like the data query of a button, or
+      the device that a player control widget should talk to).  I guess the pages could be stored in HTML directly, since it's possible to
+      parse what's needed easily enough in python, but it could also be stored in the settings file (maybe shouldn't rely so much on that...
+      separate files are easier to mix and backup and edit manually than one big file).  Advanced mode then would be HTML editing?  That is
+      to say, the actual specification and configuration of the widget is always and only in the HTML file, and the rest of it (css, js,
+      controller, additional view pyhtml) would automatically work?  Can that work and can it be good enough without being too complicated?
 

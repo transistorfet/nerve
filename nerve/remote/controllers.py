@@ -16,14 +16,14 @@ class RemoteController (nerve.http.Controller):
 
     def index(self, request):
         data = { }
-        #data['contents'] = nerve.read_config_file('html/remote.html')
+        #data['contents'] = nerve.load_file('html/remote.html')
         data['contents'] = self.load_view_as_string(nerve.configdir() + '/html/remote.html')
         self.load_view('nerve/remote/views/index.pyhtml', data)
 
     # TODO this is temporary
     def summary(self, request):
         data = { }
-        data['contents'] = nerve.read_config_file('html/summary.html')
+        data['contents'] = nerve.load_file('html/summary.html')
         self.load_view('nerve/remote/views/index.pyhtml', data)
 
     def player(self, request):
@@ -41,12 +41,12 @@ class RemoteController (nerve.http.Controller):
         self.load_view('nerve/remote/views/editor.pyhtml', data)
 
     def get_layout(self, request):
-        contents = nerve.read_config_file('html/remote.html')
+        contents = nerve.load_file('html/remote.html')
         self.write_text(contents)
 
     def save_layout(self, request):
         try:
-            nerve.write_config_file('html/remote.html', request.arg('data', default=''))
+            nerve.save_file('html/remote.html', request.arg('data', default=''))
         except:
             result = { 'status' : 'error', 'message' : traceback.format_exc() }
         else:
@@ -59,21 +59,21 @@ class RemoteController (nerve.http.Controller):
         words = text.split()
 
         if text == 'play':
-            nerve.query_string("player/toggle")
+            nerve.query("player/toggle")
         elif text == 'next':
-            nerve.query_string("player/next")
+            nerve.query("player/next")
         elif text == 'previous':
-            nerve.query_string("player/previous")
+            nerve.query("player/previous")
         else:
             if words[-1] in [ 'on', 'off' ]:
                 for word in words[:-1]:
                     try:
                         if word in [ 'tv', 'stereo', 'rgb' ]:
-                            nerve.query_string(word + "/power")
+                            nerve.query(word + "/power")
                         elif word == 'lamp':
-                            nerve.query_string("sensors/relay_toggle")
+                            nerve.query("sensors/relay_toggle")
                         elif word == 'player':
-                            nerve.query_string("player/toggle")
+                            nerve.query("player/toggle")
                     except:
                         pass
 

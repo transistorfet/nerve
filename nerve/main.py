@@ -12,12 +12,12 @@ import argparse
 import traceback
 import threading
 
+import cgi
 import json
 import requests
 import urllib.parse
 
 mainloops = [ ]
-#stdout = sys.stdout
 
 
 class Main (nerve.ObjectNode):
@@ -33,13 +33,16 @@ class Main (nerve.ObjectNode):
         self.configdir = self.args.configdir.strip('/')
         sys.path.insert(0, ( sys.path[0] + '/' if self.configdir[0] != '/' else '' ) + self.configdir)
 
-    @staticmethod
-    def get_config_info():
-        config_info = nerve.ObjectNode.get_config_info()
-        config_info.add_setting('modules', "Modules", default=nerve.ModulesDirectory())
+    @classmethod
+    def get_config_info(cls):
+        config_info = super().get_config_info()
+        """
+        # TODO this is now wrong... these items are children of the parent object, not settings
+        config_info.add_setting('modules', "Modules", default=nerve.Module())
         config_info.add_setting('devices', "Devices", default=nerve.ObjectNode())
         config_info.add_setting('events', "Events", default=nerve.ObjectNode())
         config_info.add_setting('servers', "Servers", default=nerve.ObjectNode())
+        """
         return config_info
 
     def del_child(self, index):
@@ -51,15 +54,18 @@ class Main (nerve.ObjectNode):
     def start(self):
         signal.signal(signal.SIGINT, self.signal_handler)
 
-        try:
-            users = nerve.Users()
+        self.eventpool = nerve.events.EventThreadPool()
+        self.eventpool.start()
 
+        self.users = nerve.Users()
+
+        try:
             if not self.load_config(os.path.join(self.configdir, 'settings.json')):
                 self.shutdown()
             if not self.run_init():
                 self.shutdown()
-            if not self.start_all_servers():
-                self.shutdown()
+
+            nerve.Task.start_all()
 
             #print (dir(nerve))
             while not self.stopflag.wait(0.5):
@@ -103,30 +109,37 @@ class Main (nerve.ObjectNode):
             return False
 
     def load_config(self, filename):
-        config = self.get_config_info().get_defaults()
+        #config = self.get_config_info().get_defaults()
 
-        if os.path.exists(filename):
-            try:
-                with open(filename, 'r') as f:
-                    config = json.load(f)
-                    nerve.log("config loaded from " + filename)
-            except:
-                nerve.log("error loading config from " + filename + "\n\n" + traceback.format_exc())
-                return False
-        #nerve.ModulesDirectory.preload_modules(config['__children__']['modules']['autoload'])
+        if not os.path.exists(filename):
+            nerve.log("error config not found in " + filename + "\n\n" + traceback.format_exc())
+            return False
+
+        try:
+            with open(filename, 'r') as f:
+                config = json.load(f)
+                nerve.log("config loaded from " + filename)
+        except:
+            nerve.log("error loading config from " + filename + "\n\n" + traceback.format_exc())
+            return False
+
         self.set_config_data(config)
         return True
+
+    def make_object_children(self, config):
+        # make sure to load the /modules config first
+        modules_config = config['modules']
+        del config['modules']
+        modules = nerve.ObjectNode.make_object(modules_config['__type__'], modules_config)
+        self.set_child('modules', modules)
+        super().make_object_children(config)
 
     def save_config(self, filename):
         config = self.get_config_data()
         with open(filename, 'w') as f:
             json.dump(config, f, sort_keys=True, indent=4, separators=(',', ': '))
 
-    def start_all_servers(self):
-        # TODO start all servers here, but how do you get a list of servers?
-        return True
-
-    def read_config_file(self, filename):
+    def load_file(self, filename):
         filename = os.path.join(self.configdir, filename)
         (path, _, _) = filename.rpartition('/')
         if not os.path.isdir(path):
@@ -138,7 +151,7 @@ class Main (nerve.ObjectNode):
             contents = f.read()
         return contents
 
-    def write_config_file(self, filename, contents):
+    def save_file(self, filename, contents):
         filename = os.path.join(self.configdir, filename)
         (path, _, _) = filename.rpartition('/')
         if not os.path.isdir(path):
@@ -162,14 +175,6 @@ def main():
     global mainloops
     return mainloops[0]
 
-def get_config_info():
-    global mainloops
-    return mainloops[0].get_config_info()
-
-def get_config_data():
-    global mainloops
-    return mainloops[0].get_config_data()
-
 def configdir():
     global mainloops
     return mainloops[0].getdir()
@@ -178,15 +183,16 @@ def save_config():
     global mainloops
     return mainloops[0].save_config(os.path.join(nerve.configdir(), 'settings.saved.json'))
 
-def set_object(name, obj, **config):
-    global mainloops
-    return mainloops[0].set_object(name.lstrip('/'), obj, **config)
 
 def get_object(name):
     global mainloops
     if name == "/":
         return mainloops[0]
     return mainloops[0].get_object(name.lstrip('/'))
+
+def set_object(name, obj, **config):
+    global mainloops
+    return mainloops[0].set_object(name.lstrip('/'), obj, **config)
 
 def del_object(name):
     global mainloops
@@ -202,20 +208,37 @@ def has_object(name):
         pass
     return False
 
+
 def query(urlstring, *args, **kwargs):
     global mainloops
 
-    nerve.log("executing query: " + urlstring + " " + ' '.join([ repr(val) for val in args ]) + " " + repr(kwargs))
+    nerve.log("executing query: " + urlstring + " " + repr(args) + " " + repr(kwargs))
     url = urllib.parse.urlparse(urlstring)
 
     if url.netloc:
         if url.scheme == 'http':
-            nerve.log("remote query to " + urlstring)
-            r = requests.get(urlstring)
-            if r.status_code == 200:
-                return json.loads(r.text)
+            # TODO we ignore args and kwargs when querying a http server.  We could automatically make a query string of kwargs, and possible
+            #      still ignore args, or we could use a POST request instead, and send the json of the arguments (possible JSON-RPC style)
+
+            if len(kwargs) <= 0:
+                nerve.log("remote query: GET " + urlstring)
+                r = requests.get(urlstring)
             else:
-                return "request to " + urlstring + " failed. " + str(r.status_code) + " returned"
+                # TODO should there be an option to encode the args as json?
+                nerve.log("remote query: POST " + urlstring)
+                r = requests.post(urlstring, data=kwargs)
+
+            if r.status_code != 200:
+                raise Exception("request to " + urlstring + " failed. " + str(r.status_code) + ": " + r.reason, json.loads(r.text))
+
+            (mimetype, pdict) = cgi.parse_header(r.headers['content-type'])
+            if mimetype == 'application/json':
+                return json.loads(r.text)
+            elif mimetype == 'application/x-www-form-urlencoded':
+                return urllib.parse.parse_qs(r.text, keep_blank_values=True)
+            else:
+                return r.text
+
         else:
             raise Exception("unsupported url scheme: " + url.scheme)
 
@@ -224,15 +247,13 @@ def query(urlstring, *args, **kwargs):
 
         obj = mainloops[0].get_object(url.path.lstrip('/'))
         if callable(obj):
-            return obj(*args, **kwargs)
+            result = obj(*args, **kwargs)
         else:
-            return obj
+            result = obj
 
-def query_string(text):
-    # TODO parse quotes
-    args = text.split()
-    ref = args.pop(0)
-    return query(ref, *args)
+        rstr = str(result)
+        nerve.log("result: " + ( rstr[:75] + '...' if len(rstr) > 75 else rstr ))
+        return result
 
 def notify(querystring, *args, **kwargs):
     if not querystring.endswith('/*'):
@@ -243,11 +264,13 @@ def notify(querystring, *args, **kwargs):
         if callable(obj):
             obj(*args, **kwargs)
 
-def read_config_file(filename):
-    global mainloops
-    return mainloops[0].read_config_file(filename)
 
-def write_config_file(filename, contents):
+def load_file(filename):
     global mainloops
-    return mainloops[0].write_config_file(filename, contents)
+    return mainloops[0].load_file(filename)
+
+def save_file(filename, contents):
+    global mainloops
+    return mainloops[0].save_file(filename, contents)
+
 

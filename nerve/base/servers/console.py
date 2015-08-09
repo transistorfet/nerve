@@ -16,9 +16,9 @@ class Console (nerve.Server):
         self.thread.daemon = True
         self.thread.start()
 
-    @staticmethod
-    def get_config_info():
-        config_info = nerve.Server.get_config_info()
+    @classmethod
+    def get_config_info(cls):
+        config_info = super().get_config_info()
         config_info.add_setting('controllers', "Controllers", default={
             '__default__' : {
                 '__type__' : 'base/QueryController'
@@ -30,37 +30,42 @@ class Console (nerve.Server):
         print(text)
 
     def run(self):
-        # TODO this is to fix a race condition where the parent server object, /servers/default_shell, hasn't been created yet, and
-        # make_controller fails as a result.  Maybe there should be a secondary 'start threads' phase after the config objects have been
-        # created
-        time.sleep(3)
+        # TODO you should grab the stdin and stdout at the start so that it doesn't interfer with webpages that override 'print'
 
-        controller = self.make_controller(nerve.Request(self, None, 'QUERY', "/", { }))
-        while True:
-        #while not self.thread.stopflag.is_set():
-            try:
-                #print(">> ", end='', flush=True)
-                #line = sys.stdin.readline().strip()
-                line = input(">> ")
-                if line == 'quit':
-                    nerve.quit()
+        with nerve.users.login('admin', 'admin'):
+            # TODO i don't like how this happens...  you shouldn't have to create a request
+            controller = self.make_controller(nerve.Request(self, None, 'QUERY', "/", { }))
+            if hasattr(controller, 'tab_complete'):
+                readline.set_completer(controller.tab_complete)
+                readline.parse_and_bind("tab: complete")
+
+            while True:
+            #while not self.thread.stopflag.is_set():
+                try:
+                    #print(">> ", end='', flush=True)
+                    #line = sys.stdin.readline().strip()
+                    line = input(">> ")
+                    if line == 'quit':
+                        nerve.quit()
+                        break
+                    elif line:
+                        request = nerve.Request(self, None, 'QUERY', "/", { 'queries[]' : [ line ] }, headers=dict(accept='text/plain, text/html, application/json'))
+                        controller.handle_request(request)
+                        mimetype = controller.get_mimetype()
+                        output = controller.get_output()
+
+                        if mimetype == 'application/json':
+                            data = json.loads(output.decode('utf-8'))
+                            if data and data[0]:
+                                print('\n'.join([ str(val) for val in data ]))
+                        else:
+                            print(output.decode('utf-8'))
+
+                except EOFError:
+                    nerve.log("Console received EOF. Exiting...")
                     break
-                elif line:
-                    request = nerve.Request(self, None, 'QUERY', "/", { 'queries[]' : [ line ] })
-                    controller.handle_request(request)
-                    if controller.get_mimetype() == 'application/json':
-                        output = controller.get_output().decode('utf-8')
-                        data = json.loads(output)
-                        if data and data[0]:
-                            print('\n'.join([ str(val) for val in data ]))
-                    else:
-                        print(controller.get_output().decode('utf-8'))
 
-            except EOFError:
-                nerve.log("Console received EOF. Exiting...")
-                break
-
-            except:
-                nerve.log(traceback.format_exc())
+                except:
+                    nerve.log(traceback.format_exc())
 
  

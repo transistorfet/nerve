@@ -1,0 +1,15 @@
+
+    <h4>Pages</h4>
+
+    <div>
+        <% for (id, block) in blocks: %>
+            <div class="block-item" data-name="<%= block %>">
+                <span><%= block %></span>
+                <a href="/pages/editblock/<%= block %>"><button>Edit</button></a>
+                <button class="delete-block" data-target="<%= block %>">Delete</button>
+            </div>
+        <% end %>
+    </div>
+
+    <a href="/pages/editblock"><button>Add Block</button></a>
+

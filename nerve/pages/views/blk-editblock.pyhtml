@@ -1,0 +1,10 @@
+
+    <h4>Edit Block</h4>
+
+    <div id="block-editor">
+        <input id="block-original-name" type="hidden" value="<%= blockname %>" />
+        <input id="block-editor-name" type="text" value="<%= blockname %>" />
+        <textarea id="block-editor-text"><%= blocktext %></textarea>
+        <button id="block-editor-save">Save</button>
+    </div>
+

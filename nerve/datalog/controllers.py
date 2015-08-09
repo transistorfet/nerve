@@ -15,6 +15,12 @@ import urllib.parse
 
 class DatalogController (nerve.http.Controller):
 
+    def handle_error(self, error, traceback):
+        if type(error) == nerve.NotFoundError or self.get_mimetype() != None:
+            super().handle_error(error, traceback)
+        else:
+            self.write_json({ 'status' : 'error', 'message' : repr(error) })
+
     def index(self, request):
         self.redirect_to('/%s/graph' % (request.segments[0],))
 
@@ -26,7 +32,7 @@ class DatalogController (nerve.http.Controller):
 
         data = { }
         data['datalog_name'] = remain
-        data['datalog_list'] = [ name for name in datalogs.keys() if isinstance(getattr(datalogs, name), nerve.datalog.DatalogDevice) ]
+        data['datalog_list'] = [ name for name in datalogs.keys_children() if isinstance(getattr(datalogs, name), nerve.datalog.DatalogDevice) ]
         self.load_view('nerve/datalog/views/graph.pyhtml', data)
 
     def get_data(self, request):

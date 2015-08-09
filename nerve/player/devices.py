@@ -22,21 +22,22 @@ class PlayerDevice (nerve.Device):
 
         backend_name = self.get_setting('backend')
         try:
-            (empty, sep, type_name) = backend_name.partition("/modules/player/")
-            if empty == '' and sep and type_name:
-                print(type_name)
-                (module_name, sep, player_obj) = type_name.rpartition('/')
-                nerve.ModulesDirectory.import_module("player." + module_name.replace('/', '.'))
-                self.driver = nerve.ObjectNode.make_object("player/" + type_name, config)
+            (empty, sep, typename) = backend_name.partition("/modules/player/")
+            if empty == '' and sep and typename:
+                print(typename)
+                #(modulename, sep, player_obj) = typename.rpartition('/')
+                #nerve.Module.import_module("player." + modulename.replace('/', '.'))
+                #self.driver = nerve.ObjectNode.make_object("player/" + typename, config)
+                self.driver = nerve.ObjectNode.make_object("player/" + typename, config)
         except:
             nerve.log("failed to initialize player backend: " + backend_name)
             nerve.log(traceback.format_exc())
 
         self.playlist = []
 
-    @staticmethod
-    def get_config_info():
-        config_info = nerve.ObjectNode.get_config_info()
+    @classmethod
+    def get_config_info(cls):
+        config_info = super().get_config_info()
         config_info.add_setting('backend', "Player Backend", default='player.vlc')
         for option in os.listdir('nerve/player'):
             if option != '__pycache__' and os.path.isdir('nerve/player/' + option):

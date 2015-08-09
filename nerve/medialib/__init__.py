@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from .devices import MediaLib, Playlist
-from .updater import MediaUpdaterTask
-from .youtube import YoutubePlaylistFetcher
-
+from .playlists import Playlist
+from .devices import MediaLibDevice
 from .controllers import MediaLibController
+from .tasks import MediaLibUpdater
 
 
 def init():
@@ -17,10 +16,31 @@ def init():
 
     # would you register a single controller for the module?  would you register several? or would it auto load based on a controller dir?
     # would you register the device types, so that they can be created through the config data?
-    #nerve.register_device_type('medialib', MediaLib, 'Media Library Database')
+    #nerve.register_device_type('medialib', MediaLibDevice, 'Media Library Database')
 
 
     #nerve.register_server_type('http', HTTPServer, "HTTP Server")
     #nerve.register_controller('medialib', MediaLibController)
-    pass
+
+    from .tasks import MediaLibUpdaterTask
+
+    from .updaters.files import MediaFilesUpdater
+    from .updaters.youtube import YoutubePlaylistUpdater
+
+    updater = MediaLibUpdaterTask()
+    updater.add('files', MediaFilesUpdater(updater))
+    updater.add('youtube', YoutubePlaylistUpdater(updater))
+
+    updater.start()
+
+def get_config_info():
+    from nerve.objects import Module
+    config_info = Module.get_config_info()
+    config_info.add_setting('medialib_dirs', 'Directories', default=list())
+    config_info.add_setting('youtube_playlists', 'YouTube Playlists', default=list())
+    return config_info
+
+
+# TODO temporary
+#init()
 

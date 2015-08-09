@@ -15,13 +15,14 @@ class UDPServer (nerve.Server):
     def __init__(self, **config):
         super().__init__(**config)
 
-        self.thread = nerve.Task('UDPServerTask', target=self.run)
+        port = self.get_setting('port')
+        self.thread = nerve.Task('UDPServerTask:' + str(port), target=self.run)
         self.thread.daemon = True
         self.thread.start()
 
-    @staticmethod
-    def get_config_info():
-        config_info = nerve.Server.get_config_info()
+    @classmethod
+    def get_config_info(cls):
+        config_info = super().get_config_info()
         config_info.add_setting('port', "Port", default=5959)
         config_info.add_setting('controllers', "Controllers", default={
             '__default__' : {

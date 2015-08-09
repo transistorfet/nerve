@@ -11,9 +11,9 @@ class FileController (nerve.Controller):
     def __init__(self, **config):
         super().__init__(**config)
 
-    @staticmethod
-    def get_config_info():
-        config_info = nerve.Controller.get_config_info()
+    @classmethod
+    def get_config_info(cls):
+        config_info = super().get_config_info()
         config_info.add_setting('root', "Root Directory", default='nerve/http/wwwdata')
         return config_info
 
@@ -24,14 +24,14 @@ class FileController (nerve.Controller):
             filename = os.path.join(filename, "index.html")
 
         if not os.path.isfile(filename):
-            raise nerve.NotFoundException("Error file not found: " + filename)
+            raise nerve.NotFoundError("Error file not found: " + filename)
 
         (_, _, extension) = filename.rpartition('.')
 
         if extension == 'pyhtml':
             self.set_mimetype('text/html')
             engine = PyHTML(request, None, filename)
-            contents = engine.evaluate()
+            contents = engine.get_output()
             self.write_text(contents)
         else:
             self.write_file(filename)

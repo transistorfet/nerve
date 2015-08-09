@@ -159,6 +159,7 @@ function MediaLibSearch(element)
         medialib.search();
     */
 
+
     $(element).find('.pl_enqueue').click(function () {
         medialib.add_tracks('enqueue');
     });
@@ -188,6 +189,10 @@ $(document).ready(function ()
 
     $('.medialib-search').each(function () {
             new MediaLibSearch(this);
+    });
+
+    $('input[name="pl_search"]').click(function () {
+        $('#search-results').hide();
     });
 });
 

@@ -1,0 +1,45 @@
+
+<div id="nerve-shell">
+    <style>
+        #nerve-shell-output {
+            width: 75%;
+            height: 25em;
+            border: 1px solid #80C008;
+            white-space: pre-wrap;
+        }
+
+        #nerve-shell-input {
+            width: 75%;
+            padding: 2px;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function ()
+        {
+            var server = new WebSocket("ws://localhost:8888/shell", "Terminal");
+
+            server.onmessage = function (event)
+            {
+                var scroll = false;
+                var terminal = $('#nerve-shell-output');
+                if (terminal.scrollTop == terminal.scrollTopMax) scroll = true;
+                terminal.append(event.data);
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+
+            $('#nerve-shell-input').change(function ()
+            {
+                server.send($(this).val());
+                $(this).val('');
+            });
+        });
+    </script>
+
+    <pre id="nerve-shell-output">
+    </pre>
+
+    <input id="nerve-shell-input" type="text" />
+
+</div>
+

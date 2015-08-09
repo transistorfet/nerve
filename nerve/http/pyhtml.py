@@ -1,54 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-"""
-
-PyHTML - HTML with Embedded Python:
-
-The following code will take a filename (or string contents) containing HTML
-with embedded tags (<% %>) surronding python code.  When .evaluate() is
-called on the object, it will parse out the embedded tags, execute the python
-code and assemble the resulting output into a pure HTML file that can then be
-sent to the browser.
-
-It first parses the input code into segments which are either HTML (anything
-outside the <% %> tags) and python code, retaining the order in which they
-appear in the input code.  It then iterates through each segment and produces
-appropriate python code.  HTML segments are turned into print statements which
-print the HTML code itself.  Special evaluate tags are turned into
-print(eval()) statements, which print the evaluated result of the python code.
-For normal tags, the code itself is added as-is to the python code being
-generated.
-
-The generated python code is then further processed to normalize the
-indentation.  When an open block statement is found (such as 'if', 'while',
-'for', etc), it will indent all subsequent lines until it reaches an 'end'
-keyword on a single line by itself.  If an 'else', 'elif', 'except', or
-'finally' keyword is found, it will close the current indentation and start
-a new one, without the need for an 'end' keyword for each block.
-
-Once the python code is generated, it is sent to exec(), along with a
-dictionary of data arguments passed to the PyHTML object when it's created.
-They are added to the global variable dict that is sent to exec().  Numerous
-libraries are automatically imported into the global variable dict for
-convenience.
-
-The <%= %> special tag will cause the contents of the tag to be passed
-to eval(), which will then be printed to the output.  This is a short
-hand way of outputting the contents of a variable for example.
-
-The <%%include %> special tag will interpret the contents tag to be a file
-name.  It will open the referenced file, parse the contents into the
-python code currently being generated, and execute it as one big script
-after all include tags have been processed.  It uses the current working
-directory as the relative root.
-
-BUGS:
-- currently does not support multi-line comments using triple double-quotes
-- seems to complain if a normal python tag contains no actual code, only comments
-
-"""
-
 import nerve
 
 import os
@@ -67,7 +19,53 @@ import urllib
 import urllib.parse
 
 
-class PyHTML (object):
+class PyHTML (nerve.View):
+    """PyHTML - HTML with Embedded Python:
+
+    The following code will take a filename (or string contents) containing HTML
+    with embedded tags (<% %>) surronding python code.  When .evaluate() is
+    called on the object, it will parse out the embedded tags, execute the python
+    code and assemble the resulting output into a pure HTML file that can then be
+    sent to the browser.
+
+    It first parses the input code into segments which are either HTML (anything
+    outside the <% %> tags) and python code, retaining the order in which they
+    appear in the input code.  It then iterates through each segment and produces
+    appropriate python code.  HTML segments are turned into print statements which
+    print the HTML code itself.  Special evaluate tags are turned into
+    print(eval()) statements, which print the evaluated result of the python code.
+    For normal tags, the code itself is added as-is to the python code being
+    generated.
+
+    The generated python code is then further processed to normalize the
+    indentation.  When an open block statement is found (such as 'if', 'while',
+    'for', etc), it will indent all subsequent lines until it reaches an 'end'
+    keyword on a single line by itself.  If an 'else', 'elif', 'except', or
+    'finally' keyword is found, it will close the current indentation and start
+    a new one, without the need for an 'end' keyword for each block.
+
+    Once the python code is generated, it is sent to exec(), along with a
+    dictionary of data arguments passed to the PyHTML object when it's created.
+    They are added to the global variable dict that is sent to exec().  Numerous
+    libraries are automatically imported into the global variable dict for
+    convenience.
+
+    The <%= %> special tag will cause the contents of the tag to be passed
+    to eval(), which will then be printed to the output.  This is a short
+    hand way of outputting the contents of a variable for example.
+
+    The <%%include %> special tag will interpret the contents tag to be a file
+    name.  It will open the referenced file, parse the contents into the
+    python code currently being generated, and execute it as one big script
+    after all include tags have been processed.  It uses the current working
+    directory as the relative root.
+
+    BUGS:
+    - currently does not support multi-line comments using triple double-quotes
+    - seems to complain if a normal python tag contains no actual code, only comments
+
+    """
+
     version = '0.3'
 
     def __init__(self, request, data=None, filename=None, code=None):
@@ -76,6 +74,7 @@ class PyHTML (object):
         self._pycode = ''
         self._output = None
         self._start_time = 0
+        self._run_time = 0
 
         self.FILENAME = filename
         self.REQUEST = request
@@ -111,8 +110,9 @@ class PyHTML (object):
 
     def _init_globals(self):
         self._globals = self._data
-        self._globals['nerve'] = nerve
         self._globals['py'] = self
+        self._globals['nerve'] = nerve
+        self._globals['print'] = self.print
 
         self._globals['json'] = json
         self._globals['re'] = re
@@ -121,11 +121,20 @@ class PyHTML (object):
         self._globals['urlencode'] = urllib.parse.quote
         self._globals['urldecode'] = urllib.parse.unquote
 
+    def print(self, *args, **kwargs):
+        kwargs['file'] = self._output
+        print(*args, **kwargs)
+
     @staticmethod
     def htmlspecialchars(text):
         return cgi.escape(text, True)
 
     ### Parser and Execution Code ###
+
+    def get_output(self):
+        if not self._run_time:
+            self.evaluate()
+        return self._output.getvalue()
 
     def evaluate(self):
         self._start_time = time.time()
@@ -133,16 +142,21 @@ class PyHTML (object):
         self._output = io.StringIO()
         segments = self._parse_segments(self._contents)
         self._pycode = self._generate_python(segments)
-        output = self._execute_python()
+        self._execute_python()
 
-        nerve.log("pyhtml executed in %.4f seconds" % (time.time() - self._start_time,))
-        self._start_time = 0
-        return output
+        self._run_time = time.time() - self._start_time
+        nerve.log("pyhtml executed in %.4f seconds" % (self._run_time,))
 
-    def pyhtmleval(self, code):
+    def inline(self, code):
+        """ Execute code as PyHTML inline with the currently running script. """
         segments = self._parse_segments(code)
         pycode = self._generate_python(segments)
         exec(pycode, self._globals)
+
+    def include(self, filename):
+        """ Load file and execute as PyHTML. """
+        code = self._read_contents(filename)
+        self.inline(code)
 
     def _read_contents(self, filename):
         with open(filename, 'r') as f:
@@ -216,19 +230,23 @@ class PyHTML (object):
 
     def _execute_python(self):
 
-        old_stdout = sys.stdout
+        #old_stdout = sys.stdout
 
         try:
-            sys.stdout = self._output
+            #sys.stdout = self._output
             exec(self._pycode, self._globals)
 
         except Exception as e:
-            print('\n<b>Eval Error:</b>\n<pre>\n%s</pre><br />\n' % (traceback.format_exc(),))
-            print('<br /><pre>' + self.htmlspecialchars('\n'.join([ str(num + 1) + ':  ' + line for num,line in enumerate(self._pycode.splitlines()) ])) + '</pre>')
+            # TODO you need to let this defer to the error handler, don't you?
+            self.print('\n<b>Eval Error:</b>\n<pre>\n%s</pre><br />\n' % (traceback.format_exc(),))
+            self.print('<br /><pre>' + self.htmlspecialchars('\n'.join([ str(num + 1) + ':  ' + line for num,line in enumerate(self._pycode.splitlines()) ])) + '</pre>')
+            return False
 
         finally:
-            sys.stdout = old_stdout
+            #sys.stdout = old_stdout
+            pass
 
-        return self._output.getvalue()
+        return True
+
 
 

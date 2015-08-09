@@ -1,16 +1,22 @@
 {
     "__children__": {
         "modules": {
-            "__type__": "objects/ModulesDirectory",
-            "autoload": [
-                "base",
-                "http",
-                "medialib",
-                "player/xmms2cli",
-                "remote",
-                "serial",
-                "system"
-            ]
+            "__children__": {
+                "medialib": {
+                    "__children__": {},
+                    "__type__": "objects/Module",
+                    "name": "nerve.medialib",
+                    "medialib_dirs": [
+                        "/media/media/Torrents",
+                        "/media/media/Music"
+                    ],
+                    "youtube_playlists": [
+                        "FL_VkJGWFV9ZEIv87E-0NM5w"
+                    ]
+                }
+            },
+            "__type__": "objects/Module",
+            "name": "nerve"
         },
         "devices": {
             "__children__": {
@@ -26,7 +32,7 @@
                     "__type__": "player/xmms2cli/Xmms2CLI"
                 },
                 "medialib": {
-                    "__type__": "medialib/MediaLib",
+                    "__type__": "medialib/MediaLibDevice",
                     "medialib_dirs": [
                         "/media/media/Music", 
                         "/media/media/Torrents"

@@ -14,8 +14,8 @@ class SerialDevice (nerve.Device):
     def __init__(self, **config):
         super().__init__(**config)
 
-        self.file = config['file']
-        self.baud = config['baud']
+        self.file = self.get_setting('file')
+        self.baud = self.get_setting('baud')
 
         self.thread = nerve.Task('SerialTask', self.run)
 
@@ -27,9 +27,9 @@ class SerialDevice (nerve.Device):
 
         self.thread.start()
 
-    @staticmethod
-    def get_config_info():
-        config_info = nerve.Device.get_config_info()
+    @classmethod
+    def get_config_info(cls):
+        config_info = super().get_config_info()
         config_info.add_setting('file', "Device File", default='/dev/ttyS0')
         config_info.add_setting('baud', "Baud Rate", default=19200)
         return config_info
@@ -57,7 +57,9 @@ class SerialDevice (nerve.Device):
     def run(self):
         while not self.thread.stopflag.is_set():
             try:
-                self.serial = serial.Serial(self.file, self.baud)
+                filename = self.get_setting('file')
+                baud = self.get_setting('baud')
+                self.serial = serial.Serial(filename, baud)
 
             except serial.serialutil.SerialException as exc:
                 nerve.log("serial error: " + str(exc))

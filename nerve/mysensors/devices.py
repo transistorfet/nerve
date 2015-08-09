@@ -11,9 +11,9 @@ class MySensorsSerialGateway (nerve.serial.SerialDevice):
     def __init__(self, **config):
         super().__init__(**config)
 
-    @staticmethod
-    def get_config_info():
-        config_info = nerve.serial.SerialDevice.get_config_info()
+    @classmethod
+    def get_config_info(cls):
+        config_info = super().get_config_info()
         return config_info
 
     """
@@ -113,7 +113,7 @@ class MySensorsSerialGateway (nerve.serial.SerialDevice):
 class MySensorsNode (nerve.Device):
     def __init__(self, **config):
         super().__init__(**config)
-        self.nodeid = config['nodeid']
+        self.nodeid = self.get_setting('nodeid')
         self.name = ''
         self.version = ''
         self.battery_level = 0.0
@@ -138,9 +138,9 @@ class MySensorsNode (nerve.Device):
 class MySensorsSensor (nerve.Device):
     def __init__(self, **config):
         super().__init__(**config)
-        self.sensorid = config['sensorid']
-        self.type = config['type']
-        self.version = config['version']
+        self.sensorid = self.get_setting('sensorid')
+        self.type = self.get_setting('type')
+        self.version = self.get_setting('version')
         self.last_recv = 0
         self.last_type = None
         self.last_value = None

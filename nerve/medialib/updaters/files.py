@@ -14,49 +14,41 @@ import threading
 import mutagen
 import subprocess
 
-import signal
-import fcntl
+from .. import MediaLibUpdater
 
 
-class MediaUpdaterTask (nerve.Task):
-    def __init__(self, path):
-        super().__init__('MediaUpdaterTask')
+class MediaFilesUpdater (MediaLibUpdater):
+    def __init__(self, task):
+        self.task = task
         self.db = nerve.Database('medialib.sqlite')
-        self.path = path        #nerve.get_config("medialib_dirs")
-        self.run_update = threading.Event()
+        #self.path = path        #nerve.get_config("medialib_dirs")
+        self.paths = [ ]
 
-    def run(self):
-        """
-        def handler(signum, frame):
-            self.run_update.set()
-        signal.signal(signal.SIGIO, handler)
+    def check_update(self):
+        row = self.db.get_single('info', 'name,value', self.db.inline_expr('name', 'last_updated'))
+        if row is None or float(row[1]) + 86400 < time.time():
+            self.run_update()
 
-        fd = os.open(FNAME,  os.O_RDONLY)
-        fcntl.fcntl(fd, fcntl.F_SETSIG, 0)
-        fcntl.fcntl(fd, fcntl.F_NOTIFY,
-        fcntl.DN_MODIFY | fcntl.DN_CREATE | fcntl.DN_MULTISHOT)
-        """
+    def run_update(self):
+        medialib = nerve.get_object('/modules/medialib')
+        self.path = medialib.get_setting('medialib_dirs')
+        if not self.path:
+            nerve.log("warning: medialib_dirs not set")
+            return
 
-        while True:
-            row = self.db.get_single('info', 'name,value', self.db.inline_expr('name', 'last_updated'))
-            if row is None or float(row[1]) + 86400 < time.time():
-                nerve.log("Starting medialib update...")
-                self.update_all()
-                self.check_for_deleted()
-                nerve.log("Medialib update complete")
-                self.db.insert('info', { 'name' : 'last_updated', 'value' : str(time.time()) }, replace=True)
-            if self.stopflag.wait(3600):
-                break 
-
-    def update_all(self):
+        nerve.log("Starting medialib update...")
         for libpath in self.path:
             for root, dirs, files in os.walk(libpath):
-                if self.stopflag.is_set():
+                if self.task.stopflag.is_set():
                     return
                 nerve.log("Searching " + root)
                 for media in files:
                     #if media.endswith('.mp3'):
                     self.update_file(os.path.join(root, media))
+
+        self.check_for_deleted()
+        self.db.insert('info', { 'name' : 'last_updated', 'value' : str(time.time()) }, replace=True)
+        nerve.log("Medialib update complete")
 
     def check_for_deleted(self):
         for libpath in self.path:

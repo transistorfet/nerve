@@ -4,138 +4,118 @@
 import nerve 
 import nerve.http
 
-class ConfigController (nerve.http.Controller):
-    def __init__(self, **config):
-        super().__init__(**config)
-        #self.load_header("nerve/base/views/header.pyhtml", dict(tab="Config", title="Nerve Configuration"))
-        #self.load_footer("nerve/base/views/footer.pyhtml")
+from nerve.base.formview import FormView
 
-        #self.add_css("nerve/http/assets/css/widgets.css", 'global')    # you'd need like a default set of files that all subfiles will have
-        #self.add_js("nerve/base/assets/js/config.js")
+class ConfigController (nerve.http.Controller):
+
+    def handle_error(self, error, traceback):
+        if type(error) == nerve.ControllerError:
+            self.write_json({ 'status' : 'error', 'message' : repr(error) })
+        else:
+            super().handle_error(error, traceback)
 
     def index(self, request):
         data = { }
         #self.load_default_data(data)
         # TODO can you for this path without refering directly to the module (ie. using what's in the request)
         #self.load_view("nerve/base/views/config/settings.pyhtml", data)
-        self.load_view("nerve/base/views/config/settings-template.pyhtml", data)
 
-    def types(self, request):
-        if request.reqtype != "POST":
-            self.write_json({ 'status' : 'error', 'message' : "Unrecognized request type: " + request.reqtype })
-        else:
-            typelist = nerve.Modules.get_types(nerve.Device)
-            self.write_json(typelist)
+        #data['formhtml'] = FormView(nerve.main().get_config_info()).get_output()
+        self.load_view("nerve/base/views/config/template.pyhtml", data)
 
     def defaults(self, request):
         if request.reqtype != "POST":
-            self.write_json({ 'status' : 'error', 'message' : "Unrecognized request type: " + request.reqtype })
-        elif not request.arg('type'):
-            self.write_json({ 'status' : 'error', 'message' : "You must select a type first" })
-        else:
-            defaults = nerve.ObjectNode.get_class_config_info(request.arg('type'))
-            self.write_json(defaults.settings)
+            raise nerve.ControllerError("Unrecognized request type: " + request.reqtype)
+        if not request.arg('type'):
+            raise nerve.ControllerError("You must select a type first")
+
+        data = { }
+        data['config_info'] = nerve.ObjectNode.get_class_config_info(request.arg('type'))
+        self.load_view("nerve/base/views/config/blk-configinfo.pyhtml", data)
 
     def create(self, request):
         if request.reqtype != "POST":
-            self.write_json({ 'status' : 'error', 'message' : "Unrecognized request type: " + request.reqtype })
-            return False
+            raise nerve.ControllerError("Unrecognized request type: " + request.reqtype)
 
         dirname = request.arg('__dir__')
         name = request.arg('__name__')
         typeinfo = request.arg('__type__')
 
         if not dirname or not nerve.has_object(dirname):
-            self.write_json({ 'status' : 'error', 'message' : "The directory you've specified is invalid." })
-            return False
+            raise nerve.ControllerError("The directory you've specified is invalid.")
         if not name:
-            self.write_json({ 'status' : 'error', 'message' : "You must provide a valid name." })
-            return False
+            raise nerve.ControllerError("You must provide a valid name.")
         if nerve.has_object(dirname + '/' + name):
-            self.write_json({ 'status' : 'error', 'message' : "An object of that name already exists." })
-            return False
+            raise nerve.ControllerError("An object of that name already exists.")
         if not typeinfo:
-            self.write_json({ 'status' : 'error', 'message' : "You must select a type." })
-            return False
+            raise nerve.ControllerError("You must select a type.")
 
         defaults = nerve.ObjectNode.get_class_config_info(typeinfo)
-        config = { '__type__' : typeinfo }
-        self._unpack_values(defaults, config, request.args)
+        config = defaults.get_config_info().validate_settings(request.args)
 
         obj = nerve.ObjectNode.make_object(typeinfo, config)
         nerve.set_object(dirname + '/' + name, obj)
         nerve.save_config()
         self.write_json({ 'status' : 'success' })
 
+    def save(self, request):
+        # TODO do authorization check
+        if request.reqtype != "POST":
+            raise nerve.ControllerError("Unrecognized request type: " + request.reqtype)
+
+        obj = nerve.get_object(request.args['objectname'])
+        config = obj.get_config_info().validate_settings(request.args)
+        obj.update_config_data(config)
+
+        nerve.save_config()
+        self.write_json({ 'status' : 'success' })
+
     def rename(self, request):
         if request.reqtype != "POST":
-            self.write_json({ 'status' : 'error', 'message' : "Unrecognized request type: " + request.reqtype })
-            return False
+            raise nerve.ControllerError("Unrecognized request type: " + request.reqtype)
 
         # TODO you totally don't validate these names enough
         oldname = request.arg('oldname')
         newname = request.arg('newname')
 
         if not oldname or not nerve.has_object(oldname):
-            self.write_json({ 'status' : 'error', 'message' : "The directory you've specified is invalid." })
-            return False
+            raise nerve.ControllerError("The directory you've specified is invalid.")
         if not newname:
-            self.write_json({ 'status' : 'error', 'message' : "The new name given is invalid." })
-            return False
+            raise nerve.ControllerError("The new name given is invalid.")
         if nerve.has_object(newname):
-            self.write_json({ 'status' : 'error', 'message' : "An object of that name already exists." })
-            return False
+            raise nerve.ControllerError("An object of that name already exists.")
 
         obj = nerve.get_object(oldname)
         if not nerve.del_object(oldname):
-            self.write_json({ 'status' : 'error', 'message' : "Unable to rename this object." })
-            return False
+            raise nerve.ControllerError("Unable to rename this object.")
         nerve.set_object(newname, obj)
-        nerve.save_config()
-        self.write_json({ 'status' : 'success' })
 
-    def save(self, request):
-        # TODO do authorization check
-        if request.reqtype != "POST":
-            self.write_json({ 'status' : 'error', 'message' : "Unrecognized request type: " + request.reqtype })
-            return False
-
-        obj = nerve.get_object(request.args['objectname'])
-        defaults = obj.get_config_info()
-        config = obj.get_config_data()
-        self._unpack_values(defaults, config, request.args)
-
-        obj.set_config_data(config)
         nerve.save_config()
         self.write_json({ 'status' : 'success' })
 
     def delete(self, request):
         # TODO do authorization check
         if request.reqtype != "POST":
-            self.write_json({ 'status' : 'error', 'message' : "Unrecognized request type: " + request.reqtype })
-            return False
+            raise nerve.ControllerError("Unrecognized request type: " + request.reqtype)
 
         objectname = request.args['objectname']
         if not objectname or not nerve.has_object(objectname):
-            self.write_json({ 'status' : 'error', 'message' : "The object you've specified doesn't exist." })
-            return False
+            raise nerve.ControllerError("The object you've specified doesn't exist.")
 
         result = nerve.del_object(objectname)
-        if result:
-            nerve.save_config()
-            self.write_json({ 'status' : 'success' })
-        else:
-            self.write_json({ 'status' : 'error', 'message' : "Unable to delete object." })
+        if not result:
+            raise nerve.ControllerError("Unable to delete object.")
 
-    def _unpack_values(self, defaults, config, args):
-        for setting in defaults.settings:
-            if setting['name'] in args:
-                # TODO also check sanity and convert to int if necessary
-                if setting['datatype'] == 'int':
-                    config[setting['name']] = int(args[setting['name']])
-                elif setting['datatype'] == 'float':
-                    config[setting['name']] = float(args[setting['name']])
-                else:
-                    config[setting['name']] = args[setting['name']]
-        return config
+        nerve.save_config()
+        self.write_json({ 'status' : 'success' })
+
+
+    # Perhaps save should just write the config file at once, and other operations will manipulate settings without saving them?
+    # - need a mechanism to address subsettings... should there still be obj and setting name? combining them would require a way to figure out what part is object vs setting (checking for
+    #   object and if not then checking for setting??
+    # - there was an idea to use set_setting() instead of set_config_data() but the difference is that the former wont 're-initialize the object'. Are both needed?
+    # - defaults should be usable with anything, including sub-settings, to get an html form for a given object/setting
+    # - add object/setting
+    # - rename object/setting for dicts at least, but should the same mechanism be used for lists, which have order, or should there be a separate move up/move down thing?
+    # - delete object/setting
 

@@ -4,14 +4,10 @@
             "__children__": {
                 "computer": {
                     "__children__": {},
-                    "__type__": "system/SystemDevice"
+                    "__type__": "system/_linux/devices/SystemDevice"
                 },
                 "datalogs": {
                     "__children__": {
-                        "manager": {
-                            "__children__": {},
-                            "__type__": "datalog/devices/DatalogManager"
-                        },
                         "testlog": {
                             "__children__": {},
                             "__type__": "datalog/devices/DatalogDevice",
@@ -52,7 +48,7 @@
                 },
                 "medialib": {
                     "__children__": {},
-                    "__type__": "medialib/devices/MediaLib",
+                    "__type__": "medialib/devices/MediaLibDevice",
                     "medialib_dirs": [
                         "/media/media/Music",
                         "/media/media/Video",
@@ -81,35 +77,35 @@
                 },
                 "test": {
                     "__children__": {},
-                    "__type__": "objects/SymbolicLink",
-                    "link": "devices/datalogs"
+                    "__type__": "core/SymbolicLink",
+                    "target": "devices/datalogs"
                 },
                 "thing": {
                     "__children__": {
                         "auto": {
                             "__children__": {},
-                            "__type__": "events/Event",
+                            "__type__": "events/PyExecEvent",
                             "code": "#print('SPAM!')",
                             "repeat": 1.0,
                             "trigger": ""
                         },
                         "lamp": {
                             "__children__": {},
-                            "__type__": "events/Event",
+                            "__type__": "events/PyExecEvent",
                             "code": "time.sleep(2)\nnerve.query(\"http://dev:dev@localhost:8889/query/deskclock/relay_toggle\")",
                             "repeat": 0.0,
                             "trigger": ""
                         },
                         "spam": {
                             "__children__": {},
-                            "__type__": "events/Event",
+                            "__type__": "events/PyExecEvent",
                             "code": "print('SPAM!')\nself.repeat_in(1.0)",
                             "repeat": 0.0,
                             "trigger": ""
                         },
                         "test": {
                             "__children__": {},
-                            "__type__": "events/Event",
+                            "__type__": "events/PyExecEvent",
                             "code": "print('Hey there2342')",
                             "repeat": 0.0,
                             "trigger": ""
@@ -128,21 +124,21 @@
                             "__children__": {
                                 "N:628": {
                                     "__children__": {},
-                                    "__type__": "events/Event",
+                                    "__type__": "events/PyExecEvent",
                                     "code": "nerve.query('/devices/player/toggle')",
                                     "repeat": 0.0,
                                     "trigger": ""
                                 },
                                 "N:650": {
                                     "__children__": {},
-                                    "__type__": "events/Event",
+                                    "__type__": "events/PyExecEvent",
                                     "code": "nerve.query('/devices/player/previous')",
                                     "repeat": 0.0,
                                     "trigger": ""
                                 },
                                 "N:690": {
                                     "__children__": {},
-                                    "__type__": "events/Event",
+                                    "__type__": "events/PyExecEvent",
                                     "code": "nerve.query('/devices/player/next')",
                                     "repeat": 0.0,
                                     "trigger": ""
@@ -157,20 +153,35 @@
             "__type__": "objects/ObjectNode"
         },
         "modules": {
-            "__children__": {},
-            "__type__": "objects/ModulesDirectory",
-            "autoload": [
-                "base",
-                "datalog",
-                "http",
-                "medialib",
-                "mysensors",
-                "player",
-                "remote",
-                "serial",
-                "system",
-                "player/xmms2cli"
-            ]
+            "__children__": {
+                "datalog": {
+                    "__children__": {},
+                    "__type__": "objects/Module",
+                    "name": "nerve.datalog"
+                },
+                "medialib": {
+                    "__children__": {},
+                    "__type__": "objects/Module",
+                    "name": "nerve.medialib",
+                    "medialib_dirs": [
+                        "/media/media/Music",
+                        "/media/media/Video",
+                        "/media/media/Torrents"
+                    ],
+                    "youtube_playlists": [
+                        "PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4",
+                        "FL_VkJGWFV9ZEIv87E-0NM5w",
+                        "PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0"
+                    ]
+                },
+                "pages": {
+                    "__children__": {},
+                    "__type__": "objects/Module",
+                    "name": "nerve.pages"
+                }
+            },
+            "__type__": "objects/Module",
+            "name": "nerve"
         },
         "servers": {
             "__children__": {
@@ -192,9 +203,6 @@
                             "__type__": "base/FileController",
                             "root": "nerve/base/assets"
                         },
-                        "pages": {
-                            "__type__": "pages/PagesController"
-                        },
                         "config": {
                             "__type__": "base/ConfigController"
                         },
@@ -204,8 +212,14 @@
                         "medialib": {
                             "__type__": "medialib/MediaLibController"
                         },
+                        "pages": {
+                            "__type__": "pages/PagesController"
+                        },
                         "query": {
                             "__type__": "base/QueryController"
+                        },
+                        "shell": {
+                            "__type__": "base/ShellController"
                         },
                         "remote": {
                             "__type__": "remote/RemoteController"

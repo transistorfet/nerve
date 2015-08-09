@@ -11,7 +11,17 @@ import urllib.parse
 import json
 import requests
 
+
 class MediaLibController (nerve.http.Controller):
+
+    def handle_error(self, error, traceback):
+        if type(error) == nerve.NotFoundError or self.get_mimetype() != None:
+            super().handle_error(error, traceback)
+        else:
+            #if 'application/json' in request.header['accept']:
+
+            # TODO this has a different format than what's used with other controllers
+            self.write_json({ 'error' : repr(error) })
 
     def index(self, request):
         medialib = nerve.get_object('/devices/medialib')
@@ -80,8 +90,8 @@ class MediaLibController (nerve.http.Controller):
         playlist_name = request.args['playlist']
         for name in medialib.get_playlist_list():
             if name == playlist_name:
-                self.write_json({ 'error' : "A playlist by that name already exists" })
-                return
+                raise nerve.ControllerError("A playlist by that name already exists")
+
         playlist = nerve.medialib.Playlist.create(playlist_name)
         self.write_json({ 'notice' : "Playlist created successfully" })
 
@@ -90,8 +100,8 @@ class MediaLibController (nerve.http.Controller):
         playlist_name = request.args['playlist']
         for name in medialib.get_playlist_list():
             if name == playlist_name:
-                self.write_json({ 'notice' : "Playlist deleted successfully" })
                 nerve.medialib.Playlist.delete(playlist_name)
+                self.write_json({ 'notice' : "Playlist deleted successfully" })
                 return
         self.write_json({ 'error' : "That playlist no longer exists" })
 

@@ -1,0 +1,67 @@
+<!DOCTYPE html PUBLIC "-//W3C/DTD HTML 4.01//EN">
+<html>
+<head>
+    <title><%= title %></title>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/theme.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/widgets.css" />
+    <link rel="stylesheet" type="text/css" href="/pages/assets/css/pages.css" />
+    <% for file in jsfiles: %>
+    <link rel="stylesheet" type="text/css" href="<%= file %>" />
+    <% end %>
+
+    <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/assets/js/widgets.js"></script>
+    <script type="text/javascript" src="/pages/assets/js/pages.js"></script>
+    <% for file in jsfiles: %>
+    <script type="text/javascript" src="<%= file %>"></script>
+    <% end %>
+</head>
+<body>
+
+<div id="header">
+    <%= header %>
+</div>
+
+<div id="subheader">
+    <%= subheader %>
+</div>
+
+<hr/>
+
+<div id="main">
+    <% if sidebar.strip(): %>
+    <div id="sidebar">
+        <%= sidebar %>
+    </div>
+    <% end %>
+
+    <div id="content">
+        <div id="nerve-notice" style="display: none;"></div>
+        <div id="nerve-error" style="display: none;"></div>
+
+        <% py.inline(content) %>
+    </div>
+    <div style="clear: both;"></div>
+</div>
+
+<hr/>
+
+<% if 'pagename' in globals(): %>
+<a href="/pages/editpage/<%= pagename %>"><button type="button">Edit Page</button></a>
+<% end %>
+
+<div id="footer">
+    <%= footer %>
+</div>
+
+<div id="subfooter">
+    <%= subfooter %>
+</div>
+
+</body>
+</html> 

@@ -8,24 +8,29 @@ import time
 import requests
 import json
 
+from .. import MediaLibUpdater
 
-class YoutubePlaylistFetcher (nerve.Task):
-    def __init__(self, path):
-        super().__init__('YoutubePlaylistFetcher')
+
+class YoutubePlaylistUpdater (MediaLibUpdater):
+    def __init__(self, task):
+        self.task = task
         self.db = nerve.Database('medialib.sqlite')
         self.json = None
-        self.list_ids = path        #nerve.get_config("youtube_playlists")
+        #self.list_ids = path        #nerve.get_config("youtube_playlists")
+        self.list_ids = [ ]
 
-    def run(self):
-        while True:
-            row = self.db.get_single('info', 'name,value', self.db.inline_expr('name', 'youtube_last_updated'))
-            if row is None or float(row[1]) + 86400 < time.time():
-                self.update_all()
-                self.db.insert('info', { 'name' : 'youtube_last_updated', 'value' : str(time.time()) }, replace=True)
-            if self.stopflag.wait(3600):
-                break 
+    def check_update(self):
+        row = self.db.get_single('info', 'name,value', self.db.inline_expr('name', 'youtube_last_updated'))
+        if row is None or float(row[1]) + 86400 < time.time():
+            self.run_update()
 
-    def update_all(self):
+    def run_update(self):
+        medialib = nerve.get_object('/modules/medialib')
+        self.list_ids = medialib.get_setting('youtube_playlists')
+        if not self.list_ids:
+            nerve.log("warning: youtube_playlists not set")
+            return
+
         nerve.log("Starting youtube medialib update...")
         for list_id in self.list_ids:
             json_playlist = self.fetch_json(list_id)
@@ -34,12 +39,14 @@ class YoutubePlaylistFetcher (nerve.Task):
             else:
                 playlist = [ ]
                 for video in json_playlist['video']:
-                    if self.stopflag.is_set():
+                    if self.task.stopflag.is_set():
                         return
                     data = self.hash_video(video)
                     playlist.append({ 'artist' : data['artist'], 'title' : data['title'], 'duration' : data['duration'], 'filename' : data['filename'] })
                 pl = nerve.medialib.Playlist(json_playlist['title'])
                 pl.set_list(playlist)
+
+        self.db.insert('info', { 'name' : 'youtube_last_updated', 'value' : str(time.time()) }, replace=True)
         nerve.log("Youtube medialib update complete")
 
     def fetch_json(self, list_id):

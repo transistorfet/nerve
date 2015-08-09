@@ -1,0 +1,125 @@
+
+
+button.nerve-button {
+    min-height: 1.75em;
+    font-size: 1.25em;
+}
+
+input.nerve-slider {
+    height: 2.50em;
+    font-size: 1.25em;
+    margin-left: 1.0em;
+    margin-right: 1.0em;
+}
+
+.nerve-display {
+    font-size: 1.25em;
+}
+
+.nerve-medialist .current {
+    border: 1px solid green;
+    height: 1.75em;
+}
+
+.nerve-medialist .current span {
+    font-weight: bold;
+}
+
+
+
+#block-editor {
+    padding: 4px;
+    width: 40em;
+    margin-bottom: 2em;
+}
+
+#block-editor-name {
+    width: 100%;
+    margin-bottom: 1em;
+}
+
+#block-editor-text {
+    width: 100%;
+    height: 20em;
+}
+
+#block-editor-save {
+    float: right;
+}
+
+#page-editor {
+    padding: 4px;
+    width: 40em;
+    margin-bottom: 2em;
+}
+
+#page-editor-name {
+    /* width: 100%;
+    margin-bottom: 1em; */
+}
+
+#page-editor-text {
+    width: 100%;
+    height: 20em;
+}
+
+#page-editor-save {
+}
+
+.page-blocks {
+}
+
+#main {
+    width: 100%;
+    display: table;
+}
+
+#content {
+    display: table-cell;
+}
+
+#sidebar {
+    display: table-cell;
+    width: 10em;
+}
+
+/*
+This is a neat way of doing the same thing, which is apparently less known about.  I'm not
+sure which way I prefer.  The cells method is kinda nice though
+
+#main {
+    width: 100%;
+}
+
+#content {
+    overflow: hidden;
+}
+
+#sidebar {
+    width: 10em;
+    float: left;
+}
+*/
+
+/*
+#main:after {
+    clear: both;
+    display: block;
+    content: '';
+}
+*/
+
+
+.page-item,
+.block-item {
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+.page-item a:first-child,
+.block-item span:first-child {
+    display: inline-block;
+    width: 14em;
+}
+
+

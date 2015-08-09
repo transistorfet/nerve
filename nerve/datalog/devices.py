@@ -12,40 +12,9 @@ import urllib
 import random
 
 
-class DatalogManager (nerve.Device):
-    def __init__(self, **config):
-        super().__init__(**config)
-        #self.db = nerve.Database('datalog.sqlite')
-        #self.db.create_table('media', "id INTEGER PRIMARY KEY, filename TEXT, artist TEXT, album TEXT, title TEXT, track_num NUMERIC, genre TEXT, tags TEXT, duration NUMERIC, media_type TEXT, file_hash TEXT, file_size INT, file_last_modified INT")
-        #self.db.create_table('info', "name TEXT PRIMARY KEY, value TEXT")
-
-        self.thread = nerve.Task("DatalogTask", target=self.run)
-        self.thread.start()
-
-    @staticmethod
-    def get_config_info():
-        config_info = nerve.ObjectNode.get_config_info()
-        return config_info
-
-    def add(self, name, update_time=60):
-        log = DatalogDevice(name=name, update_time=update_time)
-        nerve.set_device('name', log)
-        return
-
-    def run(self):
-        while not self.thread.stopflag.wait(60):
-            try:
-                datalogs = nerve.get_object('/devices/datalogs')
-                if datalogs:
-                    for name in datalogs.keys():
-                        obj = getattr(datalogs, name)
-                        if isinstance(obj, DatalogDevice):
-                            obj._collect_data()
-            except:
-                nerve.log(traceback.format_exc())
-
-
 class DatalogDevice (nerve.Device):
+    datalogs = [ ]
+
     def __init__(self, **config):
         super().__init__(**config)
         self.name = self.get_setting('name')
@@ -61,9 +30,11 @@ class DatalogDevice (nerve.Device):
             if datapoint['name'] not in column_names:
                 self.db.add_column(self.name, datapoint['name'], datapoint['datatype'], default='')
 
-    @staticmethod
-    def get_config_info():
-        config_info = nerve.Device.get_config_info()
+        DatalogDevice.datalogs.append(self)
+
+    @classmethod
+    def get_config_info(cls):
+        config_info = super().get_config_info()
         config_info.add_setting('name', "Table Name", default='')
         config_info.add_setting('datapoints', "Data Points", default=list())
         config_info.add_setting('update_time', "Update Time", default=60.0)
@@ -77,7 +48,7 @@ class DatalogDevice (nerve.Device):
         datapoints_config.add_setting('min', "Minimum Value", default=0.0)
         datapoints_config.add_setting('max', "Maximum Value", default=0.0)
         datapoints_config.add_setting('units', "Units", default='')
-        config_info.add_setting('datapoints', "Data Points", default=list(datapoints_config))
+        config_info.add_setting('datapoints', "Data Points", default=list(), iteminfo=datapoints_config)
         """
         return config_info
 
@@ -130,5 +101,6 @@ class DatalogDevice (nerve.Device):
                 nerve.log("error collecting ref: " + str(datapoint['ref']) + ": " + repr(exc))
                 data[datapoint['name']] = None
         self.db.insert(self.name, data)
+
 
 

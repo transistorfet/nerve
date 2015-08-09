@@ -19,7 +19,7 @@ class TCPConnection (nerve.Server):
 
         self.buffer = ""
 
-        self.thread = nerve.Task('TCPConnectionTask', self.run)
+        self.thread = nerve.Task('TCPConnectionTask:' + self.host + ':' + str(self.port), self.run)
         self.thread.daemon = True
         self.thread.start()
 
@@ -67,20 +67,21 @@ class TCPConnection (nerve.Server):
             except:
                 nerve.log(traceback.format_exc())
         self.close()
-        self.thread.finish()
+        self.thread.delete()
 
 
 class TCPServer (nerve.Server):
     def __init__(self, **config):
         super().__init__(**config)
 
-        self.thread = nerve.Task('TCPServerTask', self.run)
+        port = self.get_setting('port')
+        self.thread = nerve.Task('TCPServerTask:' + str(port), self.run)
         self.thread.daemon = True
         self.thread.start()
 
-    @staticmethod
-    def get_config_info():
-        config_info = nerve.Server.get_config_info()
+    @classmethod
+    def get_config_info(cls):
+        config_info = super().get_config_info()
         config_info.add_setting('port', "Port", default=12345)
         config_info.add_setting('controllers', "Controllers", default={
             '__default__' : {

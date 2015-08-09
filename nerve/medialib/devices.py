@@ -3,18 +3,21 @@
 
 import nerve
 
-import time
 import os
-import os.path
-
-import urllib
+import time
 import random
 
-from .updater import MediaUpdaterTask
-from .youtube import YoutubePlaylistFetcher
+from .playlists import Playlist
 
 
-class MediaLib (nerve.Device):
+# TODO apart from the updater threads, there isn't really anything 'device' about this.  It's really a model isn't it?
+# it reads info from a database, or from playlist files, acting as a counterpart to the medialib controller/UI
+# the one thing that isn't like the only other model that exists in this system is the configuration data...  Should
+# models be added to the object fs with config options, and everything uses the ofs to lookup the model?  Should they
+# be created for each use (eg. for each controller that needs that model?)  The config is only for the updaters actually
+# so...
+
+class MediaLibDevice (nerve.Device):
     def __init__(self, **config):
         super().__init__(**config)
         self.playlists = 'playlists'
@@ -24,31 +27,21 @@ class MediaLib (nerve.Device):
 
         self.current = 'default'
 
-        self.start_updaters()
-
-    def start_updaters(self):
-        self.media_updater = MediaUpdaterTask(self.get_setting("medialib_dirs"))
-        self.media_updater.start()
-
-        self.youtube_updater = YoutubePlaylistFetcher(self.get_setting("youtube_playlists"))
-        self.youtube_updater.start()
-
     def force_database_update(self):
-        self.media_updater.stop()
-        self.youtube_updater.stop()
+        #self.media_updater.stop()
+        #self.youtube_updater.stop()
 
         self.db.where('name', 'last_updated')
         self.db.update('info', { 'value' : 0 })
 
-        self.start_updaters()
+        # TODO new way to force an update
+        #self.start_updaters()
 
     def get_playlist_list(self):
         files = os.listdir(nerve.configdir() + '/playlists')
         playlist_list = [ name[:-4] for name in files if name.endswith(".m3u") ]
-        try:
+        if 'default' in playlist_list:
             playlist_list.remove('default')
-        except ValueError:
-            pass
         playlist_list.insert(0, 'default')
         return playlist_list
 
@@ -170,109 +163,4 @@ class MediaLib (nerve.Device):
                 })
         return info
 
-
-class Playlist (object):
-    def __init__(self, name):
-        self.name = name
-        plroot = nerve.configdir() + '/playlists'
-        if not os.path.isdir(plroot):
-            os.mkdir(plroot)
-        self.filename = plroot + '/' + name + '.m3u'
-        #if not os.path.isfile(self.filename):
-        #    raise Exception(self.filename + " playlist not found")
-        if not os.path.isfile(self.filename):
-            with open(self.filename, 'w') as f:
-                pass
-        self.media_list = [ ]
-
-    @staticmethod
-    def create(self, name):
-        plroot = nerve.configdir() + '/playlists'
-        filename = plroot + '/' + name + '.m3u'
-        if not os.path.isfile(filename):
-            with open(filename, 'w') as f:
-                pass
-
-    @staticmethod
-    def delete(name):
-        plroot = nerve.configdir() + '/playlists'
-        filename = plroot + '/' + name + '.m3u'
-        if os.path.isdir(plroot) and os.path.isfile(filename):
-            os.remove(filename)
-
-    def load(self):
-        self.media_list = [ ]
-        artist = ""
-        title = ""
-        duration = 0
-        with open(self.filename, 'r') as f:
-            for line in f.read().split('\n'):
-                line = line.strip()
-                if line and line.startswith('#'):
-                    if line.startswith('#EXTINF:'):
-                        (duration, info) = line[8:].split(', ', 1)
-                        (artist, title) = info.split(' - ', 1)
-                elif line != '':
-                    media = {
-                        'artist' : artist,
-                        'title' : title,
-                        'duration' : duration,
-                        'filename' : line
-                    }
-                    self.media_list.append(media)
-
-    def save(self):
-        with open(self.filename, 'w') as f:
-            f.write("#EXTM3U\n")
-            for media in self.media_list:
-                f.write("#EXTINF:%d, %s - %s\n" % (float(media['duration']), media['artist'], media['title']))
-                f.write(media['filename'] + "\n")
-
-    def get_size(self):
-        self.load()
-        return len(self.media_list)
-
-    def get_list(self):
-        self.load()
-        return self.media_list
-
-    def set_list(self, media_list):
-        self.media_list = media_list
-        self.save()
-        return len(self.media_list)
-
-    def add_list(self, media_list):
-        self.load()
-        existing = len(self.media_list)
-        self.media_list.extend(media_list)
-        self.save()
-        return len(self.media_list) - existing
-
-    def remove_files(self, file_list):
-        self.load()
-        existing = len(self.media_list)
-
-        media_list = [ ]
-        for media in self.media_list:
-            if media['filename'] in file_list:
-                file_list.remove(media['filename'])
-            else:
-                media_list.append(media)
-        self.media_list = media_list
-        self.save()
-        return existing - len(self.media_list)
-
-    def clear(self):
-        self.media_list = [ ]
-        self.save()
-
-    def shuffle(self):
-        self.load()
-        random.shuffle(self.media_list)
-        self.save()
-
-    def sort(self):
-        self.load()
-        self.media_list = sorted(self.media_list, key=lambda media: media['filename'])
-        self.save()
 

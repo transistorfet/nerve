@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C/DTD HTML 4.01//EN">
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -62,7 +62,7 @@
             <option value="video" <%= ' selected' if media_type == 'video' else '' %>>video</option>
         </select>
 
-        <input type="text" name="recent" value="<%= recent if recent else '' %>">
+        <input type="date" name="recent" value="<%= recent if recent else '' %>">
 
         <br />
 

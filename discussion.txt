@@ -4,7 +4,7 @@
 	http://localhost:8888/player.next
 	http://localhost:8888/player/next
 
-	localhost:8888/player/next
+	//localhost:8888/player/next
 
 	/player/next
 
@@ -213,6 +213,8 @@ player/load_playlist?a=Nine+Inch+Nails
 
 2015/03/15:
 
+OBJECT FILESYSTEM
+
 internal vfs:
 /
     /modules
@@ -254,6 +256,8 @@ An alternative to /modules is /types.  They can also be grouped by type
 ---------
 
 2015/04/20:
+
+EVENTS
 
 Ok so things are currently set up for querying.  You send a query to a device, and it returns some data as a response, and/or controls
 something in response.  The queries come from an originating source, usually from a request received by a server, but also from other
@@ -370,6 +374,89 @@ nerve.notify("/devices/player/*/stop")      # stop each individual player object
 
 On a side note, the advantage of having all generic directory objects instead of special 'directories' that have additional methods, is
 that it's easy to maintain with filesystem style commands.
+
+
+---------
+
+A note about queries:
+
+player/load_playlist?name=Nine+Inch+Nails <--- should be what's used...
+we should pass a query string to ardunio instead of the space separated query sent now
+
+
+---------
+
+2015/07/30:
+
+MODULES/PER-MODULE CONFIG/PER-OBJECT CONFIG/
+
+You need a way to start and stop servers
+    - should this be relevant of all/most threads?
+
+You need singleton classes of some kind
+    - should models be singleton classes, or should they be individually created as needed (like in controllers)
+
+
+- EventThreadPool needs a way to create the object/thread that runs events in the background.
+    - should this be just a thread/task
+        - should threads/tasks all be common and represented in the objfs somehow? /tasks/EventThreadPool
+
+    - or should this be 'module specfic', even though events aren't in a module of their own (they could be?)
+        - if so, should it be created during an init() call to the module, or should there be an automatic one
+          where when the module is loaded, the module namespace is searched for a class of type Module, which
+          it then creates and calls init on?
+            - I already don't like this idea because not all modules need this
+        - if using an init() call on module load, should all modules be loaded, and init called, before the objfs data is initialized?
+
+- medialib updaters needs should be on a per module basis
+
+- we could have a multi-stage initialization process... 1) load modules, 2) populate objfs, 3) start threads/servers
+
+- what about DatalogManager???  Where should that be created and access and everything?  Could it just be a module specific task?
+
+
+
+
+SECURITY & PERMISSIONS:
+
+- you need some kind of access restrictions on objects
+- writeable vs read-only: to control whether you can use set_child or set_object
+- execute only queries vs execute all non-_leading methods: set so that when using query(), you can only execute approved methods
+
+
+
+Servers:
+- http
+- console/teriminal
+- simple query thing
+- irc?
+
+- the server should know what kind of requests it can receive, or what kind of data it wants from the controller, and communicate that to the controller
+
+
+Types of Requests:
+- get html data
+- get binary files
+- query things
+- interactive text (terminal)
+
+What ways can the user interact with the system:
+- control a conceptual device (player, stereo, ...)
+- request and display data (immediate values such a temperature, or historical data such as trends)
+- retrieve files (possibly virtual files)
+
+- chat or communicate with others?
+- leave messages for other users
+- leave reminders for yourself
+
+- repeat events periodically or after a time
+    - like a tea timer where you click the button and then it, by some appropriate means, notifies you.
+      perhaps a chime on stereo, or chime on phone (the app could make an android notification.  is there a way to do that through web??)
+
+
+- thinking about the system reminding you about something later... there could be multiple means and the system should have a way of
+  knowing what means is appropriate, such as knowing that the stereo is on or off, or knowing that you aren't home and the android
+  app wont work, so it should send an email or something instead
 
 
 

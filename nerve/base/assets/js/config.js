@@ -15,28 +15,8 @@ $(document).ready(function ()
 
         var div = $(this).parent().parent().find('#add-settings');
         $.post('/config/defaults', { 'type' : $(this).val() }, function (response) {
-            var fields = '';
-            for (var setting in response) {
-                fields += '<div class="nerve-form-item">'
-                        + '<label>' + response[setting].propername + '</label>';
-                if (response[setting].options) {
-                    fields += '<select name="' + response[setting].name + '" value="' + response[setting].default + '">';
-                    options = response[setting].options;
-                    for (var option in options) {
-                        fields += '<option value="' + options[option][1] + '" ' + ( (options[option][1] == response[setting].default) ? 'selected' : '' ) + '>' + options[option][0] + '</option>';
-                    }
-                    fields += '</select>';
-                }
-                else if (response[setting].datatype == 'str' || response[setting].datatype == 'int' || response[setting].datatype == 'float')
-                    fields += '<input type="text" name="' + response[setting].name + '" value="' + response[setting].default + '" />';
-                else if (response[setting].datatype == 'bool')
-                    fields += '<input type="checkbox" name="' + response[setting].name + '" ' + ( response[setting].default ? 'checked' : '' ) + '" />';
-                else
-                    fields += '<span>' + response[setting].default + '&nbsp;</span>';
-                fields += '</div>';
-            }
-            $(div).html(fields);
-        }, 'json');
+            $(div).html(response);
+        }, 'html');
     });
 
     function _pack_values(form) {

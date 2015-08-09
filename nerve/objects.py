@@ -3,34 +3,42 @@
 
 import nerve
 
-import os
-import sys
-import shutil
-import time
 import traceback
-
-import json
 
 
 class ConfigInfo (object):
+    datatypes = { }
+
+    @classmethod
+    def register_type(cls, name, validator):
+        cls.datatypes[name] = validator
+
+    @classmethod
+    def get_type(cls, name):
+        return cls.datatypes[name]
+
     def __init__(self):
         self.settings = [ ]
 
-    def add_setting(self, name, propername, default=None, datatype=None):
+    def add_setting(self, name, propername, default=None, datatype=None, iteminfo=None):
         for i in range(len(self.settings)):
             if self.settings[i]['name'] == name:
                 del self.settings[i]
                 break
 
-        # other valid datatypes are: textarea
+        # attempt to guess the datatype if it's not given
         if not datatype:
             datatype = type(default).__name__
+
+        if datatype not in self.datatypes:
+            raise Exception("Unsupported setting datatype: " + datatype)
 
         self.settings.append({
             'name' : name,
             'propername' : propername,
             'default' : default,
             'datatype' : datatype,
+            'iteminfo' : iteminfo,
             'options' : None
         })
 
@@ -41,14 +49,114 @@ class ConfigInfo (object):
                     setting['options'] = [ ]
                 setting['options'].append( (propername, value) )
 
+    def __iter__(self):
+        return iter(self.settings)
+
+    def __len__(self):
+        return len(self.settings)
+
     def get_defaults(self):
         defaults = { }
         for setting in self.settings:
             defaults[setting['name']] = setting['default']
         return defaults
 
-    def get_proper_names(self):
-        return [ (setting['name'], setting['propername'], setting['datatype']) for setting in self.settings ]
+    def validate_settings(self, args, defaults=False):
+        config = { }
+        for setting in self.settings:
+            if setting['name'] not in args:
+                if defaults:
+                    config[setting['name']] = setting['default']
+            elif setting['datatype'] in self.datatypes:
+                validator = self.datatypes[setting['datatype']]
+                config[setting['name']] = validator(args[setting['name']], setting['iteminfo'])
+        return config
+
+
+        # bool, int, float, str, textarea, bytes, tuple, list, dict... maybe also complex
+        # datatype = list, subtype = 'bool|int|float|str|textarea'
+        # actually it should be a subconfig info right?
+        # subinfo = ConfigInfo()
+        # subinfo.add_setting(None, 'Block Name', default='')
+
+
+
+class ConfigTypeValidator (object):
+    def __init__(self, func, htmltype="text", typeclass="scalar"):
+        self.func = func
+        self.htmltype = htmltype
+        self.typeclass = typeclass
+
+    def __call__(self, data, iteminfo=None):
+        if iteminfo:
+            return self.func(data, iteminfo)
+        return self.func(data)
+
+def ConfigTypeDecorator(htmltype="text", typeclass="scalar"):
+    def CreateValidator(func):
+        return ConfigTypeValidator(func, htmltype, typeclass)
+    return CreateValidator
+
+@ConfigTypeValidator
+def BoolValidator(data):
+    if type(data) == bool:
+        config[setting['name']] = data
+        return
+
+    val = str(data).lower()
+    if val == 'true':
+        config[setting['name']] = True
+    elif val == 'false':
+        config[setting['name']] = False
+    else:
+        raise ValueError("Invalid data for " + setting['name'] + ". Expected bool")
+
+ConfigInfo.register_type('bool', BoolValidator)
+ConfigInfo.register_type('int', ConfigTypeValidator(int))
+ConfigInfo.register_type('float', ConfigTypeValidator(float))
+ConfigInfo.register_type('str', ConfigTypeValidator(str))
+ConfigInfo.register_type('bytes', ConfigTypeValidator(bytes))
+ConfigInfo.register_type('textarea', ConfigTypeValidator(str))
+# also list, tuple, dict, object?
+ConfigInfo.register_type('dict', ConfigTypeValidator(dict, htmltype=None))
+
+@ConfigTypeDecorator(htmltype=None, typeclass="list")
+def ListValidator(data):
+    thing
+
+ConfigInfo.register_type('list', ListValidator)
+
+#Scalar:
+# - display html element
+# - package values from html element for post request
+# - verify data conforms to type
+
+#List:
+# - add item (display complete html form for an item) (button displays form)
+# for each item in the list
+#  - display form for item, possibly collapsed (recursive)
+#  - delete item that's displayed
+#  - move item up or down
+# - verify data, either force items to be accessed individually, or possibly allow entire list to be verified at once (how do you reference a subitem inside a config option)
+
+#Dict:
+# - add item (display complete html form for an item) (button displays form)
+# for each item in dict
+#  - display form for item, possibly collapsed (recursive)
+#  - delete item that's displayed
+#  - rename item that's displayed
+
+#Object:
+# - display complete form for all object settings (but you can't add or remove settings)
+# - package values from html element for post request recursively
+# - verify data conforms to type, again recursively
+
+
+
+def querymethod(funcobj):
+    """ function decorator to include method in the keys_queries() list """
+    funcobj.__isquerymethod__ = True
+    return funcobj
 
 
 class ObjectNode (object):
@@ -57,54 +165,68 @@ class ObjectNode (object):
         self._children = { }
         self.set_config_data(config)
 
-    @staticmethod
-    def get_config_info():
-        return ConfigInfo()
+    """ Settings """
+
+    @classmethod
+    def get_config_info(cls):
+        config_info = ConfigInfo()
+        #config_info.add_setting('__children__', "Child Objects", default=dict(), datatype="dict:object")
+        # TODO if you had a means of dealing with objects as single settings, then you can use the dict recursive validator to add/remove/rename items
+        return config_info
 
     def set_config_data(self, config):
-        self._config = config
-        self._config['__type__'] = self.__class__.__module__.replace('nerve.', '').replace('.', '/') + "/" + self.__class__.__name__
+        self._config = self.get_config_info().get_defaults()
+        self.update_config_data(config)
+
         if '__children__' in config:
-            self._children = self.make_object_table(config['__children__'])
-            for objname in self._children.keys():
-                self._children[objname].parent = self
+            if len(self._children):
+                raise Exception("object already has children: " + self._config['__type__'] + " " + repr(self._children))
+            self.make_object_children(config['__children__'])
+
+    def update_config_data(self, config):
+        # TODO should this maybe be only in the controller?
+        #self.get_config_info().validate_settings(config)
+        self._config.update(config)
+        self._config['__type__'] = self.__class__.__module__.replace('nerve.', '').replace('.', '/') + "/" + self.__class__.__name__
 
     def get_config_data(self):
-        self._config['__children__'] = self.save_object_table(self._children)
+        self._config['__children__'] = self.save_object_children()
         return self._config
+
+    def make_object_children(self, config):
+        for objname in config.keys():
+            typeinfo = config[objname]['__type__'] if '__type__' in config[objname] else 'objects/ObjectNode'
+            obj = ObjectNode.make_object(typeinfo, config[objname])
+            obj._parent = self
+            self._children[objname] = obj
+
+    def save_object_children(self):
+        config = { }
+        for objname in self._children.keys():
+            config[objname] = self._children[objname].get_config_data()
+        return config
 
     def set_setting(self, name, value):
         try:
             self._config[name] = value
         except:
-            print (traceback.format_exc())
+            nerve.log(traceback.format_exc())
 
     def get_setting(self, name, typename=None):
         if name in self._config:
             return self._config[name]
         return None
 
-
-    def __getattr__(self, index):
-        attrib = self.get_child(index)
-        if attrib:
-            return attrib
-        #if '_config' in self.__dict__ and index in self.__dict__['_config']:
-        #    return self.__dict__['_config'][index]
-        raise AttributeError("'%s' object has no attribute '%s'" % (str(self), index))
-
-    def keys(self):
-        return self.keys_children() # + list(self._config.keys()) #+ [ name for name in dir(self) if name[0] != '_' ]
-
+    """ Direct ObjectNode Children """
 
     def get_child(self, index):
-        if index in self.__dict__['_children']:
-            return self.__dict__['_children'][index]
+        if index in self._children:
+            return self._children[index]
         return None
 
     def set_child(self, index, obj):
         if isinstance(obj, ObjectNode):
-            obj.parent = self
+            obj._parent = self
         self._children[index] = obj
 
     def del_child(self, index):
@@ -116,6 +238,39 @@ class ObjectNode (object):
     def keys_children(self):
         return list(self._children.keys())
 
+    def get_root(self):
+        if not self._parent:
+            return None
+        root = self._parent
+        while root._parent:
+            root = root._parent
+        return root
+
+    """ Direct Attributes """
+
+    def __getattr__(self, index):
+        attrib = self.get_child(index)
+        if attrib:
+            return attrib
+        #if '_config' in self.__dict__ and index in self.__dict__['_config']:
+        #    return self.__dict__['_config'][index]
+        raise AttributeError("'%s' object has no attribute '%s'" % (str(self), index))
+
+    def keys_attrs(self):
+        return [ attrib for attrib in dir(self) if not attrib.startswith('_') ]
+
+    def keys_queries(self):
+        keys = [ ]
+        for name in dir(self):
+            obj = getattr(self, name)
+            try:
+                if obj.__isquerymethod__ is True:
+                    keys.append(name)
+            except:
+                pass
+        return keys
+
+    """ Indirect Sub-Object Attributes """
 
     def get_object(self, name):
         obj = self
@@ -147,132 +302,102 @@ class ObjectNode (object):
 
     @staticmethod
     def make_object(typeinfo, config):
-        classtype = ModulesDirectory.get_module(typeinfo)
+        classtype = Module.get_class(typeinfo)
         if not issubclass(classtype, ObjectNode):
             raise TypeError(str(typeinfo) + " is not a subclass of ObjectNode")
-        config_data = classtype.get_config_info().get_defaults()
-        config_data.update(config)
-        config_data['__type__'] = typeinfo
-        obj = classtype(**config_data)
+        obj = classtype(**config)
         return obj
 
     @staticmethod
     def get_class_config_info(typeinfo):
-        classtype = ModulesDirectory.get_module(typeinfo)
+        classtype = Module.get_class(typeinfo)
         if not issubclass(classtype, ObjectNode):
             raise TypeError(str(typeinfo) + " is not a subclass of ObjectNode")
         return classtype.get_config_info()
 
-    @staticmethod
-    def make_object_table(config):
-        objects = { }
-        for objname in config.keys():
-            if objname != '__type__':
-                if '__type__' not in config[objname]:
-                    typeinfo = "objects/ObjectNode"
+
+
+class _ModuleSingleton (type):
+    def __call__(cls, **config):
+        if 'name' not in config:
+            config['name'] = 'nerve'
+
+        if not cls.root:
+            if config['name'] == 'nerve':
+                cls.root = super(_ModuleSingleton, cls).__call__(**config)
+            else:
+                cls.root = super(_ModuleSingleton, cls).__call__(name='nerve')
+
+        modulepath = config['name'].split('.')
+        module = parentmodule = cls.root
+        for (i, name) in enumerate(modulepath[1:], start=1):
+            module = parentmodule.get_child(name)
+            if not module:
+                if i + 1 == len(modulepath):
+                    module = super(_ModuleSingleton, cls).__call__(**config)
                 else:
-                    typeinfo = config[objname]['__type__']
-                obj = ObjectNode.make_object(typeinfo, config[objname])
-                objects[objname] = obj
-        return objects
+                    module = super(_ModuleSingleton, cls).__call__(name='.'.join(modulepath[:i+1]))
+                parentmodule.set_child(name, module)
+            parentmodule = module
 
-    @staticmethod
-    def save_object_table(objects):
-        config = { }
-        for objname in objects.keys():
-            config[objname] = objects[objname].get_config_data()
-        return config
+        #print("would have set data to " + repr(config))
+        #module.set_config_data(config)
+        return module
 
 
-class SymbolicLink (ObjectNode):
-    @staticmethod
-    def get_config_info():
-        config_info = nerve.ObjectNode.get_config_info()
-        config_info.add_setting('link', "Link", default="")
+class Module (ObjectNode, metaclass=_ModuleSingleton):
+    root = None
+
+    def __init__(self, **config):
+        super().__init__(**config)
+        self._name = self.get_setting('name')
+        #self._module = eval(self._name)
+        self._module = self.get_module(self._name)
+
+        if hasattr(self._module, 'get_config_info'):
+            defaults = self._module.get_config_info().get_defaults()
+            defaults.update(self._config)
+            self._config = defaults
+
+    @classmethod
+    def get_config_info(cls):
+        config_info = super().get_config_info()
+        config_info.add_setting('name', "Full Name", default='nerve')
         return config_info
 
-    def __getitem__(self, index):
-        link = self.get_setting('link')
-        return nerve.get_object(link + '/' + str(index))
-
-    def __setitem__(self, index, obj):
-        link = self.get_setting('link')
-        nerve.set_object(link + '/' + str(index), obj)
-
-    #def __delitem__(self, index):
-    #    delattr(self.objects, index)
-
-
-class Module (ObjectNode):
-    @staticmethod
-    def get_config_info():
-        config_info = nerve.ObjectNode.get_config_info()
-        config_info.add_setting('name', "Module Name", default="")
-        return config_info
-
-
-class ModulesDirectory (ObjectNode):
-    loaded_modules = { }
-
     """
-    @staticmethod
-    def get_config_info():
-        config_info = nerve.ObjectNode.get_config_info()
-        config_info.add_setting('autoload', "Auto Load", default=[ 'base' ])
-        return config_info
-    """
-
-    """
-    def set_config_data(self, config):
-        #super(ObjectNode, self).set_config_data(config)
-        ObjectNode.set_config_data(self, config)
-        #self.autoload_modules()
-    """
-
-    def get_config_data(self):
-        return self._config
-
-    """
-    def __getattr__(self, name):
-        res = getattr(nerve, name)
-        return res
-    """
-
-    """
-    def keys(self):
-        return dir(nerve)
-    """
-
     def get_child(self, index):
-        if index in ModulesDirectory.loaded_modules:
-            return ModulesDirectory.loaded_modules[index]
-        return None
+        child = super().get_child(index)
+        #if not child:
+        #    child = getattr(self._module, index)
+        return child
+    """
 
-    def set_child(self, index, obj):
-        pass
+    #def set_child(self, index, obj):
+    #    pass
 
     def del_child(self, index):
         return False
 
-    def keys_children(self):
-        return list(ModulesDirectory.loaded_modules.keys())
+    def __getattr__(self, index):
+        attrib = self.get_child(index)
+        if attrib:
+            return attrib
 
+        attrib = getattr(self._module, index)
+        if attrib:
+            return attrib
+        raise AttributeError("'%s' object has no attribute '%s'" % (str(self), index))
+
+    # TODO is this used anywhere?
+    def keys(self):
+        keys = super().keys()
+        print(keys)
+        keys = keys + [ name for name in dir(self._module) if not name.startswith('_') and name not in keys ]
+        print(keys)
+        return keys
 
     """
-    def autoload_modules(self):
-        modules = self.get_setting('autoload')
-        if modules:
-            print ("loading modules")
-            for name in modules:
-                ModulesDirectory.import_module(name.replace('/', '.'))
-
-    @staticmethod
-    def preload_modules(modules):
-        print ("preloading modules")
-        for name in modules:
-            ModulesDirectory.import_module(name)
-    """
-
     def get_types(self, classtype=None, module=None):
         typelist = [ ]
         if not module:
@@ -291,52 +416,87 @@ class ModulesDirectory (ObjectNode):
         # TODO holy fuck bad hack
         return [ typename.replace('nerve/', '') for typename in typelist ]
         #return typelist
+    """
 
-    def get_modules(self):
-        autoload = self.get_setting('autoload')
-        modules = [ ]
-        for filename in os.listdir('nerve/'):
-            if filename != '__pycache__' and os.path.isdir('nerve/' + filename):
-                modules.append( (filename, filename in autoload) )
-        return sorted(modules)
+    def get_types(self, classtype=None, module=None):
+        return [ 'core/Server' ]
 
-    @staticmethod
-    def get_module(modulename):
-        #return ObjectNode.get_object(nerve, modulename)
-        #return nerve.get_object("/modules/" + modulename)
-        (modulename, _, objname) = modulename.rpartition('/')
-        modulename = modulename.replace('/', '.')
-        if modulename not in ModulesDirectory.loaded_modules:
-            ModulesDirectory.import_module(modulename)
-        return getattr(ModulesDirectory.loaded_modules[modulename], objname)
+    # TODO this doesn't work because it only gets proper modules
+    def get_module_list(self):
+        return self.keys_children()
 
+    @classmethod
+    def get_class(cls, typeinfo):
+        (modulename, _, classname) = typeinfo.rpartition('/')
+        module = cls.get_module(modulename)
+        return getattr(module, classname)
 
-    @staticmethod
-    def import_module(modulename):
-        modulename = modulename.replace('/', '.')
-        if modulename not in ModulesDirectory.loaded_modules:
+    @classmethod
+    def get_module(cls, modulename):
+        modulename = cls.get_python_name(modulename)
+
+        modulepath = modulename.split('.')
+        module = parentmodule = nerve
+        for (i, name) in enumerate(modulepath[1:], start=1):
             try:
-                module = eval("nerve." + modulename)
+                module = getattr(parentmodule, name)
             except:
                 module = None
 
-            if module and type(module) == type(nerve):
-                ModulesDirectory.loaded_modules[modulename] = module
+            if not module:
+                module = cls.import_module('.'.join(modulepath[:i+1]))
+            parentmodule = module
+        return module
+
+    @classmethod
+    def import_module(cls, modulename):
+        """
+        nerve.log("loading module " + modulename)
+        try:
+            exec("import " + modulename, globals(), globals())
+        except ImportError:
+            nerve.log("failed loading module " + modulename)
+            modulename = modulename.replace("nerve.", "modules.")
+            nerve.log("loading module " + modulename)
+            exec("import " + modulename, globals(), globals())
+        #    nerve.log("error loading module " + modulename + "\n\n" + traceback.format_exc())
+        #    return
+
+        module = eval(modulename)
+
+        if hasattr(module, 'init'):
+            init = getattr(module, 'init')
+            init()
+
+        return module
+        """
+
+        modulename = modulename.replace("nerve.", "")
+        nerve.log("loading module " + modulename)
+        for namespace in ('nerve', 'modules'):
+            try:
+                exec("import " + '.'.join((namespace, modulename)), globals(), globals())
+            except ImportError:
+                continue
+
             else:
-                try:
-                    nerve.log("loading module " + modulename)
-                    code = 'import nerve.%s\n#nerve.%s.init()' % (modulename, modulename)
-                    exec(code, globals(), globals())
-                    ModulesDirectory.loaded_modules[modulename] = eval("nerve." + modulename)
-                except ImportError as e:
-                    """
-                    # TODO this is a temporary hack...
-                    #nerve.log("error loading module " + modulename + "\n\n" + traceback.format_exc())
-                    nerve.log("loading module " + modulename)
-                    code = 'import local.%s\n#%s.init()' % (modulename, modulename)
-                    exec(code, globals(), globals())
-                    ModulesDirectory.loaded_modules[modulename] = eval("local." + modulename)
-                    """
-                    nerve.log("error loading module " + modulename + "\n\n" + traceback.format_exc())
-        return ModulesDirectory.loaded_modules[modulename]
+                module = eval('.'.join((namespace, modulename)))
+
+                if hasattr(module, 'init'):
+                    init = getattr(module, 'init')
+                    init()
+                return module
+        return None
+
+    @staticmethod
+    def get_python_name(modulename):
+        if modulename.startswith('/modules/'):
+            modulename = modulename[len('/modules/'):]
+        modulename = modulename.replace('/', '.')
+        if modulename[0] == '.':
+            raise Exception("attempting to import invalid module: " + modulename)
+        if not modulename.startswith('nerve'):
+            modulename = 'nerve.' + modulename
+        return modulename
+
 

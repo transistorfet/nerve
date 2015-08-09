@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C/DTD HTML 4.01//EN">
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/theme.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/widgets.css" />
+    <link rel="stylesheet" type="text/css" href="/pages/assets/css/pages.css" />
+
+    <script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/assets/js/widgets.js"></script>
+</head>
+<body>
+
+<h3>Pages</h3>
+
+<div id="nerve-notice" style="display: none;"></div>
+<div id="nerve-error" style="display: none;"></div>
+
+<div id="sidebar">
+    <a href="/pages/listpages">Pages</a><br/>
+    <a href="/pages/listblocks">Blocks</a><br/>
+</div>
+
+<div id="content">
+    <% for (id, page) in pages: %>
+        <div class="page-item">
+            <a href="/pages/<%= page %>"><%= page %></a>
+            <a href="/pages/editpage/<%= page %>"><button>Edit</button></a>
+            <a href="/pages/editpage/<%= page %>"><button>Delete</button></a>
+        </div>
+    <% end %>
+
+    <a href="/pages/editpage"><button>Add Page</button></a>
+</div>
+
+</body>
+</html> 
