@@ -12,6 +12,7 @@ import urllib
 import urllib.parse
 
 from .models import PagesModel
+from .views.page import PageView
 
 
 class PagesController (nerve.http.Controller):
@@ -28,28 +29,30 @@ class PagesController (nerve.http.Controller):
             func = getattr(self, page)
             func(request)
 
-        else:
-            data = self.model.render_page(page)
-            if not data:
-                raise nerve.NotFoundError("Page not found: " + page)
+        elif self.model.page_exists(page):
+            data = { }
             data['pagename'] = page
-            self.load_view('nerve/pages/views/template.pyhtml', data)
+            self.set_view(PageView(page, data))
+            self.template_add_to_section('jsfiles', '/pages/assets/js/pages.js')
+            self.template_add_to_section('cssfiles', '/pages/assets/css/pages.css')
+
+        else:
+            raise nerve.NotFoundError("Page not found: " + page)
 
     def handle_error(self, error, traceback):
         if type(error) == nerve.NotFoundError or self.get_mimetype() != None:
             super().handle_error(error, traceback)
         else:
-            self.write_json({ 'status' : 'error', 'message' : error.args[0] })
+            self.load_json_view({ 'status' : 'error', 'message' : error.args[0] })
 
     def listpages(self, request):
         data = { }
         data['pages'] = self.model.list_pages()
-        #self.load_view('nerve/pages/views/listpages.pyhtml', data)
 
-        sectiondata = self.model.render_page(None)
-        sectiondata['sidebar'] += self.load_view_as_string('nerve/pages/views/blk-sidebar.pyhtml', data)
-        sectiondata['content'] = self.load_view_as_string('nerve/pages/views/blk-listpages.pyhtml', data)
-        self.load_view('nerve/pages/views/template.pyhtml', sectiondata)
+        self.load_template_view('nerve/pages/views/editor/listpages.blk.pyhtml', data, request)
+        self.template_add_to_section('sidebar', self.make_html_view('nerve/pages/views/editor/sidebar.blk.pyhtml', data))
+        self.template_add_to_section('jsfiles', '/pages/assets/js/pages.js')
+        self.template_add_to_section('cssfiles', '/pages/assets/css/pages.css')
 
     def editpage(self, request):
         data = { }
@@ -60,15 +63,14 @@ class PagesController (nerve.http.Controller):
         if data['pagename'] and not self.model.page_exists(data['pagename']):
             raise nerve.NotFoundError("Page doesn't exist: " + data['pagename'])
 
-        data['sections'] = self.model.get_page_sections()
+        data['sections'] = PageView.get_page_sections()
         data['pagedata'] = self.model.get_page_data(data['pagename']) if data['pagename'] else ''
         data['blocklist'] = self.model.list_blocks()
-        #self.load_view('nerve/pages/views/editpage.pyhtml', data)
 
-        sectiondata = self.model.render_page(None)
-        sectiondata['sidebar'] += self.load_view_as_string('nerve/pages/views/blk-sidebar.pyhtml', data)
-        sectiondata['content'] = self.load_view_as_string('nerve/pages/views/blk-editpage.pyhtml', data)
-        self.load_view('nerve/pages/views/template.pyhtml', sectiondata)
+        self.load_template_view('nerve/pages/views/editor/editpage.blk.pyhtml', data, request)
+        self.template_add_to_section('sidebar', self.make_html_view('nerve/pages/views/editor/sidebar.blk.pyhtml', data))
+        self.template_add_to_section('jsfiles', '/pages/assets/js/pages.js')
+        self.template_add_to_section('cssfiles', '/pages/assets/css/pages.css')
 
     def savepage(self, request):
         originalname = request.arg('originalname')
@@ -82,14 +84,14 @@ class PagesController (nerve.http.Controller):
             raise nerve.ControllerError('A page by that name already exists: ' + pagename)
 
         pagedata = { }
-        for (name, title, typename) in self.model.get_page_sections():
+        for (name, title, typename) in PageView.get_page_sections():
             if typename == 'text':
                 pagedata[name] = request.arg(name, default="")
             elif typename.startswith('list:'):
-                pagedata[name] = [ item.strip() for item in request.arg(name, default="").split(',') if item ]
+                pagedata[name] = [ item.strip() for item in request.arg(name, default="").split('\n') if item ]
 
         self.model.save_page_data(originalname, pagename, pagedata)
-        self.write_json({ 'status' : 'success', 'message' : 'Page saved successfully' })
+        self.load_json_view({ 'status' : 'success', 'message' : 'Page saved successfully' })
 
     def deletepage(self, request):
         pagename = request.arg('name', default=None)
@@ -100,17 +102,15 @@ class PagesController (nerve.http.Controller):
             raise nerve.ControllerError('Attempting to delete non-existent page: ' + pagename)
 
         self.model.delete_page(pagename)
-        self.write_json({ 'status' : 'success', 'message' : 'Page deleted successfully' })
+        self.load_json_view({ 'status' : 'success', 'message' : 'Page deleted successfully' })
 
     def listblocks(self, request):
         data = { }
         data['blocks'] = self.model.list_blocks()
-        #self.load_view('nerve/pages/views/listblocks.pyhtml', data)
-
-        sectiondata = self.model.render_page(None)
-        sectiondata['sidebar'] += self.load_view_as_string('nerve/pages/views/blk-sidebar.pyhtml', data)
-        sectiondata['content'] = self.load_view_as_string('nerve/pages/views/blk-listblocks.pyhtml', data)
-        self.load_view('nerve/pages/views/template.pyhtml', sectiondata)
+        self.load_template_view('nerve/pages/views/editor/listblocks.blk.pyhtml', data, request)
+        self.template_add_to_section('sidebar', self.make_html_view('nerve/pages/views/editor/sidebar.blk.pyhtml', data))
+        self.template_add_to_section('jsfiles', '/pages/assets/js/pages.js')
+        self.template_add_to_section('cssfiles', '/pages/assets/css/pages.css')
 
     def editblock(self, request):
         data = { }
@@ -122,12 +122,11 @@ class PagesController (nerve.http.Controller):
             raise nerve.ControllerError("Block doesn't exist: " + data['blockname'])
 
         data['blocktext'] = self.model.get_block(data['blockname']) if data['blockname'] else ''
-        #self.load_view('nerve/pages/views/editblock.pyhtml', data)
 
-        sectiondata = self.model.render_page(None)
-        sectiondata['sidebar'] += self.load_view_as_string('nerve/pages/views/blk-sidebar.pyhtml', data)
-        sectiondata['content'] = self.load_view_as_string('nerve/pages/views/blk-editblock.pyhtml', data)
-        self.load_view('nerve/pages/views/template.pyhtml', sectiondata)
+        self.load_template_view('nerve/pages/views/editor/editblock.blk.pyhtml', data, request)
+        self.template_add_to_section('sidebar', self.make_html_view('nerve/pages/views/editor/sidebar.blk.pyhtml', data))
+        self.template_add_to_section('jsfiles', '/pages/assets/js/pages.js')
+        self.template_add_to_section('cssfiles', '/pages/assets/css/pages.css')
 
     def saveblock(self, request):
         originalname = request.arg('originalname')
@@ -142,7 +141,7 @@ class PagesController (nerve.http.Controller):
             raise nerve.ControllerError('A block by that name already exists: ' + blockname)
 
         self.model.save_block(originalname, blockname, blocktext)
-        self.write_json({ 'status' : 'success', 'message' : 'Block saved successfully' })
+        self.load_json_view({ 'status' : 'success', 'message' : 'Block saved successfully' })
 
     def deleteblock(self, request):
         blockname = request.arg('name', default=None)
@@ -153,6 +152,6 @@ class PagesController (nerve.http.Controller):
             raise nerve.ControllerError('Attempting to delete non-existent block: ' + blockname)
 
         self.model.delete_block(blockname)
-        self.write_json({ 'status' : 'success', 'message' : 'Block deleted successfully' })
+        self.load_json_view({ 'status' : 'success', 'message' : 'Block deleted successfully' })
 
 

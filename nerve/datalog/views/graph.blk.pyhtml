@@ -1,0 +1,38 @@
+
+<h3>Datalog Data Display</h3>
+
+<div id="nerve-notice" style="display: none;"></div>
+<div id="nerve-error" style="display: none;"></div>
+
+<div>
+    <select id="select-datalog">
+	<% for name in datalog_list: %>
+	    <option value="<%= name %>"><%= name %></option>
+	<% end %>
+    </select>
+    <button type="submit" class="dl_add">+</button>
+    <button type="submit" class="dl_remove">-</button>
+</div>
+
+<br />
+
+<div class="nerve-graph" data-log="<%= datalog_name %>">
+    <div class="nerve-graph column">
+	<canvas id="graph" width="600" height="400" style="border: 1px solid #000000;">
+	</canvas>
+
+	<div class="nerve-graph controls">
+	    <button id="oldest">&lt;&lt;</button>
+	    <button id="older">&lt;</button>
+	    <button id="newer">&gt;</button>
+	    <button id="newest">&gt;&gt;</button>
+	    <button id="zoomin">+</button>
+	    <button id="zoomout">-</button>
+	</div>
+    </div>
+    <div class="nerve-graph column">
+	<div class="nerve-graph legend">
+	</div>
+    </div>
+</div>
+

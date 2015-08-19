@@ -51,7 +51,7 @@
                             "__type__": "base/QueryController"
                         }
                     },
-                    "__type__": "base/Console"
+                    "__type__": "base/servers/console/Console"
                 },
                 "udp": {
                     "port": 5959,
@@ -60,7 +60,7 @@
                             "__type__": "base/QueryController"
                         }
                     },
-                    "__type__": "base/UDPServer"
+                    "__type__": "base/servers/udpserver/UDPServer"
                 },
                 "http": {
                     "username" : "dev",

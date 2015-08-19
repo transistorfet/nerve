@@ -18,7 +18,7 @@ class Event (nerve.ObjectNode):
 
         repeat = self.get_setting('repeat')
         if repeat and repeat > 0.0:
-            self._repeat_in(repeat)
+            self.repeat_in(repeat)
 
     @classmethod
     def get_config_info(cls):
@@ -45,9 +45,9 @@ class Event (nerve.ObjectNode):
         self.execute(*args, **kwargs)
         repeat = self.get_setting('repeat')
         if repeat and repeat > 0.0:
-            self._repeat_in(repeat)
+            self.repeat_in(repeat)
 
-    def _repeat_in(self, timeout, *args, **kwargs):
+    def repeat_in(self, timeout, *args, **kwargs):
         root = self.get_root()
         if not root:
             return False
@@ -57,7 +57,7 @@ class Event (nerve.ObjectNode):
         raise NotImplementedError
 
 
-class PyExecEvent (Event):
+class PyCodeEvent (Event):
     @classmethod
     def get_config_info(cls):
         config_info = super().get_config_info()

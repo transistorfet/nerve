@@ -8,8 +8,6 @@ import os.path
 import mimetypes
 
 class FileController (nerve.Controller):
-    def __init__(self, **config):
-        super().__init__(**config)
 
     @classmethod
     def get_config_info(cls):
@@ -27,6 +25,13 @@ class FileController (nerve.Controller):
             raise nerve.NotFoundError("Error file not found: " + filename)
 
         (_, _, extension) = filename.rpartition('.')
+        if extension == 'pyhtml':
+            self.set_view(PyHTML(request, None, filename))
+        else:
+            self.load_file_view(filename) 
+
+        """
+        (_, _, extension) = filename.rpartition('.')
 
         if extension == 'pyhtml':
             self.set_mimetype('text/html')
@@ -35,5 +40,6 @@ class FileController (nerve.Controller):
             self.write_text(contents)
         else:
             self.write_file(filename)
+        """
 
 

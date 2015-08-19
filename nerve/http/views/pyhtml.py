@@ -68,7 +68,9 @@ class PyHTML (nerve.View):
 
     version = '0.3'
 
-    def __init__(self, request, data=None, filename=None, code=None):
+    def __init__(self, request=None, data=None, filename=None, code=None):
+        super().__init__()
+        self._mimetype = 'text/html'
         self._contents = ''
         self._segments = [ ]
         self._pycode = ''
@@ -108,8 +110,13 @@ class PyHTML (nerve.View):
             return default
         return self.ARGS(name, default, as_array)
 
+    def DATA(self, name, default=''):
+        if name not in self._data:
+            return default
+        return self._data[name]
+
     def _init_globals(self):
-        self._globals = self._data
+        self._globals = self._data.copy()
         self._globals['py'] = self
         self._globals['nerve'] = nerve
         self._globals['print'] = self.print
@@ -132,9 +139,11 @@ class PyHTML (nerve.View):
     ### Parser and Execution Code ###
 
     def get_output(self):
-        if not self._run_time:
-            self.evaluate()
-        return self._output.getvalue()
+        self.finalize()
+        return bytes(self._output.getvalue(), 'utf-8')
+
+    def render(self):
+        self.evaluate()
 
     def evaluate(self):
         self._start_time = time.time()

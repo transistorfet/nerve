@@ -7,16 +7,6 @@ import traceback
 
 
 class ConfigInfo (object):
-    datatypes = { }
-
-    @classmethod
-    def register_type(cls, name, validator):
-        cls.datatypes[name] = validator
-
-    @classmethod
-    def get_type(cls, name):
-        return cls.datatypes[name]
-
     def __init__(self):
         self.settings = [ ]
 
@@ -30,14 +20,23 @@ class ConfigInfo (object):
         if not datatype:
             datatype = type(default).__name__
 
-        if datatype not in self.datatypes:
+        dataclass = ConfigType.get_type(datatype)
+        if not dataclass:
             raise Exception("Unsupported setting datatype: " + datatype)
+
+        if type(iteminfo) == str:
+            infoclass = ConfigType.get_type(iteminfo)
+            if not infoclass:
+                raise Exception("Unsupported setting iteminfo: " + iteminfo)
+            iteminfo = infoclass
+        elif iteminfo and type(iteminfo) != ConfigInfo:
+            raise Exception("iteminfo must be str or ConfigInfo: " + str(iteminfo))
 
         self.settings.append({
             'name' : name,
             'propername' : propername,
             'default' : default,
-            'datatype' : datatype,
+            'datatype' : dataclass,
             'iteminfo' : iteminfo,
             'options' : None
         })
@@ -67,9 +66,8 @@ class ConfigInfo (object):
             if setting['name'] not in args:
                 if defaults:
                     config[setting['name']] = setting['default']
-            elif setting['datatype'] in self.datatypes:
-                validator = self.datatypes[setting['datatype']]
-                config[setting['name']] = validator(args[setting['name']], setting['iteminfo'])
+            else:
+                config[setting['name']] = setting['datatype'].validate(args[setting['name']], setting['iteminfo'])
         return config
 
 
@@ -81,50 +79,101 @@ class ConfigInfo (object):
 
 
 
-class ConfigTypeValidator (object):
-    def __init__(self, func, htmltype="text", typeclass="scalar"):
-        self.func = func
+class ConfigType (object):
+    datatypes = { }
+
+    @classmethod
+    def get_type(cls, name):
+        if name not in cls.datatypes:
+            return None
+        return cls.datatypes[name]
+
+    def __init__(self, name, constructor, htmltype="text", typeclass="scalar"):
+        ConfigType.datatypes[name] = self
+        self.name = name
+        self.constructor = constructor
+        self.getter = None
         self.htmltype = htmltype
         self.typeclass = typeclass
 
-    def __call__(self, data, iteminfo=None):
+    def validate(self, data, iteminfo=None):
         if iteminfo:
             return self.func(data, iteminfo)
         return self.func(data)
 
-def ConfigTypeDecorator(htmltype="text", typeclass="scalar"):
-    def CreateValidator(func):
-        return ConfigTypeValidator(func, htmltype, typeclass)
-    return CreateValidator
+    def get_value(self, data, name):
+        pass
 
-@ConfigTypeValidator
-def BoolValidator(data):
+    def def_get_items(self, func):
+        self.getter = func
+        return self
+
+    def get_items(self, data):
+        if not self.getter:
+            return None
+        return self.getter(data)
+
+
+def ConfigTypeConstructor(name, htmltype=None, typeclass=None):
+    def CreateType(func):
+        return ConfigType(name, func, htmltype, typeclass)
+    return CreateType
+
+
+ConfigType('int', int)
+ConfigType('float', float)
+ConfigType('str', str)
+ConfigType('bytes', bytes)
+ConfigType('textarea', str, htmltype="textarea")
+
+
+@ConfigTypeConstructor('bool', htmltype="checkbox")
+def BoolConfigType(data):
     if type(data) == bool:
-        config[setting['name']] = data
-        return
+        return data
 
     val = str(data).lower()
     if val == 'true':
-        config[setting['name']] = True
+        return True
     elif val == 'false':
-        config[setting['name']] = False
+        return False
     else:
         raise ValueError("Invalid data for " + setting['name'] + ". Expected bool")
 
-ConfigInfo.register_type('bool', BoolValidator)
-ConfigInfo.register_type('int', ConfigTypeValidator(int))
-ConfigInfo.register_type('float', ConfigTypeValidator(float))
-ConfigInfo.register_type('str', ConfigTypeValidator(str))
-ConfigInfo.register_type('bytes', ConfigTypeValidator(bytes))
-ConfigInfo.register_type('textarea', ConfigTypeValidator(str))
-# also list, tuple, dict, object?
-ConfigInfo.register_type('dict', ConfigTypeValidator(dict, htmltype=None))
 
-@ConfigTypeDecorator(htmltype=None, typeclass="list")
-def ListValidator(data):
-    thing
+@ConfigTypeConstructor('list', htmltype=None, typeclass="list")
+def ListConfigType(data, iteminfo):
+    if type(data) != list:
+        raise ValueError("expected type 'list', received type '" + type(data).__name__ + "'")
+    result = [ ]
+    for item in data:
+        if type(iteminfo) == ConfigInfo:
+            result.append(iteminfo.validate_settings(item))
+        elif type(iteminfo) == ConfigType:
+            result.append(typeinfo.validate(item, None))
+    return result
 
-ConfigInfo.register_type('list', ListValidator)
+@ListConfigType.def_get_items
+def ListConfigType(data):
+    return enumerate(data)
+
+
+@ConfigTypeConstructor('dict', htmltype=None, typeclass="dict")
+def DictConfigType(data, iteminfo):
+    if type(data) != dict:
+        raise ValueError("expected type 'list', received type '" + type(data).__name__ + "'")
+    result = { }
+    for (key, item) in data.items():
+        if type(iteminfo) == ConfigInfo:
+            result[key] = iteminfo.validate_settings(item)
+        elif type(iteminfo) == ConfigType:
+            result[key] = typeinfo.validate(item, None)
+    return result
+
+@DictConfigType.def_get_items
+def DictConfigType(data):
+    return data.items()
+
 
 #Scalar:
 # - display html element
@@ -151,6 +200,11 @@ ConfigInfo.register_type('list', ListValidator)
 # - package values from html element for post request recursively
 # - verify data conforms to type, again recursively
 
+# There needs to be a way of reversing the validation process (verify: convert input into usable data item, ???: convert data item into values to display in html form)
+# A way to retrieve data from an item...
+#
+# in FormView: for each config item: value = datatype.get_value(data, item['name']); output(form with value)
+
 
 
 def querymethod(funcobj):
@@ -165,7 +219,7 @@ class ObjectNode (object):
         self._children = { }
         self.set_config_data(config)
 
-    """ Settings """
+    ### Settings ###
 
     @classmethod
     def get_config_info(cls):
@@ -203,7 +257,10 @@ class ObjectNode (object):
     def save_object_children(self):
         config = { }
         for objname in self._children.keys():
-            config[objname] = self._children[objname].get_config_data()
+            if isinstance(self._children[objname], ObjectNode):
+                config[objname] = self._children[objname].get_config_data()
+            else:
+                nerve.log("unable to save child object " + objname + ": " + self._children[objname])
         return config
 
     def set_setting(self, name, value):
@@ -217,7 +274,7 @@ class ObjectNode (object):
             return self._config[name]
         return None
 
-    """ Direct ObjectNode Children """
+    ### Direct ObjectNode Children ###
 
     def get_child(self, index):
         if index in self._children:
@@ -246,7 +303,7 @@ class ObjectNode (object):
             root = root._parent
         return root
 
-    """ Direct Attributes """
+    ### Direct Attributes ###
 
     def __getattr__(self, index):
         attrib = self.get_child(index)
@@ -270,7 +327,7 @@ class ObjectNode (object):
                 pass
         return keys
 
-    """ Indirect Sub-Object Attributes """
+    ### Indirect Sub-Object Attributes ###
 
     def get_object(self, name):
         obj = self
@@ -298,6 +355,15 @@ class ObjectNode (object):
         for segment in segments:
             root = getattr(root, segment)
         return root.del_child(leaf)
+
+    def notify(self, querystring, *args, **kwargs):
+        if not querystring.endswith('/*'):
+            raise Exception("Invalid notify query: " + querystring)
+        parent = self.get_object(querystring.strip('/*'))
+        for objname in parent.keys_children():
+            obj = parent.get_child(objname)
+            if callable(obj):
+                obj(*args, **kwargs)
 
 
     @staticmethod
@@ -474,13 +540,14 @@ class Module (ObjectNode, metaclass=_ModuleSingleton):
         modulename = modulename.replace("nerve.", "")
         nerve.log("loading module " + modulename)
         for namespace in ('nerve', 'modules'):
+            currentname = '.'.join((namespace, modulename))
             try:
-                exec("import " + '.'.join((namespace, modulename)), globals(), globals())
+                exec("import " + currentname, globals(), globals())
             except ImportError:
+                nerve.log(traceback.format_exc())
                 continue
-
             else:
-                module = eval('.'.join((namespace, modulename)))
+                module = eval(currentname)
 
                 if hasattr(module, 'init'):
                     init = getattr(module, 'init')

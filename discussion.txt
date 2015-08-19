@@ -460,3 +460,35 @@ What ways can the user interact with the system:
 
 
 
+- so you have a view compiler.  A controller handles a specific request, and returns a view.  I don't know exactly how is best to do that but
+  for now, the controller being is object that returns the final output.
+- as it is now, the controller creates a view and passes it the data, but the controller can instead create partial views for the data, and
+  send that to a view compiler which assembles the partial views in a way appropriate for the server who's request it is handling (ie.
+  there can be views for each part (tabs, menu, content, footer, etc) and then the view compiler could use some or all of those views to
+  produce an output.  So the view compiler would tailor the output appropriately for the server, whether it's a console or http)
+
+
+
+- you can talk of the controllers as having an api to access the function of that controller.  The other side of the api in most cases is defined in the js and html files
+  but you use a common api for accessing shell/pyexec/etc.
+- the controllers should strictly handle processing of requests, with possible special requests for features like tabcomplete
+- the server, or a piece of code between the server and the controller, should take of the actual user interaction
+- in the case of console and tcpserver and stuff, there should be a common piece of code on top of the server that runs the controller... should this code be a subclass of the server??
+  so you might subclass Console or TCPServer.  The problem here is that you wouldn't be able to share the code easily between two different superclasses... could be a mixin?
+
+
+
+
+for websockets (as well as html requests), there is a view (phtml + js + css, or View object) that implements the controller's api!
+the controller currently defines the view...
+a controller could be accessed through multiple different types of servers, so eg. the irc client controller could either be accessed through another irc client
+or through websockets, using a custom html view
+
+what if you had settings in the controller objects specifying what type of view to use, so that it can be server specific
+
+
+there is a fundamental difference between servers that result in a single request and response and servers which continually send and receive requests and responses,
+possibly out of order (like a response, sending back data, is not always triggered by a request, in the case of the shell printing the welcome message and stuff...)
+there is something that isn't *exactly* a server, it's a server thread that handles a single connection.
+
+

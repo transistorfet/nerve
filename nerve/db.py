@@ -24,9 +24,9 @@ class Database (object):
         self.cache_select = "*"
         self.cache_distinct = ""
 
-    def query(self, query):
+    def query(self, query, bindings=None):
         dbcursor = self.dbcon.cursor()
-        result = dbcursor.execute(query)
+        result = dbcursor.execute(query, bindings)
         try:
             self.columns = dbcursor.getdescription()
         except apsw.ExecutionCompleteError:

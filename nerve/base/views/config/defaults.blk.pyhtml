@@ -1,0 +1,25 @@
+
+    <%
+
+    for setting in config_info:
+        type_info = config_info.get_type(setting['datatype'])
+        if setting['datatype'] in ('bool', 'int', 'float', 'str', 'bytes', 'textarea'):
+            %>
+            <li><div class="nerve-form-item">
+                <label><%= setting['propername'] %></label>
+                <span>
+                    <% if type_info.htmltype == 'checkbox': %>
+                    <input type="checkbox" name="<%= setting['name'] %>" value="1" <%= ' checked' if setting['default'] else '' %> />
+                    <% elif type_info.htmltype == 'textarea': %>
+                    <textarea name="<%= setting['name'] %>"><%= setting['default'] %></textarea>
+                    <% elif type_info.htmltype == 'text': %>
+                    <input type="text" name="<%= setting['name'] %>" value="<%= setting['default'] %>" />
+                    <% end %>
+                </span>
+            </div></li>
+            <%
+        end
+    end
+
+    %>
+

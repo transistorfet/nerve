@@ -7,7 +7,7 @@ function NerveButton(element)
         var query = $(element).attr('data-query');
         if (query) {
             if (query[0] == '/' || query.indexOf('http://') == 0)
-                $.post('/query', { 'queries[]': [ query ] }, function(response) {}, 'json');
+                $.post('/query', { 'requests[]': [ query ] }, function(response) {}, 'json');
             else
                 $.post('/query/'+query, {}, function(response) {}, 'json');
         }
@@ -91,7 +91,7 @@ function NerveQueryBlock(element)
             elements.push(e);
         });
 
-        $.post('/query', { 'queries[]': queries }, function(response) {
+        $.post('/query', { 'requests[]': queries }, function(response) {
             for (var i in response) {
                 $(elements[i]).html(response[i])
             }
@@ -169,7 +169,7 @@ function NerveTabs(element)
         }
         else {
             $('#' + container + ' > div').hide();
-            $('#' + container + '-' + data_content).show();
+            $('#' + container + ' > #' + data_content).show();
 
             $(element).find('.tab').removeClass('selected');
             $(this).addClass('selected');

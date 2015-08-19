@@ -31,6 +31,10 @@ class Main (nerve.ObjectNode):
         self.args = parser.parse_args()
 
         self.configdir = self.args.configdir.strip('/')
+        if not os.path.exists(self.configdir):
+            os.mkdir(self.configdir)
+            self.save_config(os.path.join(self.configdir, 'settings.json'))
+
         sys.path.insert(0, ( sys.path[0] + '/' if self.configdir[0] != '/' else '' ) + self.configdir)
 
     @classmethod
@@ -38,10 +42,10 @@ class Main (nerve.ObjectNode):
         config_info = super().get_config_info()
         """
         # TODO this is now wrong... these items are children of the parent object, not settings
-        config_info.add_setting('modules', "Modules", default=nerve.Module())
-        config_info.add_setting('devices', "Devices", default=nerve.ObjectNode())
-        config_info.add_setting('events', "Events", default=nerve.ObjectNode())
-        config_info.add_setting('servers', "Servers", default=nerve.ObjectNode())
+        child_info.add_setting('modules', "Modules", default=nerve.Module())
+        child_info.add_setting('devices', "Devices", default=nerve.ObjectNode())
+        child_info.add_setting('events', "Events", default=nerve.ObjectNode())
+        child_info.add_setting('servers', "Servers", default=nerve.ObjectNode())
         """
         return config_info
 
@@ -112,7 +116,7 @@ class Main (nerve.ObjectNode):
         #config = self.get_config_info().get_defaults()
 
         if not os.path.exists(filename):
-            nerve.log("error config not found in " + filename + "\n\n" + traceback.format_exc())
+            nerve.log("error config not found in " + filename + "\n")
             return False
 
         try:
@@ -127,9 +131,15 @@ class Main (nerve.ObjectNode):
         return True
 
     def make_object_children(self, config):
+        # TODO should defaults be set so that this conditional is no longer needed? (it will still need to extra the modules config)
+
         # make sure to load the /modules config first
-        modules_config = config['modules']
-        del config['modules']
+        if 'modules' in config:
+            modules_config = config['modules']
+            del config['modules']
+        else:
+            modules_config = { '__type__': 'objects/Module' }
+
         modules = nerve.ObjectNode.make_object(modules_config['__type__'], modules_config)
         self.set_child('modules', modules)
         super().make_object_children(config)
@@ -229,7 +239,7 @@ def query(urlstring, *args, **kwargs):
                 r = requests.post(urlstring, data=kwargs)
 
             if r.status_code != 200:
-                raise Exception("request to " + urlstring + " failed. " + str(r.status_code) + ": " + r.reason, json.loads(r.text))
+                raise Exception("request to " + urlstring + " failed. " + str(r.status_code) + ": " + r.reason, r.text)
 
             (mimetype, pdict) = cgi.parse_header(r.headers['content-type'])
             if mimetype == 'application/json':
@@ -256,13 +266,8 @@ def query(urlstring, *args, **kwargs):
         return result
 
 def notify(querystring, *args, **kwargs):
-    if not querystring.endswith('/*'):
-        raise Exception("Invalid notify query: " + querystring)
-    parent = nerve.get_object(querystring[:-2])
-    for objname in parent.keys_children():
-        obj = parent.get_child(objname)
-        if callable(obj):
-            obj(*args, **kwargs)
+    global mainloops
+    return mainloops[0].notify(name.lstrip('/'), obj, **config)
 
 
 def load_file(filename):

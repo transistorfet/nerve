@@ -13,9 +13,9 @@
                 <% if typename == 'text': %>
                     <input name="<%= name %>" class="page-section" type="text" value="<%= pagedata[name] if name in pagedata else '' %>" />
                 <% elif typename == 'list:blocks': %>
-                    <textarea name="<%= name %>" class="page-section"><%= ', '.join(pagedata[name]) if name in pagedata else '' %></textarea>
+                    <textarea name="<%= name %>" class="page-section"><%= '\n'.join(pagedata[name]) if name in pagedata else '' %></textarea>
                 <% elif typename.startswith('list:'): %>
-                    <textarea name="<%= name %>" class="page-section"><%= ', '.join(pagedata[name]) if name in pagedata else '' %></textarea>
+                    <textarea name="<%= name %>" class="page-section"><%= '\n'.join(pagedata[name]) if name in pagedata else '' %></textarea>
                 <% end %>
             </div>
         <% end %>

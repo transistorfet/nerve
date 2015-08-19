@@ -28,7 +28,7 @@
 
 <div id="content">
 
-<%%include nerve/base/views/config/blk-settings.pyhtml %>
+<% py.include('nerve/connect/views/client.blk.pyhtml') %>
 
 </div>
 

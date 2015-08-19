@@ -19,7 +19,7 @@ class DatalogController (nerve.http.Controller):
         if type(error) == nerve.NotFoundError or self.get_mimetype() != None:
             super().handle_error(error, traceback)
         else:
-            self.write_json({ 'status' : 'error', 'message' : repr(error) })
+            self.load_json_view({ 'status' : 'error', 'message' : repr(error) })
 
     def index(self, request):
         self.redirect_to('/%s/graph' % (request.segments[0],))
@@ -33,7 +33,9 @@ class DatalogController (nerve.http.Controller):
         data = { }
         data['datalog_name'] = remain
         data['datalog_list'] = [ name for name in datalogs.keys_children() if isinstance(getattr(datalogs, name), nerve.datalog.DatalogDevice) ]
-        self.load_view('nerve/datalog/views/graph.pyhtml', data)
+        self.load_template_view('nerve/datalog/views/graph.blk.pyhtml', data, request)
+        self.template_add_to_section('jsfiles', '/datalog/assets/js/datalog.js')
+        self.template_add_to_section('cssfiles', '/datalog/assets/css/datalog.css')
 
     def get_data(self, request):
         datalog_name = request.args['datalog']
@@ -42,6 +44,6 @@ class DatalogController (nerve.http.Controller):
         ref = '/devices/datalogs/%s/get_data' % (datalog_name,)
 
         data = nerve.query(ref, start_time=start_time, length=length)
-        self.write_json(data)
+        self.load_json_view(data)
 
 

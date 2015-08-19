@@ -40,7 +40,41 @@ WS_B1_OPCODE = 0x0f
 WS_B2_MASKBIT = 0x80
 WS_B2_LENGTH = 0x7f
 
-class WebSocketError (Exception): pass
+class WebSocketError (OSError): pass
+
+
+class HTTPServer (nerve.Server, socketserver.ThreadingMixIn, http.server.HTTPServer):
+    daemon_threads = True
+
+    def __init__(self, **config):
+        nerve.Server.__init__(self, **config)
+
+        self.username = self.get_setting("username")
+        self.password = self.get_setting("password")
+
+        http.server.HTTPServer.__init__(self, ('', self.get_setting('port')), HTTPRequestHandler)
+        #if self.get_setting('ssl_enable'):
+        #    self.socket = ssl.wrap_socket(self.socket, certfile=self.get_setting('ssl_cert'), server_side=True)
+
+        sa = self.socket.getsockname()
+        nerve.log('starting http(s) on port ' + str(sa[1]))
+
+        self.thread = nerve.Task('HTTPServerTask', target=self.serve_forever)
+        self.thread.daemon = True
+        self.thread.start()
+
+    @classmethod
+    def get_config_info(cls):
+        config_info = super().get_config_info()
+        config_info.add_setting('port', "Port", default=8888)
+        config_info.add_setting('use_usersdb', "Use Users DB", default=True)
+        config_info.add_setting('allow_guest', "Allow Guest", default=True)
+        config_info.add_setting('username', "Admin Username", default='')
+        config_info.add_setting('password', "Admin Password", default='')
+        config_info.add_setting('ssl_enable', "SSL Enable", default=False)
+        config_info.add_setting('ssl_cert', "SSL Certificate File", default='')
+        config_info.add_setting('template', "Default Template", default=dict(__type__='http/views/template/TemplateView', filename='nerve/http/views/template.pyhtml'))
+        return config_info
 
 
 class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
@@ -49,6 +83,9 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
 
     def log_message(self, format, *args):
         nerve.log(self.address_string() + ' ' + format % args)
+
+    def get_setting(self, name, typename=None):
+        return self.server.get_setting(name, typename)
 
     def check_authorization(self):
         authdata = self.headers.get('Authorization')
@@ -71,9 +108,6 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
             return contextmanager()
 
         raise nerve.users.UserLoginError("you must provide a login name and password")
-
-    def send_401(self, message):
-        self.send_content(401, 'text/html', message, [ ('WWW-Authenticate', 'Basic realm="Secure Area"') ])
 
     def do_GET(self):
         try:
@@ -121,24 +155,26 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
         else:
             postvars = None
 
-        request = nerve.Request(self, None, reqtype, self.path, postvars, headers=dict(self.headers))
-
         if self.headers['upgrade'] == 'websocket':
-            self.handle_websocket(request)
+            self.handle_websocket(postvars)
             return
 
+        request = nerve.Request(self, None, reqtype, self.path, postvars, headers=dict(self.headers))
         controller = self.server.make_controller(request)
         controller.handle_request(request)
 
-        mimetype = controller.get_mimetype()
         redirect = controller.get_redirect()
         error = controller.get_error()
+        mimetype = controller.get_mimetype()
         output = controller.get_output()
 
         if redirect:
             self.send_content(302, mimetype, output, [ ('Location', redirect) ])
         elif error:
-            self.send_content(404 if type(error) is nerve.NotFoundError else 500, mimetype, output)
+            if type(error) == nerve.users.UserPermissionsError:
+                self.send_401(str(error))
+            else:
+                self.send_content(404 if type(error) is nerve.NotFoundError else 500, mimetype, output)
         else:
             self.send_content(200, mimetype, output)
         return
@@ -147,21 +183,38 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
         if isinstance(content, str):
             content = bytes(content, 'utf-8')
         self.send_response(errcode)
-        self.send_header('Content-Type', mimetype)
-        self.send_header('Content-Length', len(content))
+        if content:
+            self.send_header('Content-Type', mimetype)
+            self.send_header('Content-Length', len(content))
+        else:
+            self.send_header('Content-Length', 0)
         if headers:
             for (header, value) in headers:
                 self.send_header(header, value)
         self.end_headers()
-        self.wfile.write(content)
+        if content:
+            self.wfile.write(content)
 
     def send_400(self):
         self.send_content(400, 'text/plain', '400 Bad Request')
 
+    def send_401(self, message):
+        self.send_content(401, 'text/html', message, [ ('WWW-Authenticate', 'Basic realm="Secure Area"') ])
+
     def send_404(self):
         self.send_content(404, 'text/plain', '404 Not Found')
 
-    def handle_websocket(self, request):
+    @staticmethod
+    def is_valid_path(path):
+        if not path[0] == '/':
+            return False
+        for name in path.split('/'):
+            if name == '.' or name == '..':
+                return False
+        return True
+
+
+    def handle_websocket(self, postvars):
         self.send_response(101, "Switching Protocols")
         self.send_header('Upgrade', 'websocket')
         self.send_header('Connection', 'Upgrade')
@@ -170,43 +223,67 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
         self.end_headers()
 
         protocol = self.headers['Sec-WebSocket-Protocol']
+        conn = WebSocketConnection(self.rfile, self.wfile)
+        request = nerve.Request(conn, None, 'CONNECT', self.path, postvars, headers=dict(self.headers))
 
-        try:
-            controller = self.server.make_controller(request)
-            self.websocket_write_message('Welcome to the nerve webshell...\n')
-            while True:
-                self.websocket_write_message('>> ')
-                data = self.websocket_read_message()
-                if data == None:
-                    break
-                self.websocket_write_message(data + '\n')
-                if data == 'quit':
-                    break
+        controller = self.server.make_controller(request)
+        controller.handle_request(request)
+        #mimetype = controller.get_mimetype()
+        #output = controller.get_output()
+        error = controller.get_error()
 
-                controller.handle_request(nerve.Request(self, None, 'QUERY', "/", { 'queries[]' : [ data ] }))
-                mimetype = controller.get_mimetype()
-                output = controller.get_output()
-
-                if mimetype.startswith('text/'):
-                    self.websocket_write_message(output, text=True)
-                elif mimetype == 'application/json':
-                    text = [ ]
-                    results = json.loads(output.decode('utf-8'))
-                    for item in results:
-                        text.extend(item.replace(' ', '&nbsp;').split('\n'))
-                    self.websocket_write_message('\n'.join(text), text=True)
-                else:
-                    self.websocket_write_message(output, text=False)
-
-        except Exception as e:
-            nerve.log(traceback.format_exc())
-            self.websocket_send_close(500, repr(e))
-
+        if not error:
+            conn.websocket_write_close(200, '')
+        elif type(error) == nerve.users.UserPermissionsError:
+            self.send_401(str(error))
         else:
-            self.websocket_send_close(200, '')
+            conn.websocket_write_message(str(error))
+            conn.websocket_write_close(500, repr(error))
 
-        self.websocket_wait_for_close()
+        conn.websocket_wait_for_close()
         return
+
+
+class WebSocketConnection (nerve.connect.Connection):
+    def __init__(self, rfile, wfile):
+        self.rfile = rfile
+        self.wfile = wfile
+
+    def read_message(self):
+        data = self.websocket_read_message()
+        if not data:
+            return None
+        return nerve.connect.Message(text=data)
+        #if type(data) == str:
+        #    return nerve.connect.Message(text=data)
+        #else:
+        #    return nerve.connect.Message(text=data, mimetype='application/json', data=json.loads(data.decode('utf-8')))
+
+    def send_message(self, msg):
+        #if msg.mimetype == 'application/json':
+        #    self.websocket_write_message(msg.text, True)
+        #else:
+        self.websocket_write_message(msg.text, True)
+
+    """
+    def read_message(self):
+        data = self.websocket_read_message()
+        msg = { }
+        msg['text'] = data
+        if type(data) == str:
+            msg['content-type'] = 'text/plain'
+        else:
+            msg['content-type'] = 'application/json'
+            msg['data'] = json.loads(data.decode('utf-8'))
+        return msg
+
+    def send_message(self, msg):
+        if msg['content-type'] == 'application/json':
+            # this assumes that text contains the data already encoded in json...
+            self.websocket_write_message(msg['text'], False)
+        else:
+            self.websocket_write_message(msg['text'], True)
+    """
 
     def websocket_read_message(self):
         data = b''
@@ -215,9 +292,9 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
             (opcode, payload, headbyte1, headbyte2) = self.websocket_read_frame()
 
             if headbyte1 & WS_B1_RSV:
-                raise Exception("received an invalid frame where first byte is " + hex(headbyte1))
+                raise WebSocketError("websocket: received an invalid frame where first byte is " + hex(headbyte1))
             if (headbyte2 & WS_B2_MASKBIT) == 0:
-                raise Exception("received an invalid frame where second byte is " + hex(headbyte2))
+                raise WebSocketError("websocket: received an invalid frame where second byte is " + hex(headbyte2))
 
             if opcode & WS_OP_CONTROL:
                 if opcode == WS_OP_CLOSE:
@@ -229,14 +306,14 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
                 elif opcode == WS_OP_PONG:
                     continue
                 else:
-                    raise Exception("received invalid opcode " + hex(opcode))
+                    raise WebSocketError("websocket: received invalid opcode " + hex(opcode))
 
             else:
                 if msg_opcode == None:
                     msg_opcode = opcode
                 else:
                     if opcode != WS_OP_CONT:
-                        raise Exception("expected CONT opcode, received " + hex(opcode))
+                        raise WebSocketError("websocket: expected CONT opcode, received " + hex(opcode))
 
                 data += payload
                 if headbyte1 & WS_B1_FINBIT:
@@ -246,7 +323,7 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
             return data.decode('utf-8')
         elif msg_opcode == WS_OP_BIN:
             return data
-        raise Exception("expected non-control opcode, received " + hex(opcode))
+        raise WebSocketError("websocket: expected non-control opcode, received " + hex(opcode))
 
     def websocket_read_frame(self):
         (headbyte1, headbyte2) = struct.unpack('!BB', self.websocket_read_bytes(2))
@@ -267,26 +344,16 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
         return (opcode, payload, headbyte1, headbyte2)
 
     def websocket_read_bytes(self, num):
-        return self.rfile.read(num)
+        data = self.rfile.read(num)
+        if len(data) != num:
+            raise WebSocketError("websocket: unexpected end of data")
+        return data
 
     def websocket_write_message(self, data, text=True):
         if text is True:
             self.websocket_write_frame(WS_OP_TEXT, bytes(data, 'utf-8') if type(data) == str else data)
         else:
             self.websocket_write_frame(WS_OP_BIN, data)
-
-    def websocket_send_close(self, statuscode, message):
-        self.websocket_write_frame(WS_OP_CLOSE, struct.pack("!H", statuscode) + bytes(message, 'utf-8'))
-
-    def websocket_wait_for_close(self):
-        while True:
-            (opcode, payload, headbyte1, headbyte2) = self.websocket_read_frame()
-            if opcode == WS_OP_CLOSE:
-                if payload:
-                    nerve.log("websocket: received close message: " + str(struct.unpack("!H", payload[0:2])[0]) + " - " + payload[2:].decode('utf-8'))
-                else:
-                    nerve.log("websocket: received close message")
-                return
 
     def websocket_write_frame(self, opcode, data):
         length = len(data)
@@ -306,46 +373,17 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
         self.wfile.write(frame)
         #self.request.send(frame)
 
-    @staticmethod
-    def is_valid_path(path):
-        if not path[0] == '/':
-            return False
-        for name in path.split('/'):
-            if name == '.' or name == '..':
-                return False
-        return True
+    def websocket_write_close(self, statuscode, message):
+        self.websocket_write_frame(WS_OP_CLOSE, struct.pack("!H", statuscode) + bytes(message, 'utf-8'))
 
-
-class HTTPServer (nerve.Server, socketserver.ThreadingMixIn, http.server.HTTPServer):
-    daemon_threads = True
-
-    def __init__(self, **config):
-        nerve.Server.__init__(self, **config)
-
-        self.username = self.get_setting("username")
-        self.password = self.get_setting("password")
-
-        http.server.HTTPServer.__init__(self, ('', self.get_setting('port')), HTTPRequestHandler)
-        #if self.get_setting('ssl_enable'):
-        #    self.socket = ssl.wrap_socket(self.socket, certfile=self.get_setting('ssl_cert'), server_side=True)
-
-        sa = self.socket.getsockname()
-        nerve.log('starting http(s) on port ' + str(sa[1]))
-
-        self.thread = nerve.Task('HTTPServerTask', target=self.serve_forever)
-        self.thread.daemon = True
-        self.thread.start()
-
-    @classmethod
-    def get_config_info(cls):
-        config_info = super().get_config_info()
-        config_info.add_setting('port', "Port", default=8888)
-        config_info.add_setting('use_usersdb', "Use Users DB", default=True)
-        config_info.add_setting('allow_guest', "Allow Guest", default=True)
-        config_info.add_setting('username', "Admin Username", default='')
-        config_info.add_setting('password', "Admin Password", default='')
-        config_info.add_setting('ssl_enable', "SSL Enable", default=False)
-        config_info.add_setting('ssl_cert', "SSL Certificate File", default='')
-        return config_info
+    def websocket_wait_for_close(self):
+        while True:
+            (opcode, payload, headbyte1, headbyte2) = self.websocket_read_frame()
+            if opcode == WS_OP_CLOSE:
+                if payload:
+                    nerve.log("websocket: received close message: " + str(struct.unpack("!H", payload[0:2])[0]) + " - " + payload[2:].decode('utf-8'))
+                else:
+                    nerve.log("websocket: received close message")
+                return
 
 

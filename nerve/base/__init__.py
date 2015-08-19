@@ -4,14 +4,16 @@
 from .controllers.config import ConfigController
 from .controllers.files import FileController
 from .controllers.query import QueryController
-from .controllers.pyexec import PyExecController
+from .controllers.pycode import PyCodeController
 from .controllers.shell import ShellController
 
 from .devices.realtime import RealtimeDevice
 
+"""
 from .servers.console import Console
 from .servers.tcpserver import TCPServer
 from .servers.udpserver import UDPServer
+"""
 
 def init():
     pass

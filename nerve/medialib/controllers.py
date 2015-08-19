@@ -21,14 +21,16 @@ class MediaLibController (nerve.http.Controller):
             #if 'application/json' in request.header['accept']:
 
             # TODO this has a different format than what's used with other controllers
-            self.write_json({ 'error' : repr(error) })
+            self.load_json_view({ 'error' : repr(error) })
 
     def index(self, request):
         medialib = nerve.get_object('/devices/medialib')
 
         data = { }
         data['list_of_playlists'] = medialib.get_playlist_list()
-        self.load_view('nerve/medialib/views/playlist.pyhtml', data)
+        self.load_template_view('nerve/medialib/views/playlist.blk.pyhtml', data, request)
+        self.template_add_to_section('jsfiles', '/medialib/assets/js/medialib.js')
+        self.template_add_to_section('cssfiles', '/medialib/assets/css/medialib.css')
 
     def get_playlist(self, request):
         medialib = nerve.get_object('/devices/medialib')
@@ -36,7 +38,7 @@ class MediaLibController (nerve.http.Controller):
 
         data = { }
         data['playlist'] = medialib.get_playlist(playlist)
-        self.load_view('nerve/medialib/views/playlist-data.pyhtml', data)
+        self.load_html_view('nerve/medialib/views/playlist-data.blk.pyhtml', data)
 
     def search(self, request):
         medialib = nerve.get_object('/devices/medialib')
@@ -56,7 +58,9 @@ class MediaLibController (nerve.http.Controller):
         else:
             data['media_list'] = None
 
-        self.load_view('nerve/medialib/views/search.pyhtml', data)
+        self.load_template_view('nerve/medialib/views/search.blk.pyhtml', data, request)
+        self.template_add_to_section('jsfiles', '/medialib/assets/js/medialib.js')
+        self.template_add_to_section('cssfiles', '/medialib/assets/css/medialib.css')
 
     def search_youtube(self, request):
         medialib = nerve.get_object('/devices/medialib')
@@ -73,7 +77,7 @@ class MediaLibController (nerve.http.Controller):
                 data['media_list'] = json.loads(r.text)
                 #print(json.dumps(data['media_list'], sort_keys=True, indent=4, separators=(',', ':')))
 
-        self.load_view('nerve/medialib/views/search_youtube.pyhtml', data)
+        self.load_template_view('nerve/medialib/views/search_youtube.blk.pyhtml', data, request)
 
     def shuffle_playlist(self, request):
         medialib = nerve.get_object('/devices/medialib')
@@ -93,7 +97,7 @@ class MediaLibController (nerve.http.Controller):
                 raise nerve.ControllerError("A playlist by that name already exists")
 
         playlist = nerve.medialib.Playlist.create(playlist_name)
-        self.write_json({ 'notice' : "Playlist created successfully" })
+        self.load_json_view({ 'notice' : "Playlist created successfully" })
 
     def delete_playlist(self, request):
         medialib = nerve.get_object('/devices/medialib')
@@ -101,9 +105,9 @@ class MediaLibController (nerve.http.Controller):
         for name in medialib.get_playlist_list():
             if name == playlist_name:
                 nerve.medialib.Playlist.delete(playlist_name)
-                self.write_json({ 'notice' : "Playlist deleted successfully" })
+                self.load_json_view({ 'notice' : "Playlist deleted successfully" })
                 return
-        self.write_json({ 'error' : "That playlist no longer exists" })
+        self.load_json_view({ 'error' : "That playlist no longer exists" })
 
     def add_tracks(self, request):
         medialib = nerve.get_object('/devices/medialib')
@@ -126,7 +130,7 @@ class MediaLibController (nerve.http.Controller):
                     result['count'] = playlist.set_list(media)
                 elif request.arg('method') == 'enqueue':
                     result['count'] = playlist.add_list(media)
-        self.write_json(result)
+        self.load_json_view(result)
 
     def add_urls(self, request):
         result = dict(count=0)
@@ -139,7 +143,7 @@ class MediaLibController (nerve.http.Controller):
                 result['count'] = playlist.set_files(urls)
             elif 'pl_enqueue':
                 result['count'] = playlist.add_files(urls)
-        self.write_json(result)
+        self.load_json_view(result)
 
     def remove_urls(self, request):
         result = dict(count=0)
@@ -149,7 +153,7 @@ class MediaLibController (nerve.http.Controller):
                 urls.append(urllib.parse.unquote(url))
             playlist = nerve.medialib.Playlist(request.args['playlist'])
             result['count'] = playlist.remove_files(urls)
-        self.write_json(result)
+        self.load_json_view(result)
 
     def rehash_database(self, request):
         medialib = nerve.get_object('/devices/medialib')

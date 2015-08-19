@@ -2,21 +2,26 @@
 # -*- coding: utf-8 -*-
 
 import nerve
+import nerve.connect
 
 import io
 import json
 import time
+import os.path
 import traceback
 import mimetypes
 import urllib.parse
 
 
 class Request (object):
-    def __init__(self, server, user, reqtype, urlstring, args, headers=dict()):
-        self.server = server
+    def __init__(self, source, user, reqtype, urlstring, args, headers=dict()):
+        self.source = source
         self.user = user
-        self.reqtype = reqtype
-        (self.url, self.args) = self.parse_query(urlstring, args)
+        self.reqtype = reqtype      # could be GET, POST, QUERY, CONNECT?
+        if type(urlstring) == str:
+            (self.url, self.args) = self.parse_query(urlstring, args)
+        else:
+            (self.url, self.args) = (urlstring, args)
         self.headers = { key.lower(): item for (key, item) in headers.items() }
 
         self.segments = self.url.path.lstrip('/').split('/')
@@ -68,7 +73,6 @@ class Request (object):
 
 
 class NotFoundError (Exception): pass
-
 class ControllerError (Exception): pass
 
 
@@ -77,62 +81,53 @@ class Controller (nerve.ObjectNode):
         super().__init__(**config)
         self._error = None
         self._redirect = None
-        self._output = None
+        self._view = None
 
     def initialize(self):
         self._error = None
         self._redirect = None
-        #self._mimetype = 'text/plain'
-        self._mimetype = None
-        self._output = io.BytesIO()
+        self._view = None
 
     def finalize(self):
         pass
 
-    def set_mimetype(self, mimetype):
-        if len(self._output.getvalue()) > 0:
-            raise Exception('mimetype', "in nerve.Controller, attempting to change mimetype after output has been written")
-        self._mimetype = mimetype
+    def set_view(self, view):
+        self._view = view
+
+    def load_plaintext_view(self, text):
+        self.set_view(PlainTextView(text))
+
+    def load_json_view(self, data):
+        self.set_view(JsonView(data))
+
+    def load_file_view(self, filename, base=None):
+        self.set_view(FileView(filename, base))
+
+    def get_mimetype(self):
+        if not self._view:
+            return None
+        return self._view._mimetype
+
+    def get_output(self):
+        if not self._view:
+            return None
+        return self._view.get_output()
 
     def redirect_to(self, location):
         self._redirect = location
 
-    def write_bytes(self, data):
-        self._output.write(data)
-
-    def write_text(self, data):
-        self._output.write(data.encode('utf-8'))
-
-    def write_json(self, data):
-        self._mimetype = 'application/json'
-        def json_default(obj):
-            return str(obj)
-        text = json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '), default=json_default)
-        self.write_text(text)
-
-    def write_file(self, filename):
-        (mimetype, encoding) = mimetypes.guess_type(filename)
-        self.set_mimetype(mimetype)
-        with open(filename, 'rb') as f:
-            contents = f.read()
-            self.write_bytes(contents)
-
-    def get_mimetype(self):
-        return self._mimetype
-
-    def get_error(self):
-        return self._error
-
     def get_redirect(self):
         return self._redirect
 
-    def get_output(self):
-        return self._output.getvalue()
+    def get_error(self):
+        return self._error
 
     def handle_request(self, request):
         self.initialize()
         try:
             self.do_request(request)
+            if self._view:
+                self._view.finalize()
 
         except Exception as e:
             self._error = e
@@ -149,14 +144,14 @@ class Controller (nerve.ObjectNode):
         return False
 
     def handle_error(self, error, traceback):
-        if not self._mimetype:
-            self._mimetype = 'text/plain'
+        if not self._view:
+            self.load_plaintext_view('')
         nerve.log(traceback)
         #if 'text/html' in request.headers['accept']:
         #   render some html
         #else:
         #   self.write_text(traceback)
-        self.write_text(traceback)
+        self._view.write_text(traceback)
 
     def do_request(self, request):
         name = request.next_segment()
@@ -164,16 +159,75 @@ class Controller (nerve.ObjectNode):
             name = 'index'
 
         try:
-            func = getattr(self, name)
+            method = getattr(self, name)
         except AttributeError:
             raise NotFoundError("Page not found: " + name) from None
 
-        func(request)
+        method(request)
 
 
 class View (object):
+    def __init__(self):
+        self._mimetype = None
+        self._encoding = 'utf-8'
+        self._output = io.BytesIO()
+        self._finalized = False
+
+    def write_bytes(self, data):
+        self._output.write(data)
+
+    def write_text(self, data):
+        self._output.write(data.encode('utf-8'))
+
+    def get_mimetype(self):
+        return (self._mimetype, self._encoding)
+
     def get_output(self):
-        raise NotImplementedError
+        self.finalize()
+        return self._output.getvalue()
+
+    def finalize(self):
+        if not self._finalized:
+            self._finalized = True
+            self.render()
+
+    def render(self):
+        pass
+
+    def __str__(self):
+        return self.get_output().decode(self._encoding)
+
+
+class PlainTextView (View):
+    def __init__(self, text):
+        super().__init__()
+        self._mimetype = 'text/plain'
+        self.write_text(text)
+
+
+class JsonView (View):
+    def __init__(self, data=None):
+        super().__init__()
+        self._mimetype = 'application/json'
+        self._data = data
+
+    def render(self):
+        def json_default(obj):
+            return str(obj)
+        text = json.dumps(self._data, sort_keys=True, indent=4, separators=(',', ': '), default=json_default)
+        self.write_text(text)
+
+
+class FileView (View):
+    def __init__(self, filename, base=None):
+        super().__init__()
+        self.filename = os.path.join(base, filename) if base else filename
+        (self._mimetype, self._encoding) = mimetypes.guess_type(self.filename)
+
+    def render(self):
+        with open(self.filename, 'rb') as f:
+            contents = f.read()
+        self.write_bytes(contents)
 
 
 class Server (nerve.ObjectNode):
@@ -193,7 +247,7 @@ class Server (nerve.ObjectNode):
             for option in servers.keys():
                 config_info.add_option('parent', option, '/servers/' + option)
         """
-        config_info.add_setting('controllers', "Controllers", default=dict())
+        config_info.add_setting('controllers', "Controllers", default=dict(), iteminfo='str')
         return config_info
 
     def start_server(self):
@@ -235,7 +289,7 @@ class Device (Model):
         self._callbacks[attrib] = func
 
 
-class PyExecQuery (nerve.ObjectNode):
+class PyCodeQuery (nerve.ObjectNode):
     @classmethod
     def get_config_info(cls):
         config_info = super().get_config_info()

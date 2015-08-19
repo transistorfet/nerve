@@ -26,7 +26,8 @@ def log(logtype, text=None):
     if text is None:
         text = logtype
         logtype = 'info'
-    output = "%s [%s] %s\n" % (time.strftime("%Y-%m-%d %H:%M"), logtype, text)
+    #output = "%s [%s] %s\n" % (time.strftime("%Y-%m-%d %H:%M"), logtype, text)
+    output = "%s %s\n" % (time.strftime("%Y-%m-%d %H:%M"), text)
 
     logbuffer.append(output)
     if len(logbuffer) > logbuffermax:

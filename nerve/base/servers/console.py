@@ -40,7 +40,6 @@ class Console (nerve.Server):
                 readline.parse_and_bind("tab: complete")
 
             while True:
-            #while not self.thread.stopflag.is_set():
                 try:
                     #print(">> ", end='', flush=True)
                     #line = sys.stdin.readline().strip()
@@ -49,7 +48,7 @@ class Console (nerve.Server):
                         nerve.quit()
                         break
                     elif line:
-                        request = nerve.Request(self, None, 'QUERY', "/", { 'queries[]' : [ line ] }, headers=dict(accept='text/plain, text/html, application/json'))
+                        request = nerve.Request(self, None, 'QUERY', "/", { 'requests[]' : [ line ] }, headers=dict(accept='text/plain, text/html, application/json'))
                         controller.handle_request(request)
                         mimetype = controller.get_mimetype()
                         output = controller.get_output()

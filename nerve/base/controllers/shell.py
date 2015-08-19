@@ -2,26 +2,36 @@
 # -*- coding: utf-8 -*-
 
 import nerve
+import nerve.connect
 
 import io
 import shlex
 
 
-class ShellController (nerve.Controller):
+class ShellController (nerve.Controller, nerve.connect.ControllerMixIn):
     def __init__(self, **config):
         super().__init__(**config)
         self.pwd = '/devices'
 
-    def do_request(self, request):
-        result = None
-        self.set_mimetype('text/plain')
-        if 'queries[]' in request.args:
-            result = [ ]
-            for query_string in request.args['queries[]']:
+    def index(self, request):
+        if request.reqtype == 'CONNECT':
+            self.handle_connection(request)
+        elif request.reqtype == 'QUERY':
+            self.load_plaintext_view('')
+            for query_string in request.args['requests[]']:
                 self.run_command(query_string)
+        else:
+            raise nerve.ControllerError("unexpected request type; received " + request.reqtype)
 
-    def print(self, *objects, sep='', end='\n'):
-        self.write_text(sep.join(str(obj) for obj in objects) + end)
+    def on_connect(self):
+        self.conn.send_message(nerve.connect.Message(text="Welcome to the nerve webshell...\n"))
+
+    def on_message(self, msg):
+        if msg.text == 'quit':
+            raise nerve.connect.QuitException()
+        self.load_plaintext_view('')
+        self.run_command(msg.text)
+        self.conn.send_message(nerve.connect.Message(text=self.get_output().decode('utf-8')))
 
     def run_command(self, command_line):
         args = shlex.split(command_line)
@@ -32,6 +42,9 @@ class ShellController (nerve.Controller):
         else:
             command_func = self.cmd_query
         exec("command_func(args)")
+
+    def print(self, *objects, sep='', end='\n'):
+        self._view.write_text(sep.join(str(obj) for obj in objects) + end)
 
     def tab_complete(self, text, state):
         for name in dir(self):

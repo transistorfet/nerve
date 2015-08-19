@@ -17,11 +17,11 @@ class QueryController (nerve.Controller):
 
         if querystr != '':
             result = self.execute_query(querystr, **request.args)
-        elif 'queries[]' in request.args:
+        elif 'requests[]' in request.args:
             result = { }
-            for i, querystr in enumerate(request.args['queries[]']):
+            for i, querystr in enumerate(request.args['requests[]']):
                 result[i] = self.execute_query(querystr)
-        self.write_json(result)
+        self.load_json_view(result)
 
     def execute_query(self, querystr, **args):
         if querystr[0] != '/' and not querystr.startswith('http:'):

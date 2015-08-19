@@ -1,22 +1,38 @@
 
+    * add subtabs for tabs
+    * sort out how the users module is a singleton, and how eventthreadpool is a singleton; also how they are created (current just statically made in Main)
+    * more directly integrate the user system.  especially with mud, there must be much better security and access controls.  This also could apply for an
+      irc device that is owned by one user and represents that user, and can only be accessed by that user
+    * finalize in views doesn't work entirely right... the point is to allow errors in the view to be caught while handling the request, rather than when
+      the server fetches output, but sometimes the output renders incorrectly. Views need to be more consistent anyways, with str vs bytes, etc
+
+    * A connection could be either text/plain (line terminated), application/json (messages), or possibly text/html, which would be similar to
+      text/plain but allow html tags in the stream.  Sort out how connections negotiate mimetype of messages, and how messages are structured
+    * could you make something (server or connection handler or something), that will act like a terminal, that will respond to arrow
+      keys, completion, and so on, just like console does, but for tcpserver connections, and other things (even the websocket shell)
+
     * change server's 'controllers' to 'mappings' to allow multiple parts in the path name ("/things/stuff/config" -> "config controller")
     * add a mechanism for specifying access controls, even if it could be circumvented.  It should at least be hard to mess up the system
     * add validation to ConfigInfo (to move it out of config controller), and maybe have option to add new types
     * could you use ConfigInfo in part as a form validation system?  at least for config values
     * should Model actually inherit from object, and Device would be an ObjectNode that's also a Model? (multiple inheritence)
     * should medialib be a model instead of a device?
-    * should there be a generic system based on View, such that any object, including blocks defined in pages, and pyhtml code and all those
-      things are all treated as view objects, and have a means of rendering views, and views inside views. (eg. a view to show config objects,
-      a view to show a form, a view to show a block, a view to show medialib functions; each of which can be added to a page or template or
-      something using the common means)
 
     * add full row select for playlist and media search, so you can click anywhere to check the box
     * add a loading thing to search.  You can probably just turn off display of the previous results and put a loading icon up
     * add mysensors info webpage things, means of more easily managing sensor network (like buttons to reset each device, when last msg received, etc)
     * make mud using a special module
-    * add a system of notifications/messages that's global to the system but specific to a user
+    * add a system of notifications/messages that's global to the system but specific to a user (ie. can leave messages for individual users)
     * add irc/chat sort of things?
+    * could you use mixin classes for some object features?
 
+    * make sure it creates a sane default settings file if the config dir doesn't have a file already
+    * add run and config instructions to the readme (so that somebody could actually run the thing)
+    * update projects website
+
+    * perhaps add a separater field to page configuration, that is inserted between blocks when multiple blocks are used in the same
+      section.  eg. having multiple controls blocks in the content section, or having multiple link blocks in the sidebar
+    * make it so that if a block is renamed, it's references in page definitions is updated
     * use @querymethod everywhere
     * add command/path completion to shell
     * should you overload print instead of redirecting stdout in pyhtml??  This wont work for code in other files that use print, since they have the global vars of their scope
@@ -27,8 +43,6 @@
     * allow logging to be output to a file
     * add levels/types to log messages, and possibly add means of muting certain messages
 
-    * things that have a static singleton: tasks, events, datalog, users
-    * tasks, servers, starting/stopping, background threads per module (instead of per device/server/object), module init() is the answer??
     * for now I've made eventpool and users be simple attributes on Main, but maybe they should be added to objfs?
     * you could have tasks be added to the ObjectFS... you could have tasks be started automatically (or some tasks at least), after
       everything initializes.  Then you could have the EventThreadPool and mediaupdater threads be essentially loose threads in the system,
@@ -51,18 +65,13 @@
       system
     * make sure when loading config with saved module data that it gets used
 
-    * could you make either tcpserver, or a clone of it, that will act like a terminal (perhaps console even), that will respond to arrow
-      keys, completion, and so on, just like console does
-
-    * make sure it can start when no config dir by the given name exists (by creating a defaults one)
-    * add run and config instructions to the readme (so that somebody could actually run the thing)
-    * update projects website
-
-    * perhaps add a separater field to page configuration, that is inserted between blocks when multiple blocks are used in the same
-      section.  eg. having multiple controls blocks in the content section, or having multiple link blocks in the sidebar
     * would it be useful (or more complicated) to add a 'parent' or 'template' field to pages in the pages module, so that a parent
       page can be specified other than '__default__'?
-    * make it so that if a block is renamed, it's references in page definitions is updated
+
+    * add module that can maximize a particular window (like firefox), and then have a means of programming mouse clicks on the screen and mapping
+      them to queries, so that a nerve button can cause that mouse click to happen, with the window focused and maximized.  You could also click an
+      area, and if the colour of that pixel is a certain one, then return true instead of false (eg. a play/pause status indicator that uses some kind
+      of html element to drive it).  The ease of programmability of this is the key to it being usable
 
     * add a user system that stores user data in a users.db database.  Depending on the user name and password sent along with the HTTP
       request, the system would display according to their preferences (so that multiple users can use the system, customize their own

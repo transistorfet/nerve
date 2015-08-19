@@ -64,7 +64,7 @@ class UDPServer (nerve.Server):
                     (host, port) = addr
                     if data:
                         nerve.log("RECV <- " + str(host) + ":" + str(port) + ": " + data)
-                        request = nerve.Request(self, None, 'QUERY', "/", { 'queries[]' : [ data ] })
+                        request = nerve.Request(self, None, 'QUERY', "/", { 'requests[]' : [ data ] })
                         controller = self.make_controller(request)
                         controller.handle_request(request)
                         self.send(controller.get_output() + '\n', addr)

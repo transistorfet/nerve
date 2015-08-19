@@ -17,14 +17,14 @@ class RemoteController (nerve.http.Controller):
     def index(self, request):
         data = { }
         #data['contents'] = nerve.load_file('html/remote.html')
-        data['contents'] = self.load_view_as_string(nerve.configdir() + '/html/remote.html')
-        self.load_view('nerve/remote/views/index.pyhtml', data)
+        data['contents'] = self.make_html_view(nerve.configdir() + '/html/remote.html')
+        self.load_html_view('nerve/remote/views/index.pyhtml', data)
 
     # TODO this is temporary
     def summary(self, request):
         data = { }
         data['contents'] = nerve.load_file('html/summary.html')
-        self.load_view('nerve/remote/views/index.pyhtml', data)
+        self.load_html_view('nerve/remote/views/index.pyhtml', data)
 
     def player(self, request):
         player = nerve.get_object('/devices/player')
@@ -34,15 +34,14 @@ class RemoteController (nerve.http.Controller):
         else:
             data = { }
             data['playlist'] = player.getplaylist()
-            self.load_view('nerve/remote/views/player.pyhtml', data)
+            self.load_html_view('nerve/remote/views/player.pyhtml', data)
 
     def edit_layout(self, request):
         data = { }
-        self.load_view('nerve/remote/views/editor.pyhtml', data)
+        self.load_html_view('nerve/remote/views/editor.pyhtml', data)
 
     def get_layout(self, request):
-        contents = nerve.load_file('html/remote.html')
-        self.write_text(contents)
+        self.load_file_view('html/remote.html', base=nerve.configdir())
 
     def save_layout(self, request):
         try:
@@ -51,7 +50,7 @@ class RemoteController (nerve.http.Controller):
             result = { 'status' : 'error', 'message' : traceback.format_exc() }
         else:
             result = { 'status' : 'success', 'message' : 'Remote layout saved successfully' }
-        self.write_json(result)
+        self.load_json_view(result)
 
     def voice(self, request):
         text = request.arg('text').lower()

@@ -4,38 +4,51 @@
 import nerve 
 import nerve.http
 
-from nerve.base.formview import FormView
+from ..views.formview import FormView
+
 
 class ConfigController (nerve.http.Controller):
 
     def handle_error(self, error, traceback):
         if type(error) == nerve.ControllerError:
-            self.write_json({ 'status' : 'error', 'message' : repr(error) })
+            self.load_json_view({ 'status' : 'error', 'message' : repr(error) })
         else:
             super().handle_error(error, traceback)
 
     def index(self, request):
+        nerve.users.require_permissions('admin')
+
         data = { }
         #self.load_default_data(data)
         # TODO can you for this path without refering directly to the module (ie. using what's in the request)
-        #self.load_view("nerve/base/views/config/settings.pyhtml", data)
+        #self.load_html_view("nerve/base/views/config/settings.pyhtml", data)
 
         #data['formhtml'] = FormView(nerve.main().get_config_info()).get_output()
-        self.load_view("nerve/base/views/config/template.pyhtml", data)
+
+        self.load_template_view('nerve/base/views/config/settings.blk.pyhtml', data, request)
+        self.template_add_to_section('jsfiles', '/assets/js/config.js')
+
+    def test(self, request):
+        obj = nerve.query("/servers/default")
+        self.load_template_view(None, None, request)
+        self.template_add_to_section('jsfiles', '/assets/js/config.js')
+        self.template_add_to_section('content', FormView(obj.get_config_info(), obj.get_config_data()))
 
     def defaults(self, request):
         if request.reqtype != "POST":
-            raise nerve.ControllerError("Unrecognized request type: " + request.reqtype)
+            raise nerve.ControllerError("Unexpected request type: " + request.reqtype)
         if not request.arg('type'):
             raise nerve.ControllerError("You must select a type first")
 
         data = { }
         data['config_info'] = nerve.ObjectNode.get_class_config_info(request.arg('type'))
-        self.load_view("nerve/base/views/config/blk-configinfo.pyhtml", data)
+        self.load_html_view("nerve/base/views/config/defaults.blk.pyhtml", data)
 
     def create(self, request):
+        nerve.users.require_permissions('admin')
+
         if request.reqtype != "POST":
-            raise nerve.ControllerError("Unrecognized request type: " + request.reqtype)
+            raise nerve.ControllerError("Unexpected request type: " + request.reqtype)
 
         dirname = request.arg('__dir__')
         name = request.arg('__name__')
@@ -56,23 +69,26 @@ class ConfigController (nerve.http.Controller):
         obj = nerve.ObjectNode.make_object(typeinfo, config)
         nerve.set_object(dirname + '/' + name, obj)
         nerve.save_config()
-        self.write_json({ 'status' : 'success' })
+        self.load_json_view({ 'status' : 'success' })
 
     def save(self, request):
-        # TODO do authorization check
+        nerve.users.require_permissions('admin')
+
         if request.reqtype != "POST":
-            raise nerve.ControllerError("Unrecognized request type: " + request.reqtype)
+            raise nerve.ControllerError("Unexpected request type: " + request.reqtype)
 
         obj = nerve.get_object(request.args['objectname'])
         config = obj.get_config_info().validate_settings(request.args)
         obj.update_config_data(config)
 
         nerve.save_config()
-        self.write_json({ 'status' : 'success' })
+        self.load_json_view({ 'status' : 'success' })
 
     def rename(self, request):
+        nerve.users.require_permissions('admin')
+
         if request.reqtype != "POST":
-            raise nerve.ControllerError("Unrecognized request type: " + request.reqtype)
+            raise nerve.ControllerError("Unexpected request type: " + request.reqtype)
 
         # TODO you totally don't validate these names enough
         oldname = request.arg('oldname')
@@ -91,12 +107,13 @@ class ConfigController (nerve.http.Controller):
         nerve.set_object(newname, obj)
 
         nerve.save_config()
-        self.write_json({ 'status' : 'success' })
+        self.load_json_view({ 'status' : 'success' })
 
     def delete(self, request):
-        # TODO do authorization check
+        nerve.users.require_permissions('admin')
+
         if request.reqtype != "POST":
-            raise nerve.ControllerError("Unrecognized request type: " + request.reqtype)
+            raise nerve.ControllerError("Unexpected request type: " + request.reqtype)
 
         objectname = request.args['objectname']
         if not objectname or not nerve.has_object(objectname):
@@ -107,7 +124,7 @@ class ConfigController (nerve.http.Controller):
             raise nerve.ControllerError("Unable to delete object.")
 
         nerve.save_config()
-        self.write_json({ 'status' : 'success' })
+        self.load_json_view({ 'status' : 'success' })
 
 
     # Perhaps save should just write the config file at once, and other operations will manipulate settings without saving them?

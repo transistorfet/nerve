@@ -84,28 +84,28 @@
                     "__children__": {
                         "auto": {
                             "__children__": {},
-                            "__type__": "events/PyExecEvent",
+                            "__type__": "events/PyCodeEvent",
                             "code": "#print('SPAM!')",
                             "repeat": 1.0,
                             "trigger": ""
                         },
                         "lamp": {
                             "__children__": {},
-                            "__type__": "events/PyExecEvent",
+                            "__type__": "events/PyCodeEvent",
                             "code": "time.sleep(2)\nnerve.query(\"http://dev:dev@localhost:8889/query/deskclock/relay_toggle\")",
                             "repeat": 0.0,
                             "trigger": ""
                         },
                         "spam": {
                             "__children__": {},
-                            "__type__": "events/PyExecEvent",
+                            "__type__": "events/PyCodeEvent",
                             "code": "print('SPAM!')\nself.repeat_in(1.0)",
                             "repeat": 0.0,
                             "trigger": ""
                         },
                         "test": {
                             "__children__": {},
-                            "__type__": "events/PyExecEvent",
+                            "__type__": "events/PyCodeEvent",
                             "code": "print('Hey there2342')",
                             "repeat": 0.0,
                             "trigger": ""
@@ -124,21 +124,21 @@
                             "__children__": {
                                 "N:628": {
                                     "__children__": {},
-                                    "__type__": "events/PyExecEvent",
+                                    "__type__": "events/PyCodeEvent",
                                     "code": "nerve.query('/devices/player/toggle')",
                                     "repeat": 0.0,
                                     "trigger": ""
                                 },
                                 "N:650": {
                                     "__children__": {},
-                                    "__type__": "events/PyExecEvent",
+                                    "__type__": "events/PyCodeEvent",
                                     "code": "nerve.query('/devices/player/previous')",
                                     "repeat": 0.0,
                                     "trigger": ""
                                 },
                                 "N:690": {
                                     "__children__": {},
-                                    "__type__": "events/PyExecEvent",
+                                    "__type__": "events/PyCodeEvent",
                                     "code": "nerve.query('/devices/player/next')",
                                     "repeat": 0.0,
                                     "trigger": ""
@@ -246,14 +246,17 @@
                     "port": 8888,
                     "ssl_cert": "",
                     "ssl_enable": false,
-                    "username": ""
+                    "username": "",
+                    "template": {
+                        "__type__": "pages/views/page/PageView"
+                    }
                 },
                 "pyexec": {
                     "__children__": {},
-                    "__type__": "base/servers/tcpserver/TCPServer",
+                    "__type__": "connect/servers/tcpserver/TCPServer",
                     "controllers": {
                         "__default__": {
-                            "__type__": "base/PyExecController"
+                            "__type__": "base/PyCodeController"
                         }
                     },
                     "parent": "",
@@ -261,7 +264,7 @@
                 },
                 "shell": {
                     "__children__": {},
-                    "__type__": "base/servers/tcpserver/TCPServer",
+                    "__type__": "connect/servers/tcpserver/TCPServer",
                     "controllers": null,
                     "parent": "/servers/default_shell",
                     "port": 6060
