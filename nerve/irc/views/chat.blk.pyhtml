@@ -1,0 +1,16 @@
+
+<div id="nerve-irc">
+    <div class="nerve-irc-row">
+        <div id="nerve-irc-window">
+        </div>
+
+        <div id="nerve-irc-users">
+        </div>
+    </div>
+
+    <div class="nerve-irc-row">
+        <input id="nerve-irc-input" type="text" />
+        <button id="nerve-irc-send">Send</button>
+    </div>
+</div>
+

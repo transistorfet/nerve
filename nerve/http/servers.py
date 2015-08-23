@@ -25,24 +25,6 @@ import struct
 import random
 
 
-WS_OP_CONT = 0x0
-WS_OP_TEXT = 0x1
-WS_OP_BIN = 0x2
-
-WS_OP_CONTROL = 0x8
-WS_OP_CLOSE = 0x8
-WS_OP_PING = 0x9
-WS_OP_PONG = 0xa
-
-WS_B1_FINBIT = 0x80
-WS_B1_RSV = 0x70
-WS_B1_OPCODE = 0x0f
-WS_B2_MASKBIT = 0x80
-WS_B2_LENGTH = 0x7f
-
-class WebSocketError (OSError): pass
-
-
 class HTTPServer (nerve.Server, socketserver.ThreadingMixIn, http.server.HTTPServer):
     daemon_threads = True
 
@@ -244,6 +226,24 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
         return
 
 
+WS_OP_CONT = 0x0
+WS_OP_TEXT = 0x1
+WS_OP_BIN = 0x2
+
+WS_OP_CONTROL = 0x8
+WS_OP_CLOSE = 0x8
+WS_OP_PING = 0x9
+WS_OP_PONG = 0xa
+
+WS_B1_FINBIT = 0x80
+WS_B1_RSV = 0x70
+WS_B1_OPCODE = 0x0f
+WS_B2_MASKBIT = 0x80
+WS_B2_LENGTH = 0x7f
+
+class WebSocketError (OSError): pass
+
+
 class WebSocketConnection (nerve.connect.Connection):
     def __init__(self, rfile, wfile):
         self.rfile = rfile
@@ -340,7 +340,6 @@ class WebSocketConnection (nerve.connect.Connection):
             payload = bytes(b ^ maskkey[i % 4] for (i, b) in enumerate(payload))
 
         #print("RECV: " + hex(headbyte1) + " " + hex(headbyte2) + " " + str(payload))
-
         return (opcode, payload, headbyte1, headbyte2)
 
     def websocket_read_bytes(self, num):
@@ -371,7 +370,6 @@ class WebSocketConnection (nerve.connect.Connection):
 
         #print("SEND: " + ' '.join(hex(b) for b in frame))
         self.wfile.write(frame)
-        #self.request.send(frame)
 
     def websocket_write_close(self, statuscode, message):
         self.websocket_write_frame(WS_OP_CLOSE, struct.pack("!H", statuscode) + bytes(message, 'utf-8'))

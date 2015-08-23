@@ -1,0 +1,148 @@
+{
+    "__children__": {
+        "devices": {
+            "__children__": {
+                "computer": {
+                    "__children__": {},
+                    "__type__": "system/_linux/devices/SystemDevice"
+                },
+                "realtime": {
+                    "__children__": {},
+                    "__type__": "base/devices/realtime/RealtimeDevice"
+                },
+                "irc": {
+                    "__children__": {},
+                    "__type__": "irc/devices/nervebot/NerveBot"
+                }
+            },
+            "__type__": "objects/ObjectNode"
+        },
+        "events": {
+            "__children__": {
+                "ir": {
+                    "__children__": {
+                        "irrecv": {
+                            "__children__": {
+                                "N:628": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/devices/player/toggle')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                },
+                                "N:650": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/devices/player/previous')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                },
+                                "N:690": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/devices/player/next')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                }
+                            },
+                            "__type__": "objects/ObjectNode"
+                        }
+                    },
+                    "__type__": "objects/ObjectNode"
+                }
+            },
+            "__type__": "objects/ObjectNode"
+        },
+        "modules": {
+            "__children__": {
+                "pages": {
+                    "__children__": {},
+                    "__type__": "objects/Module",
+                    "name": "nerve.pages"
+                },
+                "irc": {
+                    "__children__": {},
+                    "__type__": "objects/Module",
+                    "name": "nerve.irc"
+                }
+            },
+            "__type__": "objects/Module",
+            "name": "nerve"
+        },
+        "servers": {
+            "__children__": {
+                "console": {
+                    "__children__": {},
+                    "__type__": "base/servers/console/Console",
+                    "controllers": null,
+                    "parent": "/servers/default_shell"
+                },
+                "default_http": {
+                    "__children__": {},
+                    "__type__": "core/Server",
+                    "controllers": {
+                        "__default__": {
+                            "__type__": "base/FileController",
+                            "root": "nerve/base/assets"
+                        },
+                        "assets": {
+                            "__type__": "base/FileController",
+                            "root": "nerve/base/assets"
+                        },
+                        "config": {
+                            "__type__": "base/ConfigController"
+                        },
+                        "datalog": {
+                            "__type__": "datalog/DatalogController"
+                        },
+                        "medialib": {
+                            "__type__": "medialib/MediaLibController"
+                        },
+                        "pages": {
+                            "__type__": "pages/PagesController"
+                        },
+                        "query": {
+                            "__type__": "base/QueryController"
+                        },
+                        "shell": {
+                            "__type__": "base/ShellController"
+                        },
+                        "irc": {
+                            "__type__": "irc/controllers/chat/IRCChatController"
+                        },
+                        "remote": {
+                            "__type__": "remote/RemoteController"
+                        }
+                    },
+                    "parent": ""
+                },
+                "default_shell": {
+                    "__children__": {},
+                    "__type__": "core/Server",
+                    "controllers": {
+                        "__default__": {
+                            "__type__": "base/ShellController"
+                        }
+                    },
+                    "parent": ""
+                },
+                "http": {
+                    "__children__": {},
+                    "__type__": "http/servers/HTTPServer",
+                    "controllers": null,
+                    "parent": "/servers/default_http",
+                    "password": "",
+                    "port": 8888,
+                    "ssl_cert": "",
+                    "ssl_enable": false,
+                    "username": "",
+                    "template": {
+                        "__type__": "pages/views/page/PageView"
+                    }
+                }
+            },
+            "__type__": "objects/ObjectNode"
+        }
+    },
+    "__type__": "main/Main"
+}

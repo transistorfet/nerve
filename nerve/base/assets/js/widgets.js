@@ -151,6 +151,9 @@ function NerveTabs(element)
 {
     var container = $(element).attr('data-container');
 
+    // hide all elements in the tab's container
+    $('#' + container + ' > div').hide();
+
     // highlight the initially selected tab
     $(element).find('.tab').each(function() {
         var data_content = $(this).attr('data-content');
@@ -159,6 +162,11 @@ function NerveTabs(element)
             $(element).find('.tab').removeClass('selected');
             $(this).addClass('selected');
         }
+    });
+
+    $(element).find('.tab .selected').each(function () {
+        var data_content = $(this).attr('data-content');
+        $('#' + container + ' > #' + data_content).show();
     });
 
     $(element).find('.tab').click(function() {

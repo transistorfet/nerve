@@ -24,13 +24,13 @@
                 var scroll = false;
                 var terminal = $('#nerve-shell-output');
                 if (terminal.scrollTop == terminal.scrollTopMax) scroll = true;
-                terminal.append(event.data);
+                terminal.append(event.data.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
                 terminal.scrollTop = terminal.scrollHeight;
             }
 
             $('#nerve-shell-input').change(function ()
             {
-                server.send($(this).val());
+                server.send($(this).val() + '\n');
                 $(this).val('');
             });
         });

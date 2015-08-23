@@ -27,11 +27,16 @@ class ShellController (nerve.Controller, nerve.connect.ControllerMixIn):
         self.conn.send_message(nerve.connect.Message(text="Welcome to the nerve webshell...\n"))
 
     def on_message(self, msg):
+        self.conn.send_message(msg)
         if msg.text == 'quit':
             raise nerve.connect.QuitException()
         self.load_plaintext_view('')
-        self.run_command(msg.text)
+        self.run_command(msg.text.strip())
         self.conn.send_message(nerve.connect.Message(text=self.get_output().decode('utf-8')))
+
+    def handle_connection_error(self, error, tb):
+        nerve.log(tb)
+        self.conn.send_message(nerve.connect.Message(text=tb))
 
     def run_command(self, command_line):
         args = shlex.split(command_line)

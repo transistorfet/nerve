@@ -9,12 +9,6 @@ from ..views.formview import FormView
 
 class ConfigController (nerve.http.Controller):
 
-    def handle_error(self, error, traceback):
-        if type(error) == nerve.ControllerError:
-            self.load_json_view({ 'status' : 'error', 'message' : repr(error) })
-        else:
-            super().handle_error(error, traceback)
-
     def index(self, request):
         nerve.users.require_permissions('admin')
 
@@ -29,7 +23,7 @@ class ConfigController (nerve.http.Controller):
         self.template_add_to_section('jsfiles', '/assets/js/config.js')
 
     def test(self, request):
-        obj = nerve.query("/servers/default")
+        obj = nerve.query("/events/ir/irrecv")
         self.load_template_view(None, None, request)
         self.template_add_to_section('jsfiles', '/assets/js/config.js')
         self.template_add_to_section('content', FormView(obj.get_config_info(), obj.get_config_data()))
@@ -64,7 +58,7 @@ class ConfigController (nerve.http.Controller):
             raise nerve.ControllerError("You must select a type.")
 
         defaults = nerve.ObjectNode.get_class_config_info(typeinfo)
-        config = defaults.get_config_info().validate_settings(request.args)
+        config = defaults.get_config_info().validate(request.args)
 
         obj = nerve.ObjectNode.make_object(typeinfo, config)
         nerve.set_object(dirname + '/' + name, obj)
@@ -78,7 +72,7 @@ class ConfigController (nerve.http.Controller):
             raise nerve.ControllerError("Unexpected request type: " + request.reqtype)
 
         obj = nerve.get_object(request.args['objectname'])
-        config = obj.get_config_info().validate_settings(request.args)
+        config = obj.get_config_info().validate(request.args)
         obj.update_config_data(config)
 
         nerve.save_config()
@@ -125,6 +119,13 @@ class ConfigController (nerve.http.Controller):
 
         nerve.save_config()
         self.load_json_view({ 'status' : 'success' })
+
+
+    def handle_error(self, error, traceback):
+        if type(error) == nerve.ControllerError:
+            self.load_json_view({ 'status' : 'error', 'message' : repr(error) })
+        else:
+            super().handle_error(error, traceback)
 
 
     # Perhaps save should just write the config file at once, and other operations will manipulate settings without saving them?

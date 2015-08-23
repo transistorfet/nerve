@@ -36,7 +36,6 @@ class DatalogDevice (nerve.Device):
     def get_config_info(cls):
         config_info = super().get_config_info()
         config_info.add_setting('name', "Table Name", default='')
-        #config_info.add_setting('datapoints', "Data Points", default=list())
         config_info.add_setting('update_time', "Update Time", default=60.0)
 
         datapoints_config = nerve.ConfigInfo()

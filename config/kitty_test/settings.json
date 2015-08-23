@@ -63,7 +63,7 @@
                 "player": {
                     "__children__": {},
                     "__type__": "player/devices/PlayerDevice",
-                    "backend": "/modules/player/xmms2cli/Xmms2CLI"
+                    "backend": "player/gstreamer/devices/GstreamerPlayer"
                 },
                 "realtime": {
                     "__children__": {},
@@ -240,12 +240,14 @@
                 "http": {
                     "__children__": {},
                     "__type__": "http/servers/HTTPServer",
+                    "allow_guest": true,
                     "controllers": null,
                     "parent": "/servers/default",
                     "password": "",
                     "port": 8888,
                     "ssl_cert": "",
                     "ssl_enable": false,
+                    "use_usersdb": true,
                     "username": "",
                     "template": {
                         "__type__": "pages/views/page/PageView"

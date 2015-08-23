@@ -1,0 +1,30 @@
+
+#nerve-irc {
+    width: 75%;
+    display: table;
+}
+
+.nerve-irc-row {
+    display: table-row;
+}
+
+.nerve-irc-row > * {
+    display: table-cell;
+}
+
+#nerve-irc-window {
+    height: 25em;
+    border: 1px solid #80C008;
+    white-space: pre-wrap;
+}
+
+#nerve-irc-users {
+    width: 10em;
+    border: 1px solid #80C008;
+}
+
+#nerve-irc-input {
+    width: 93%;
+    margin: 2px;
+}
+ 

@@ -60,14 +60,14 @@ class ConfigInfo (object):
             defaults[setting['name']] = setting['default']
         return defaults
 
-    def validate_settings(self, args, defaults=False):
+    def validate(self, data, defaults=False):
         config = { }
         for setting in self.settings:
-            if setting['name'] not in args:
+            if setting['name'] not in data:
                 if defaults:
                     config[setting['name']] = setting['default']
             else:
-                config[setting['name']] = setting['datatype'].validate(args[setting['name']], setting['iteminfo'])
+                config[setting['name']] = setting['datatype'].validate(data[setting['name']], setting['iteminfo'])
         return config
 
 
@@ -101,9 +101,6 @@ class ConfigType (object):
             return self.func(data, iteminfo)
         return self.func(data)
 
-    def get_value(self, data, name):
-        pass
-
     def def_get_items(self, func):
         self.getter = func
         return self
@@ -123,8 +120,12 @@ def ConfigTypeConstructor(name, htmltype=None, typeclass=None):
 ConfigType('int', int)
 ConfigType('float', float)
 ConfigType('str', str)
-ConfigType('bytes', bytes)
 ConfigType('textarea', str, htmltype="textarea")
+
+
+@ConfigTypeConstructor('bytes')
+def BytesConfigType(data):
+    return bytes(data, 'utf-8')
 
 
 @ConfigTypeConstructor('bool', htmltype="checkbox")
@@ -148,7 +149,7 @@ def ListConfigType(data, iteminfo):
     result = [ ]
     for item in data:
         if type(iteminfo) == ConfigInfo:
-            result.append(iteminfo.validate_settings(item))
+            result.append(iteminfo.validate(item))
         elif type(iteminfo) == ConfigType:
             result.append(typeinfo.validate(item, None))
     return result
@@ -161,18 +162,36 @@ def ListConfigType(data):
 @ConfigTypeConstructor('dict', htmltype=None, typeclass="dict")
 def DictConfigType(data, iteminfo):
     if type(data) != dict:
-        raise ValueError("expected type 'list', received type '" + type(data).__name__ + "'")
+        raise ValueError("expected type 'dict', received type '" + type(data).__name__ + "'")
     result = { }
     for (key, item) in data.items():
         if type(iteminfo) == ConfigInfo:
-            result[key] = iteminfo.validate_settings(item)
+            result[key] = iteminfo.validate(item)
         elif type(iteminfo) == ConfigType:
             result[key] = typeinfo.validate(item, None)
     return result
 
 @DictConfigType.def_get_items
 def DictConfigType(data):
-    return data.items()
+    return sorted(data.items())
+
+
+@ConfigTypeConstructor('object', htmltype=None, typeclass="dict")
+def ObjectConfigType(data, iteminfo):
+    if type(data) != dict:
+        raise ValueError("expected type 'dict', received type '" + type(data).__name__ + "'")
+    if '__type__' not in data:
+        raise ValueError("object config must contain the __type__ key")
+
+    typeinfo = data['__type__']
+    configinfo = nerve.Module.get_class(typeinfo).get_config_info()
+    config = { }
+    #for (key, item) in data.items():
+    for setting in configinfo:
+        if setting['name'] in data:
+            config[setting['name']] = setting['datatype'].validate(data[setting['name']], setting['iteminfo'])
+        else:
+            config[setting['name']] = setting['default']
 
 
 #Scalar:
@@ -224,7 +243,7 @@ class ObjectNode (object):
     @classmethod
     def get_config_info(cls):
         config_info = ConfigInfo()
-        #config_info.add_setting('__children__', "Child Objects", default=dict(), datatype="dict:object")
+        #config_info.add_setting('__children__', "Child Objects", default=dict(), iteminfo="object")
         # TODO if you had a means of dealing with objects as single settings, then you can use the dict recursive validator to add/remove/rename items
         return config_info
 
@@ -239,7 +258,7 @@ class ObjectNode (object):
 
     def update_config_data(self, config):
         # TODO should this maybe be only in the controller?
-        #self.get_config_info().validate_settings(config)
+        #self.get_config_info().validate(config)
         self._config.update(config)
         self._config['__type__'] = self.__class__.__module__.replace('nerve.', '').replace('.', '/') + "/" + self.__class__.__name__
 

@@ -64,7 +64,7 @@ class YoutubePlaylistUpdater (MediaLibUpdater):
 
         parts = meta['title'].split("-", 1)
         if len(parts) < 2:
-            artist = meta['author']
+            artist = ''
             title = meta['title']
         else:
             artist = parts[0].strip()

@@ -20,21 +20,14 @@ class TelnetClient (nerve.Device, nerve.connect.Connection):
         config_info = super().get_config_info()
         config_info.add_setting('hostname', "Hostname", default='')
         config_info.add_setting('port', "Port", default=6667)
-        #config_info.add_setting('nick', "Client Nick", default='TheRealm')
-        #config_info.add_setting('server', "Server URI", default='irc.foonetic.net:6667')
-
-        """
-        server_list = ConfigInfo()
-        server_list.add_setting('hostname', "Hostname", default='')
-        server_list.add_setting('port', "Port", default=6667)
-        server_list.add_setting('password', "Password (optional)", default='')
-        """
         return config_info
 
     def __init__(self, **config):
         super().__init__(**config)
         self.connected = False
         self.socket = None
+        self.hostname = None
+        self.port = 0
         self.lastcontact = time.time()
         self.linebuffer = [ ]
         self.callbacks = [ ]
@@ -53,6 +46,7 @@ class TelnetClient (nerve.Device, nerve.connect.Connection):
         self.port = int(port)
         self.socket = socket.create_connection((hostname, int(port)))
         self.rfile = self.socket.makefile(mode='r', encoding='utf-8', newline='\n')
+        self.connected = True
 
     def close(self):
         if self.socket:
@@ -81,6 +75,14 @@ class TelnetClient (nerve.Device, nerve.connect.Connection):
         if len(self.linebuffer) > 100:
             self.linebuffer = self.linebuffer[len(self.linebuffer) - 100:]
         self.notify('event_message/*', msg)
+
+    @nerve.querymethod
+    def connected(self):
+        return self.connected
+
+    @nerve.querymethod
+    def address(self):
+        return self.hostname + ":" + str(self.port)
 
 
 class TelnetClientTask (nerve.Task):

@@ -1,4 +1,6 @@
 
+    * add a mechanism for specifying access controls, even if it could be circumvented.  It should at least be hard to mess up the system
+
     * add subtabs for tabs
     * sort out how the users module is a singleton, and how eventthreadpool is a singleton; also how they are created (current just statically made in Main)
     * more directly integrate the user system.  especially with mud, there must be much better security and access controls.  This also could apply for an
@@ -12,7 +14,6 @@
       keys, completion, and so on, just like console does, but for tcpserver connections, and other things (even the websocket shell)
 
     * change server's 'controllers' to 'mappings' to allow multiple parts in the path name ("/things/stuff/config" -> "config controller")
-    * add a mechanism for specifying access controls, even if it could be circumvented.  It should at least be hard to mess up the system
     * add validation to ConfigInfo (to move it out of config controller), and maybe have option to add new types
     * could you use ConfigInfo in part as a form validation system?  at least for config values
     * should Model actually inherit from object, and Device would be an ObjectNode that's also a Model? (multiple inheritence)
@@ -88,7 +89,6 @@
 
     * add SSL support to HTTP server
     * make more advanced widgets for various things (ideas?)
-    * possibly have more specific widgets like one for a player, etc
     * there could be a way to automatically minify js and css files on the fly
     * add support for running nerve using WSGI (PEP 3333), so that apache or something else can launch nerve to handle a web request.  It would
       have to bypass the normal main loop, but that should be doable by not creating Main(), creating a different class like Main()
