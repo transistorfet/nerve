@@ -22,7 +22,7 @@ class Request (object):
             (self.url, self.args) = self.parse_query(urlstring, args)
         else:
             (self.url, self.args) = (urlstring, args)
-        self.headers = { key.lower(): item for (key, item) in headers.items() }
+        self.headers = [ (key.lower(), item) for (key, item) in headers.items() ]
 
         self.segments = self.url.path.lstrip('/').split('/')
         self.current_segment = 0
@@ -46,9 +46,14 @@ class Request (object):
 
     def get_header(self, name, default=None):
         name = name.lower()
-        if name in self.header:
-            return self.header[name]
+        for key, value in self.headers:
+            if key == name:
+                return value
         return default
+
+    def get_header_all(self, name):
+        name = name.lower()
+        return [ value for key, value in self.headers if key == name ]
 
     def next_segment(self, default=None):
         if self.current_segment < len(self.segments):
@@ -71,6 +76,18 @@ class Request (object):
             return seg
         return ''
 
+    def get_location(self, leaf=''):
+        location = '/' + '/'.join(self.segments[:self.current_segment-1])
+        if leaf:
+            location += '/' + leaf
+        return location
+
+    def make_url(self, leaf=''):
+        host = self.get_header('Host', default=None)
+        if host == None:
+            host = 'localhost:' + str(self.source.get_setting('port'))
+        return 'http://' + host + self.get_location(leaf)
+
 
 class NotFoundError (Exception): pass
 class ControllerError (Exception): pass
@@ -79,17 +96,25 @@ class ControllerError (Exception): pass
 class Controller (nerve.ObjectNode):
     def __init__(self, **config):
         super().__init__(**config)
-        self._error = None
+        self._headers = [ ]
         self._redirect = None
+        self._error = None
         self._view = None
 
-    def initialize(self):
-        self._error = None
+    def initialize(self, request):
+        self._headers = [ ]
         self._redirect = None
+        self._error = None
         self._view = None
 
-    def finalize(self):
+    def finalize(self, request):
         pass
+
+    def add_header(self, name, value):
+        self._headers.append( (name, value) )
+
+    def get_headers(self):
+        return self._headers
 
     def set_view(self, view):
         self._view = view
@@ -119,31 +144,34 @@ class Controller (nerve.ObjectNode):
     def get_redirect(self):
         return self._redirect
 
+    def set_error(self, error):
+        self._error = error
+
     def get_error(self):
         return self._error
 
     def handle_request(self, request):
-        self.initialize()
+        self.initialize(request)
         try:
             self.do_request(request)
             if self._view:
                 self._view.finalize()
 
         except Exception as e:
-            self._error = e
             try:
-                self.handle_error(self._error, traceback.format_exc())
+                self.handle_error(e, traceback.format_exc())
             except:
                 nerve.log("error while handling exception:\n" + traceback.format_exc())
 
         finally:
-            self.finalize()
+            self.finalize(request)
 
         if self._error is None:
             return True
         return False
 
     def handle_error(self, error, traceback):
+        self.set_error(error)
         if not self._view:
             self.load_plaintext_view('')
         nerve.log(traceback)
@@ -163,11 +191,16 @@ class Controller (nerve.ObjectNode):
         except AttributeError:
             raise NotFoundError("Page not found: " + name) from None
 
+        # TODO this should be added to make accessible only methods declared as public, but the permissions error causes a login prompt to show which we don't want in this case because no matter who
+        #      tries to access the method, it should be denied
+        if not nerve.is_public(method):
+            raise nerve.users.UserPermissionsError("method is not public: " + name)
         method(request)
 
 
-class View (object):
-    def __init__(self):
+class View (nerve.ObjectNode):
+    def __init__(self, **config):
+        super().__init__(**config)
         self._mimetype = None
         self._encoding = 'utf-8'
         self._output = io.BytesIO()
@@ -247,7 +280,7 @@ class Server (nerve.ObjectNode):
             for option in servers.keys():
                 config_info.add_option('parent', option, '/servers/' + option)
         """
-        config_info.add_setting('controllers', "Controllers", default=dict(), iteminfo='str')
+        config_info.add_setting('controllers', "Controllers", default=dict(), itemtype='object')
         return config_info
 
     def start_server(self):
@@ -273,7 +306,7 @@ class Server (nerve.ObjectNode):
         else:
             request.back_segment();
             controller = controllers['__default__']
-        return nerve.ObjectNode.make_object(controller['__type__'], controller)
+        return nerve.Module.make_object(controller['__type__'], controller)
 
 
 class Model (nerve.ObjectNode):

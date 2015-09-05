@@ -6,193 +6,6 @@ import nerve
 import traceback
 
 
-class ConfigInfo (object):
-    def __init__(self):
-        self.settings = [ ]
-
-    def add_setting(self, name, propername, default=None, datatype=None, iteminfo=None):
-        for i in range(len(self.settings)):
-            if self.settings[i]['name'] == name:
-                del self.settings[i]
-                break
-
-        # attempt to guess the datatype if it's not given
-        if not datatype:
-            datatype = type(default).__name__
-
-        dataclass = ConfigType.get_type(datatype)
-        if not dataclass:
-            raise Exception("Unsupported setting datatype: " + datatype)
-
-        if type(iteminfo) == str:
-            infoclass = ConfigType.get_type(iteminfo)
-            if not infoclass:
-                raise Exception("Unsupported setting iteminfo: " + iteminfo)
-            iteminfo = infoclass
-        elif iteminfo and type(iteminfo) != ConfigInfo:
-            raise Exception("iteminfo must be str or ConfigInfo: " + str(iteminfo))
-
-        self.settings.append({
-            'name' : name,
-            'propername' : propername,
-            'default' : default,
-            'datatype' : dataclass,
-            'iteminfo' : iteminfo,
-            'options' : None
-        })
-
-    def add_option(self, settingname, propername, value):
-        for setting in self.settings:
-            if setting['name'] == settingname:
-                if not setting['options']:
-                    setting['options'] = [ ]
-                setting['options'].append( (propername, value) )
-
-    def __iter__(self):
-        return iter(self.settings)
-
-    def __len__(self):
-        return len(self.settings)
-
-    def get_defaults(self):
-        defaults = { }
-        for setting in self.settings:
-            defaults[setting['name']] = setting['default']
-        return defaults
-
-    def validate(self, data, defaults=False):
-        config = { }
-        for setting in self.settings:
-            if setting['name'] not in data:
-                if defaults:
-                    config[setting['name']] = setting['default']
-            else:
-                config[setting['name']] = setting['datatype'].validate(data[setting['name']], setting['iteminfo'])
-        return config
-
-
-        # bool, int, float, str, textarea, bytes, tuple, list, dict... maybe also complex
-        # datatype = list, subtype = 'bool|int|float|str|textarea'
-        # actually it should be a subconfig info right?
-        # subinfo = ConfigInfo()
-        # subinfo.add_setting(None, 'Block Name', default='')
-
-
-
-class ConfigType (object):
-    datatypes = { }
-
-    @classmethod
-    def get_type(cls, name):
-        if name not in cls.datatypes:
-            return None
-        return cls.datatypes[name]
-
-    def __init__(self, name, constructor, htmltype="text", typeclass="scalar"):
-        ConfigType.datatypes[name] = self
-        self.name = name
-        self.constructor = constructor
-        self.getter = None
-        self.htmltype = htmltype
-        self.typeclass = typeclass
-
-    def validate(self, data, iteminfo=None):
-        if iteminfo:
-            return self.func(data, iteminfo)
-        return self.func(data)
-
-    def def_get_items(self, func):
-        self.getter = func
-        return self
-
-    def get_items(self, data):
-        if not self.getter:
-            return None
-        return self.getter(data)
-
-
-def ConfigTypeConstructor(name, htmltype=None, typeclass=None):
-    def CreateType(func):
-        return ConfigType(name, func, htmltype, typeclass)
-    return CreateType
-
-
-ConfigType('int', int)
-ConfigType('float', float)
-ConfigType('str', str)
-ConfigType('textarea', str, htmltype="textarea")
-
-
-@ConfigTypeConstructor('bytes')
-def BytesConfigType(data):
-    return bytes(data, 'utf-8')
-
-
-@ConfigTypeConstructor('bool', htmltype="checkbox")
-def BoolConfigType(data):
-    if type(data) == bool:
-        return data
-
-    val = str(data).lower()
-    if val == 'true':
-        return True
-    elif val == 'false':
-        return False
-    else:
-        raise ValueError("Invalid data for " + setting['name'] + ". Expected bool")
-
-
-@ConfigTypeConstructor('list', htmltype=None, typeclass="list")
-def ListConfigType(data, iteminfo):
-    if type(data) != list:
-        raise ValueError("expected type 'list', received type '" + type(data).__name__ + "'")
-    result = [ ]
-    for item in data:
-        if type(iteminfo) == ConfigInfo:
-            result.append(iteminfo.validate(item))
-        elif type(iteminfo) == ConfigType:
-            result.append(typeinfo.validate(item, None))
-    return result
-
-@ListConfigType.def_get_items
-def ListConfigType(data):
-    return enumerate(data)
-
-
-@ConfigTypeConstructor('dict', htmltype=None, typeclass="dict")
-def DictConfigType(data, iteminfo):
-    if type(data) != dict:
-        raise ValueError("expected type 'dict', received type '" + type(data).__name__ + "'")
-    result = { }
-    for (key, item) in data.items():
-        if type(iteminfo) == ConfigInfo:
-            result[key] = iteminfo.validate(item)
-        elif type(iteminfo) == ConfigType:
-            result[key] = typeinfo.validate(item, None)
-    return result
-
-@DictConfigType.def_get_items
-def DictConfigType(data):
-    return sorted(data.items())
-
-
-@ConfigTypeConstructor('object', htmltype=None, typeclass="dict")
-def ObjectConfigType(data, iteminfo):
-    if type(data) != dict:
-        raise ValueError("expected type 'dict', received type '" + type(data).__name__ + "'")
-    if '__type__' not in data:
-        raise ValueError("object config must contain the __type__ key")
-
-    typeinfo = data['__type__']
-    configinfo = nerve.Module.get_class(typeinfo).get_config_info()
-    config = { }
-    #for (key, item) in data.items():
-    for setting in configinfo:
-        if setting['name'] in data:
-            config[setting['name']] = setting['datatype'].validate(data[setting['name']], setting['iteminfo'])
-        else:
-            config[setting['name']] = setting['default']
-
 
 #Scalar:
 # - display html element
@@ -225,11 +38,278 @@ def ObjectConfigType(data, iteminfo):
 # in FormView: for each config item: value = datatype.get_value(data, item['name']); output(form with value)
 
 
+class ConfigType (object):
+    _datatypes = { }
 
-def querymethod(funcobj):
-    """ function decorator to include method in the keys_queries() list """
-    funcobj.__isquerymethod__ = True
+    htmltype = 'text'
+
+    @classmethod
+    def get_type(cls, typeinfo, itemtype=None):
+        if isinstance(itemtype, ConfigType):
+            datatype = itemtype
+        elif type(itemtype) == str:
+            datatype = cls.get_type(itemtype)
+        else:
+            datatype = None
+
+        for name in reversed(typeinfo.split(':')):
+            if name not in cls._datatypes:
+                raise Exception("Unregistered subtype '" + name + "' in datatype " + typeinfo)
+            if not datatype:
+                datatype = cls._datatypes[name]
+            else:
+                datatype = type(cls._datatypes[name])(datatype)
+        return datatype
+
+    @classmethod
+    def register_type(cls, name, obj):
+        cls._datatypes[name] = obj
+
+    def is_type(self, typeinfo):
+        datatype = self
+        for name in typeinfo.split(':'):
+            if name not in self._datatypes:
+                return False
+            if not issubclass(type(datatype), type(self._datatypes[name])):
+                return False
+            datatype = datatype.itemtype if hasattr(datatype, 'itemtype') else None
+        return True
+
+    def __init__(self):
+        pass
+
+    def validate(self, data):
+        raise NotImplementedError
+
+    def get_items(self, data):
+        return ()
+
+
+def RegisterConfigType(name):
+    def CreateTypeFromClass(cls):
+        ConfigType.register_type(name, cls())
+        return cls
+    return CreateTypeFromClass
+
+
+@RegisterConfigType('scalar')
+class ScalarConfigType (ConfigType):
+    pass
+
+
+class ComplexConfigType (ConfigType):
+    htmltype = None
+
+
+class ContainerConfigType (ComplexConfigType):
+    def __init__(self, itemtype=None):
+        super().__init__()
+        self.itemtype = itemtype
+
+
+@RegisterConfigType('bool')
+class BoolConfigType (ScalarConfigType):
+    htmltype = 'checkbox'
+    def validate(self, data):
+        if type(data) == bool:
+            return data
+
+        val = str(data).lower()
+        if val == 'true':
+            return True
+        elif val == 'false':
+            return False
+        else:
+            raise ValueError("Invalid data for " + setting['name'] + ". Expected bool")
+
+
+@RegisterConfigType('int')
+class IntConfigType (ScalarConfigType):
+    def validate(self, data):
+        return int(data)
+
+
+@RegisterConfigType('float')
+class FloatConfigType (ScalarConfigType):
+    def validate(self, data):
+        return float(data)
+
+
+@RegisterConfigType('str')
+class StrConfigType (ScalarConfigType):
+    def validate(self, data):
+        return str(data)
+
+
+@RegisterConfigType('textarea')
+class TextAreaConfigType (ScalarConfigType):
+    htmltype = 'textarea'
+    def validate(self, data):
+        return str(data)
+
+
+@RegisterConfigType('bytes')
+class BytesConfigType (ScalarConfigType):
+    def validate(self, data):
+        return bytes(data, 'utf-8')
+
+
+@RegisterConfigType('filename')
+class FilenameConfigType (ScalarConfigType):
+    def validate(self, data):
+        if type(data) != str:
+            raise ValueError("expected type 'str', received type '" + type(data).__name__ + "'")
+        segments = data.split('/')
+        if '.' in segements or '..' in segements:
+            raise ValueError("filenames cannot contain '.' or '..'")
+        # TODO check if the file exists?  for a normal file that's needed, but for js/css files, they are relative to the webserver path, so os.path.exists would fail
+        #       what if... you specify the actual file and the template or something converts those names to externally reachable addresses... might be too complicated to
+        #       get the server/controllers, and it might be a bit confusing, but it would make it easier to have controllers not at the root of the path (eg. /something/medialib
+        #       which would need to refer to /something/medialib/assets/js/medialib.js)
+        return data
+
+
+@RegisterConfigType('list')
+class ListConfigType (ContainerConfigType):
+    def validate(self, data):
+        if type(data) != list:
+            raise ValueError("expected type 'list', received type '" + type(data).__name__ + "'")
+        result = [ ]
+        for item in data:
+            result.append(self.itemtype.validate(item, None))
+        return result
+
+    def get_items(self, data):
+        #return enumerate(data)
+        for (key, value) in enumerate(data):
+            yield (str(key), str(key), self.itemtype, value)
+
+
+@RegisterConfigType('dict')
+class DictConfigType (ContainerConfigType):
+    def validate(self, data):
+        if type(data) != dict:
+            raise ValueError("expected type 'dict', received type '" + type(data).__name__ + "'")
+        result = { }
+        for (key, item) in data.items():
+            result[key] = self.itemtype.validate(item, None)
+        return result
+
+    def get_items(self, data):
+        #return sorted(data.items())
+        if not data:
+            return ()
+        for (key, value) in data.items():
+            yield (key, key, self.itemtype, value)
+
+
+@RegisterConfigType('object')
+class ObjectConfigType (ComplexConfigType):
+    def validate(self, data):
+        if type(data) != dict:
+            raise ValueError("expected type 'dict', received type '" + type(data).__name__ + "'")
+        if '__type__' not in data:
+            raise ValueError("object config must contain the __type__ key")
+
+        typeinfo = data['__type__']
+        configinfo = nerve.Module.get_class(typeinfo).get_config_info()
+        return configinfo.validate(data)
+
+    def get_items(self, data):
+        #return sorted(data.items())
+        # TODO you should add the __type__ here, specifically, as a setting with options set to any object that can be used...
+        # you'd have to add some javascript that would somehow update the items...
+        if isinstance(data, ObjectNode):
+            items = data.get_config_info().get_items(data)
+            children = [ (key, data.get_child(key)) for key in data.keys_children() ]
+        elif type(data) == dict:
+            items = Module.get_class_config_info(data['__type__']).get_items(data)
+            children = data['__children__'].items() if '__children__' in data else ()
+        else:
+            raise ValueError("Invalid datatype in get_items(): " + type(data).__name__)
+
+        for tup in items:
+            yield tup
+        # TODO might the key here get mixed up with a setting of the same name?
+        for (key, item) in sorted(children):
+            yield (key, key, self, item)
+
+
+class StructConfigType (ComplexConfigType):
+    def __init__(self):
+        super().__init__()
+        self.settings = [ ]
+
+    def add_setting(self, name, propername, default=None, datatype=None, itemtype=None):
+        for i in range(len(self.settings)):
+            if self.settings[i]['name'] == name:
+                del self.settings[i]
+                break
+
+        # attempt to guess the datatype if it's not given
+        if not datatype:
+            datatype = type(default).__name__
+
+        datatype_class = ConfigType.get_type(datatype, itemtype)
+        if not datatype_class:
+            raise Exception("Unsupported setting datatype: " + datatype)
+
+        self.settings.append({
+            'name' : name,
+            'propername' : propername,
+            'default' : default,
+            'datatype' : datatype_class,
+            'options' : None
+        })
+
+    def add_option(self, settingname, propername, value):
+        for setting in self.settings:
+            if setting['name'] == settingname:
+                if not setting['options']:
+                    setting['options'] = [ ]
+                setting['options'].append( (propername, value) )
+
+    def set_default(self, name, default):
+        for setting in self.settings:
+            if setting['name'] == name:
+                setting['default'] = default
+                return
+
+    def get_defaults(self):
+        defaults = { }
+        for setting in self.settings:
+            defaults[setting['name']] = setting['default']
+        return defaults
+
+    def validate(self, data, itemtype=None):
+        config = { }
+        for setting in self.settings:
+            if setting['name'] not in data:
+                #config[setting['name']] = setting['default']
+                pass
+            else:
+                config[setting['name']] = setting['datatype'].validate(data[setting['name']])
+        return config
+
+    def get_items(self, data):
+        if not data:
+            data = { }
+        for setting in self.settings:
+            value = data[setting['name']] if setting['name'] in data else setting['default']
+            yield (setting['name'], setting['propername'], setting['datatype'], value)
+
+
+
+def public(funcobj):
+    """ make function publically accessible through queries """
+    funcobj.__ispublic__ = True
     return funcobj
+
+
+def is_public(funcobj):
+    if not hasattr(funcobj, '__ispublic__') or funcobj.__ispublic__ is not True
+        return False
+    return True
 
 
 class ObjectNode (object):
@@ -242,8 +322,10 @@ class ObjectNode (object):
 
     @classmethod
     def get_config_info(cls):
-        config_info = ConfigInfo()
-        #config_info.add_setting('__children__', "Child Objects", default=dict(), iteminfo="object")
+        config_info = StructConfigType()
+        # TODO i don't like this name, and i don't like the form the data takes... it should be clear what it means.  Do you have to have some kind of owner or at least user_class owner?
+        #config_info.add_setting('permissions', "Permissions", default='rw')
+        #config_info.add_setting('__children__', "Child Objects", default=dict(), itemtype="object")
         # TODO if you had a means of dealing with objects as single settings, then you can use the dict recursive validator to add/remove/rename items
         return config_info
 
@@ -269,7 +351,7 @@ class ObjectNode (object):
     def make_object_children(self, config):
         for objname in config.keys():
             typeinfo = config[objname]['__type__'] if '__type__' in config[objname] else 'objects/ObjectNode'
-            obj = ObjectNode.make_object(typeinfo, config[objname])
+            obj = Module.make_object(typeinfo, config[objname])
             obj._parent = self
             self._children[objname] = obj
 
@@ -340,7 +422,7 @@ class ObjectNode (object):
         for name in dir(self):
             obj = getattr(self, name)
             try:
-                if obj.__isquerymethod__ is True:
+                if obj.__ispublic__ is True:
                     keys.append(name)
             except:
                 pass
@@ -356,7 +438,7 @@ class ObjectNode (object):
 
     def set_object(self, name, obj, **config):
         if type(obj) == str:
-            obj = ObjectNode.make_object(obj, config)
+            obj = Module.make_object(obj, config)
         if not obj:
             nerve.log("error creating object " + name)
             return None
@@ -383,23 +465,6 @@ class ObjectNode (object):
             obj = parent.get_child(objname)
             if callable(obj):
                 obj(*args, **kwargs)
-
-
-    @staticmethod
-    def make_object(typeinfo, config):
-        classtype = Module.get_class(typeinfo)
-        if not issubclass(classtype, ObjectNode):
-            raise TypeError(str(typeinfo) + " is not a subclass of ObjectNode")
-        obj = classtype(**config)
-        return obj
-
-    @staticmethod
-    def get_class_config_info(typeinfo):
-        classtype = Module.get_class(typeinfo)
-        if not issubclass(classtype, ObjectNode):
-            raise TypeError(str(typeinfo) + " is not a subclass of ObjectNode")
-        return classtype.get_config_info()
-
 
 
 class _ModuleSingleton (type):
@@ -584,5 +649,20 @@ class Module (ObjectNode, metaclass=_ModuleSingleton):
         if not modulename.startswith('nerve'):
             modulename = 'nerve.' + modulename
         return modulename
+
+    @classmethod
+    def make_object(cls, typeinfo, config):
+        classtype = cls.get_class(typeinfo)
+        if not issubclass(classtype, ObjectNode):
+            raise TypeError(str(typeinfo) + " is not a subclass of ObjectNode")
+        obj = classtype(**config)
+        return obj
+
+    @classmethod
+    def get_class_config_info(cls, typeinfo):
+        classtype = cls.get_class(typeinfo)
+        if not issubclass(classtype, ObjectNode):
+            raise TypeError(str(typeinfo) + " is not a subclass of ObjectNode")
+        return classtype.get_config_info()
 
 

@@ -15,7 +15,7 @@ class NerveBot (IRCClient):
         self.channel = '#ircmoo'
         self.linebuffer = [ ]
         if not self.get_child('event_privmsg'):
-            self.set_child('event_privmsg', nerve.ObjectNode.make_object('objects/ObjectNode', dict()))
+            self.set_child('event_privmsg', nerve.Module.make_object('objects/ObjectNode', dict()))
 
     def on_connect(self):
         self.sendmsg("JOIN " + self.channel)

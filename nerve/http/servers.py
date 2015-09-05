@@ -55,7 +55,7 @@ class HTTPServer (nerve.Server, socketserver.ThreadingMixIn, http.server.HTTPSer
         config_info.add_setting('password', "Admin Password", default='')
         config_info.add_setting('ssl_enable', "SSL Enable", default=False)
         config_info.add_setting('ssl_cert', "SSL Certificate File", default='')
-        config_info.add_setting('template', "Default Template", default=dict(__type__='http/views/template/TemplateView', filename='nerve/http/views/template.pyhtml'))
+        config_info.add_setting('template', "Default Template", datatype='object', default=dict(__type__='http/views/template/TemplateView', filename='nerve/http/views/template.pyhtml'))
         return config_info
 
 
@@ -147,18 +147,19 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
 
         redirect = controller.get_redirect()
         error = controller.get_error()
+        headers = controller.get_headers()
         mimetype = controller.get_mimetype()
         output = controller.get_output()
 
         if redirect:
             self.send_content(302, mimetype, output, [ ('Location', redirect) ])
         elif error:
-            if type(error) == nerve.users.UserPermissionsError:
+            if type(error) == nerve.users.UserPermissionsRequired:
                 self.send_401(str(error))
             else:
                 self.send_content(404 if type(error) is nerve.NotFoundError else 500, mimetype, output)
         else:
-            self.send_content(200, mimetype, output)
+            self.send_content(200, mimetype, output, headers)
         return
 
     def send_content(self, errcode, mimetype, content, headers=None):
@@ -216,7 +217,7 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
 
         if not error:
             conn.websocket_write_close(200, '')
-        elif type(error) == nerve.users.UserPermissionsError:
+        elif type(error) == nerve.users.UserPermissionsRequired:
             self.send_401(str(error))
         else:
             conn.websocket_write_message(str(error))

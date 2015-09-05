@@ -21,6 +21,10 @@ hr {
     border-color: #70B008;
 }
 
+a {
+    color: #000;
+}
+
 button {
     color: #000;
     background: #f7f7f7;
@@ -35,27 +39,50 @@ button:hover {
     color: #fff;
 }
 
-input, textarea, select {
+input,
+textarea,
+select {
     background: #EFFFDF;
     font: 14px sans-serif;
 }
 
+table,
+th,
+td {
+    border: 1px solid lightgrey;
+}
+
 #nerve-notice {
     border: 1px solid #333;
-    padding: 5px;
     background-color: #9f9;
-    margin-bottom: 20px;
 }
 
 #nerve-error {
     border: 1px solid #333;
-    padding: 5px;
     background-color: #f99;
-    margin-bottom: 20px;
 }
 
 .nerve-display {
     border: 1px solid #70B008;
     background: #DFFFBF;
 }
+
+.nerve-tabs {
+    border-top: 5px solid #80C008;
+}
+
+.nerve-tabs .tab {
+    border-right: 1px solid #80C008;
+    background-color: #EFFFDF;
+}
+
+.nerve-tabs .selected {
+    background-color: #80C008;
+    color: #fff;
+}
+
+.nerve-form-list {
+    border: 1px solid #70B008;
+}
+
 

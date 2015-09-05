@@ -3,72 +3,101 @@
 
 import nerve
 
-import io
+import cgi
+import urllib.parse
+
+
+def pathjoin(base, name):
+    return base + '/' + name if base else name
 
 
 class FormView (nerve.View):
-    def __init__(self, config_info, data):
+    # TODO change config_info to type, so any type can have a form
+    def __init__(self, data, config_info):
         super().__init__()
-        self._config_info = config_info
         self._data = data
+        self._config_info = config_info
+        self._indent = 2
         self._last_label = 0
 
-    def finalize(self):
+    def write_text(self, text):
+        super().write_text(('    ' * self._indent) + text)
+
+    def render(self):
         self.build_form()
 
     def build_form(self):
         self.write_text('<div class="nerve-treeview">\n')
-        self.build_config_item(self._config_info, self._data)
+        self._indent += 1
+        self.build_complex_item('', '', '', self._config_info, self._data)
+        self._indent -= 1
+        self.write_text('<br/>\n')
+        self.write_text('<button class="nerve-form-submit">Save</button>\n')
         self.write_text('</div>\n')
 
-    def build_config_item(self, config_info, value):
-        for itemconfig in config_info:
-            itemvalue = value[itemconfig['name']]
-            self.build_item(itemconfig, itemvalue)
-
-    def build_item(self, itemconfig, itemvalue):
-        # this would be equiv to itemvalue[item['name']] for a dict or list.  It would be that way for a dict of object settings, but not for an object itself
-        #curvalue = item['datatype'].get_value(itemvalue, item['name'])
-        #curvalue = data[item['name']]
-
-        if itemconfig['iteminfo'] == None:
-            self.build_scalar_item(itemconfig, itemvalue)
+    def build_item(self, basename, name, propername, datatype, data):
+        if datatype.is_type('scalar'):
+            self.build_scalar_item(basename, name, propername, datatype, data)
         else:
-            self.build_complex_item(itemconfig, itemvalue)
+            self._last_label += 1
+            if datatype.is_type('object'):
+                self.write_text('<li><input type="checkbox" id="item-' + str(self._last_label) + '" /><label class="nerve-treeview" for="item-' + str(self._last_label) + '">' + pathjoin(basename, propername) + '</label>\n')
+            else:
+                self.write_text('<li><input type="checkbox" id="item-' + str(self._last_label) + '" checked /><label class="nerve-treeview alt-label" for="item-' + str(self._last_label) + '">' + propername + '</label>\n')
+            self.build_complex_item(basename, name, propername, datatype, data)
+            self.write_text('</li>\n')
 
-    def build_scalar_item(self, itemconfig, itemvalue):
+    def build_scalar_item(self, basename, name, propername, datatype, data):
         self.write_text('<li><div class="nerve-form-item">\n')
-        self.write_text('    <label>' + itemconfig['propername'] + '</label>\n')
-        self.write_text('    <span><input type="text" name="' + itemconfig['name'] + '" value="' + str(itemvalue) + '" /></span>\n')
+        self.write_text('    <label>' + propername + '</label>\n')
+        """
+        if 'options' in setting and setting['options']:
+            self.write_text('    <span><select name="' + pathjoin(basename, name) + '">\n')
+            for (propername, value) in setting['options']:
+                self.write_text('<option value="' + cgi.escape(str(value)) + '">' + propername + '</option>\n')
+            self.write_text('    </select></span>\n')
+        """
+        if datatype.htmltype == 'textarea':
+            self.write_text('    <span><textarea name="' + pathjoin(basename, name) + '">' + cgi.escape(str(data)) + '</textarea></span>\n')
+        else:
+            #urllib.parse.quote(str(itemvalue))
+            self.write_text('    <span><input type="' + datatype.htmltype + '" name="' + pathjoin(basename, name) + '" value="' + cgi.escape(str(data)) + '" /></span>\n')
         self.write_text('</div></li>\n')
 
-    def build_complex_item(self, parentconfig, parentvalue):
-        self._last_label += 1
+    def build_complex_item(self, basename, name, propername, datatype, data):
 
-        self.write_text('<li><input type="checkbox" id="item-' + str(self._last_label) + '" /><label class="nerve-treeview alt-label" for="item-' + str(self._last_label) + '">' + parentconfig['name'] + '</label>\n')
-        self.write_text('<ul>\n')
+        self.write_text('<ul class="nerve-form-tree" name="' + pathjoin(basename, name) + '">\n')
+        self._indent += 1
 
-        if type(parentconfig['iteminfo']) == nerve.ConfigInfo:
-            for (itemkey, itemvalue) in parentconfig['datatype'].get_items(parentvalue):
-                self._last_label += 1
-                self.write_text('<li><input type="checkbox" id="item-' + str(self._last_label) + '" /><label class="nerve-treeview alt-label" for="item-' + str(self._last_label) + '">' + str(itemkey) + '</label>\n')
-                self.write_text('<ul>\n')
-                self.build_config_item(parentconfig['iteminfo'], itemvalue)
-                self.write_text('</ul></li>\n')
-        elif type(parentconfig['iteminfo']) == nerve.ConfigType:
-            if parentconfig['iteminfo'].typeclass == 'scalar':
-                for (itemkey, itemvalue) in parentconfig['datatype'].get_items(parentvalue):
-                    self._last_label += 1
-                    self.write_text('<li><label>"' + str(itemkey) + '"</label><input type="text" name="item-' + str(self._last_label) + '" value="' + str(itemvalue) + '"/></li>\n')
+        for (itemname, itempropername, itemdatatype, itemdata) in datatype.get_items(data):
+            self.build_item(pathjoin(basename, name), itemname, itempropername, itemdatatype, itemdata)
+
+        self.write_text('<button class="nerve-config-add" data-object="dirname">Add</button>\n')
 
         """
-        # TODO this is kinda wrong.  It would be the code for a new item in the above list, but not the list itself
-        for item in parentconfig['iteminfo']:
-            #itemvalue = item['datatype'].get_value(parentvalue, parentconfig['name'])
-            itemvalue = parentvalue[item['name']]
-            self.build_item(subitem, itemvalue)
+                <button class="add" data-object="<%= dirname %>">Add</button>
+                <div style="display: none;">
+                    <div id="nerve-notice" style="display: none;"></div>
+                    <div id="nerve-error" style="display: none;"></div>
+                    <div class="nerve-form-item-row">
+                        <input type="text" name="__name__" />
+                        <select class="add-select-type">
+                            <option value="">(select type)</option>
+                            <% for typename in typeslist: %>
+                            <option value="<%= typename %>"><%= typename %></option>
+                            <% end %>
+                        </select>
+                    </div>
+                    <div id="add-settings"></div>
+                    <div>
+                        <button class="add-create" data-object="<%= dirname %>">Create</button>
+                        <button class="add-cancel">Cancel</button>
+                    </div>
+                </div>
         """
 
-        self.write_text('</ul></li>\n')
+
+        self._indent -= 1
+        self.write_text('</ul>\n')
 
 

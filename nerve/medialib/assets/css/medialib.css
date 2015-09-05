@@ -1,6 +1,4 @@
 
-
-
 .medialib-list table
 {
     width: 100%;
@@ -17,18 +15,6 @@
 {
     text-align: center;
     width: 1.5em;
-}
-
-.medialib-list table,
-.medialib-list th,
-.medialib-list td
-{
-    border: 1px solid lightgrey;
-}
-
-.medialib-list a
-{
-    color: black;
 }
 
 .medialib-links a

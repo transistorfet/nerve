@@ -8,22 +8,9 @@ from ..models import PagesModel
 from ..views.block import BlockView
 
 
-page_sections = [
-    ('title', "Page Title", 'text'),
-    ('jsfiles', "JavaScript Files", 'list:files:js'),
-    ('cssfiles', "CSS Files", 'list:files:css'),
-    ('header', "Header", 'list:blocks'),
-    ('subheader', "Sub-Header", 'list:blocks'),
-    ('sidebar', "Sidebar", 'list:blocks'),
-    ('content', "Content", 'list:blocks'),
-    ('separator', "Separator", 'list:blocks'),
-    ('footer', "Footer", 'list:blocks'),
-    ('subfooter', "Sub-Footer", 'list:blocks')
-]
-
 class PageView (nerve.http.TemplateView):
-    def __init__(self, pagename=None, data=dict()):
-        super().__init__('nerve/pages/views/template.pyhtml', data)
+    def __init__(self, pagename=None, data=dict(), **config):
+        super().__init__('nerve/pages/views/template.pyhtml', data, **config)
         self.pagename = pagename
         self.model = PagesModel()
 
@@ -36,23 +23,23 @@ class PageView (nerve.http.TemplateView):
         else:
             pagedata = None
 
-        for (name, title, typename) in page_sections:
-            if typename == 'text':
-                if pagedata and name in pagedata:
+        for (name, propername, datatype, default) in self.get_config_info().get_items(self.get_config_data()):
+            if datatype.is_type('scalar'):
+                if pagedata and name in pagedata and pagedata[name]:
                     self._sections[name] = pagedata[name]
-                elif defaultpage and name in defaultpage:
+                elif defaultpage and name in defaultpage and defaultpage[name]:
                     self._sections[name] = defaultpage[name]
                 else:
-                    self._sections[name] = ''
+                    self._sections[name] = default
 
-            elif typename.startswith('list:'):
+            else:
                 itemlist = []
                 if defaultpage and name in defaultpage:
                     itemlist += defaultpage[name]
                 if pagedata and name in pagedata:
                     itemlist += pagedata[name]
 
-                if typename == 'list:blocks':
+                if datatype.is_type('list:textarea'):
                     for blockname in itemlist:
                         self.add_to_section(name, BlockView(blockname))
                 else:
@@ -61,9 +48,6 @@ class PageView (nerve.http.TemplateView):
 
         super().render()
 
-    @staticmethod
-    def get_page_sections():
-        return page_sections.copy()
 
 
  

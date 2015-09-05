@@ -1,0 +1,106 @@
+
+html {
+    font-family: Geneva, "DejaVu Sans", "Arial Unicode MS", sans-serif;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+
+    background-color: #2E2E2E;
+    color: #CCC;
+}
+
+body {
+    margin: 4px;
+    margin-bottom: 10em;
+}
+
+h5,
+h6 {
+    margin-top: 0px;
+    margin-bottom: 4px;
+}
+
+hr {
+    border-color: #333;
+}
+
+a {
+    color: #3A8ECD;
+}
+
+button {
+    color: #CCC;
+    background: #505050;
+    border-top: 1px solid #222;
+    border-left: 1px solid #222;
+    border-bottom: 1px solid #111;
+    border-right: 1px solid #111;
+}
+
+button:hover {
+    background: #3A8ECD;
+    color: #CCC;
+}
+
+input,
+textarea,
+select {
+    background: #2E2E2E;
+    font-size: 14px;
+}
+
+table,
+th,
+td {
+    border: 1px solid #111;
+}
+
+#nerve-notice {
+    border: 1px solid #333;
+    background-color: #090;
+}
+
+#nerve-error {
+    border: 1px solid #333;
+    background-color: #900;
+}
+
+.nerve-display {
+    border: 1px solid #3A8ECD;
+    background: #505050;
+}
+
+.nerve-tabs {
+    border-top: 5px solid #3A8ECD;
+}
+
+.nerve-tabs .tab {
+    border-right: 1px solid #3A8ECD;
+    background-color: #2E2E2E;
+}
+
+.nerve-tabs .selected {
+    background-color: #3A8ECD;
+    color: #fff;
+}
+
+.nerve-form-list {
+    border: 1px solid #000;
+}
+
+.nerve-treeview li > label {
+    background: #3A8ECD;
+    border: 1px solid #222;
+    color: #fff;
+}
+
+.nerve-treeview .directory {
+    /* border: 1px solid #80C008; */
+}
+
+.nerve-treeview .alt-label {
+    background: #505050;
+    border: 1px solid #222;
+    color: #CCC;
+}
+

@@ -3,3 +3,4 @@
 junk/
 config/*/*.sqlite
 config/*/playlists
+__pycache__

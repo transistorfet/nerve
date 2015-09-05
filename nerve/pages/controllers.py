@@ -26,25 +26,27 @@ class PagesController (nerve.http.Controller):
             page = 'index'
 
         if hasattr(self, page):
-            func = getattr(self, page)
-            func(request)
+            method = getattr(self, page)
+            if not nerve.is_public(method):
+                raise nerve.users.UserPermissionsError("method is not public: " + name)
+            method(request)
 
         elif self.model.page_exists(page):
+            template = self.get_setting('template')
+            if not template and request:
+                template = request.source.get_setting('template')
+            template = template.copy()
+
             data = { }
             data['pagename'] = page
-            self.set_view(PageView(page, data))
+            self.set_view(PageView(page, data, **template))
             self.template_add_to_section('jsfiles', '/pages/assets/js/pages.js')
             self.template_add_to_section('cssfiles', '/pages/assets/css/pages.css')
 
         else:
             raise nerve.NotFoundError("Page not found: " + page)
 
-    def handle_error(self, error, traceback):
-        if type(error) == nerve.NotFoundError or self.get_mimetype() != None:
-            super().handle_error(error, traceback)
-        else:
-            self.load_json_view({ 'status' : 'error', 'message' : error.args[0] })
-
+    @nerve.public
     def listpages(self, request):
         data = { }
         data['pages'] = self.model.list_pages()
@@ -54,6 +56,7 @@ class PagesController (nerve.http.Controller):
         self.template_add_to_section('jsfiles', '/pages/assets/js/pages.js')
         self.template_add_to_section('cssfiles', '/pages/assets/css/pages.css')
 
+    @nerve.public
     def editpage(self, request):
         data = { }
         data['pagename'] = request.next_segment(default='')
@@ -63,7 +66,7 @@ class PagesController (nerve.http.Controller):
         if data['pagename'] and not self.model.page_exists(data['pagename']):
             raise nerve.NotFoundError("Page doesn't exist: " + data['pagename'])
 
-        data['sections'] = PageView.get_page_sections()
+        data['sections'] = PageView.get_config_info()
         data['pagedata'] = self.model.get_page_data(data['pagename']) if data['pagename'] else ''
         data['blocklist'] = self.model.list_blocks()
 
@@ -72,6 +75,7 @@ class PagesController (nerve.http.Controller):
         self.template_add_to_section('jsfiles', '/pages/assets/js/pages.js')
         self.template_add_to_section('cssfiles', '/pages/assets/css/pages.css')
 
+    @nerve.public
     def savepage(self, request):
         originalname = request.arg('originalname')
         pagename = request.arg('pagename')
@@ -84,15 +88,18 @@ class PagesController (nerve.http.Controller):
             raise nerve.ControllerError('A page by that name already exists: ' + pagename)
 
         pagedata = { }
-        for (name, title, typename) in PageView.get_page_sections():
-            if typename == 'text':
-                pagedata[name] = request.arg(name, default="")
-            elif typename.startswith('list:'):
+        for (name, title, datatype, default) in PageView.get_config_info().get_items(None):
+            if datatype.is_type('scalar'):
+                pagedata[name] = datatype.validate(request.arg(name, default=""))
+            elif datatype.is_type('list'):
                 pagedata[name] = [ item.strip() for item in request.arg(name, default="").split('\n') if item ]
+
+        #pagedata = PageView.get_config_info().validate(request.args)
 
         self.model.save_page_data(originalname, pagename, pagedata)
         self.load_json_view({ 'status' : 'success', 'message' : 'Page saved successfully' })
 
+    @nerve.public
     def deletepage(self, request):
         pagename = request.arg('name', default=None)
 
@@ -104,6 +111,7 @@ class PagesController (nerve.http.Controller):
         self.model.delete_page(pagename)
         self.load_json_view({ 'status' : 'success', 'message' : 'Page deleted successfully' })
 
+    @nerve.public
     def listblocks(self, request):
         data = { }
         data['blocks'] = self.model.list_blocks()
@@ -112,6 +120,7 @@ class PagesController (nerve.http.Controller):
         self.template_add_to_section('jsfiles', '/pages/assets/js/pages.js')
         self.template_add_to_section('cssfiles', '/pages/assets/css/pages.css')
 
+    @nerve.public
     def editblock(self, request):
         data = { }
         data['blockname'] = request.next_segment(default='')
@@ -128,6 +137,7 @@ class PagesController (nerve.http.Controller):
         self.template_add_to_section('jsfiles', '/pages/assets/js/pages.js')
         self.template_add_to_section('cssfiles', '/pages/assets/css/pages.css')
 
+    @nerve.public
     def saveblock(self, request):
         originalname = request.arg('originalname')
         blockname = request.arg('blockname')
@@ -143,6 +153,7 @@ class PagesController (nerve.http.Controller):
         self.model.save_block(originalname, blockname, blocktext)
         self.load_json_view({ 'status' : 'success', 'message' : 'Block saved successfully' })
 
+    @nerve.public
     def deleteblock(self, request):
         blockname = request.arg('name', default=None)
 
@@ -153,5 +164,12 @@ class PagesController (nerve.http.Controller):
 
         self.model.delete_block(blockname)
         self.load_json_view({ 'status' : 'success', 'message' : 'Block deleted successfully' })
+
+    def handle_error(self, error, traceback):
+        if type(error) == nerve.NotFoundError or self.get_mimetype() != None:
+            super().handle_error(error, traceback)
+        else:
+            nerve.log(traceback)
+            self.load_json_view({ 'status' : 'error', 'message' : error.args[0] })
 
 

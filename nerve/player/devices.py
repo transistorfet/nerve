@@ -19,7 +19,7 @@ class PlayerDevice (nerve.Device):
 
         backend = self.get_setting('backend')
         try:
-            self.driver = nerve.ObjectNode.make_object(backend, config)
+            self.driver = nerve.Module.make_object(backend, config)
         except:
             nerve.log("failed to initialize player backend: " + backend)
             nerve.log(traceback.format_exc())

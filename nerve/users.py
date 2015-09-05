@@ -9,6 +9,53 @@ import threading
 
 class UserLoginError (Exception): pass
 class UserPermissionsError (Exception): pass
+class UserPermissionsRequired (Exception): pass
+
+
+_user_db = None
+_user_threads = { }
+
+def init():
+    global _user_db
+    _user_db = nerve.Database('users.sqlite')
+
+    if not _user_db.table_exists('roles'):
+        _user_db.create_table('roles', "id INTEGER PRIMARY KEY, role TEXT, weight NUMERIC")
+        add_role('admin', 0)
+        add_role('user', 1)
+        add_role('guest', 100)
+
+    if not _user_db.table_exists('users'):
+        _user_db.create_table('users', "id INTEGER PRIMARY KEY, username TEXT, password TEXT, role TEXT, last_login NUMERIC")
+        add_user('admin', 'admin', 'admin')
+        add_user('guest', '', 'guest')
+
+    _user_db.create_table('user_data', "username TEXT PRIMARY KEY, dataname TEXT, data TEXT")
+
+
+def add_role(role, weight):
+    _user_db.where('role', role)
+    results = list(_user_db.get('roles'))
+    if len(results) > 0:
+        return False
+    _user_db.insert('roles', { 'role' : role, 'weight' : weight })
+    return True
+
+
+def add_user(username, password, role):
+    _user_db.where('username', username)
+    results = list(_user_db.get('users'))
+    if len(results) > 0:
+        return False
+
+    _user_db.where('role', role)
+    results = list(_user_db.get('roles'))
+    if len(results) <= 0:
+        return False
+
+    _user_db.where('username', username)
+    _user_db.insert('users', { 'username' : username, 'password' : hash_password(password), 'role' : role })
+    return True
 
 
 class login (object):
@@ -17,105 +64,53 @@ class login (object):
         self._password = password
 
     def __enter__(self):
-        if not Users().login(self._username, self._password):
+        if not _login(self._username, self._password):
             raise UserLoginError('invalid username or password (' + self._username + ')')
 
     def __exit__(self, type, value, traceback):
-        Users().logout()
+        _logout()
+
+
+def _login(username, password):
+    password = hash_password(password)
+    _user_db.where('username', username)
+    _user_db.where('password', password)
+    results = list(_user_db.get('users'))
+    if len(results) <= 0:
+        return False
+    _user_threads[threading.current_thread()] = username
+    return True
+
+
+def _logout():
+    t = threading.current_thread()
+    if t in _user_threads:
+        del _user_threads[t]
+
+
+def thread_owner():
+    t = threading.current_thread()
+    if t in _user_threads:
+        return _user_threads[t]
+    return 'system'
+
+
+def thread_count():
+    return len(_user_threads)
+
 
 def require_permissions(role):
-    if not Users().require_permissions(role):
-        raise UserPermissionsError()
-
-
-# TODO in a way this is really a model, isn't it?  It's not a device, it doesn't have threads or anything stateful...
-# A user object itself might be a 'device' or something, but these methods are just basic lib/db functions
-# should it actually be a singleton?  The biggest issue, as always, is the fact that command line args need to be parsed first
-# in order to get the configdir
-class Users (object):
-    singleton = None
-    user_threads = { }
-
-    def __new__(cls):
-        if not cls.singleton:
-            cls.singleton = super().__new__(cls)
-        return cls.singleton
-
-    def __init__(self):
-        self.db = nerve.Database('users.sqlite')
-
-        if not self.db.table_exists('roles'):
-            self.db.create_table('roles', "id INTEGER PRIMARY KEY, role TEXT, weight NUMERIC")
-            self.add_role('admin', 0)
-            self.add_role('user', 1)
-            self.add_role('guest', 100)
-
-        if not self.db.table_exists('users'):
-            self.db.create_table('users', "id INTEGER PRIMARY KEY, username TEXT, password TEXT, role TEXT, last_login NUMERIC")
-            self.add_user('admin', 'admin', 'admin')
-            self.add_user('guest', '', 'guest')
-
-        self.db.create_table('user_data', "username TEXT PRIMARY KEY, dataname TEXT, data TEXT")
-
-    def add_role(self, role, weight):
-        self.db.where('role', role)
-        results = list(self.db.get('roles'))
-        if len(results) > 0:
-            return False
-        self.db.insert('roles', { 'role' : role, 'weight' : weight })
+    t = threading.current_thread()
+    if t not in _user_threads:
+        raise UserPermissionsRequired()
+    username = _user_threads[t]
+    results = list(_user_db.query("SELECT users.username, users.role, roles.role, roles.weight FROM users, roles WHERE users.username == ? AND users.role == roles.role AND roles.weight <= 0", (username,)))
+    if len(results) > 0:
         return True
+    raise UserPermissionsRequired()
 
-    def add_user(self, username, password, role):
-        self.db.where('username', username)
-        results = list(self.db.get('users'))
-        if len(results) > 0:
-            return False
 
-        self.db.where('role', role)
-        results = list(self.db.get('roles'))
-        if len(results) <= 0:
-            return False
-
-        self.db.where('username', username)
-        self.db.insert('users', { 'username' : username, 'password' : self.hash_password(password), 'role' : role })
-        return True
-
-    def login(self, username, password):
-        password = self.hash_password(password)
-        self.db.where('username', username)
-        self.db.where('password', password)
-        results = list(self.db.get('users'))
-        if len(results) <= 0:
-            return False
-        self.user_threads[threading.current_thread()] = username
-        return True
-
-    def logout(self):
-        t = threading.current_thread()
-        if t in self.user_threads:
-            del self.user_threads[t]
-
-    def thread_owner(self):
-        t = threading.current_thread()
-        if t in self.user_threads:
-            return self.user_threads[t]
-        return 'system'
-
-    def thread_count(self):
-        return len(self.user_threads)
-
-    def require_permissions(self, role):
-        t = threading.current_thread()
-        if t not in self.user_threads:
-            return False
-        username = self.user_threads[t]
-        results = list(self.db.query("SELECT users.username, users.role, roles.role, roles.weight FROM users, roles WHERE users.username == ? AND users.role == roles.role AND roles.weight <= 0", (username,)))
-        if len(results) > 0:
-            return True
-        return False
-
-    @staticmethod
-    def hash_password(password):
-        return hashlib.sha256(bytes(password, 'utf-8')).hexdigest()
+def hash_password(password):
+    return hashlib.sha256(bytes(password, 'utf-8')).hexdigest()
 
 

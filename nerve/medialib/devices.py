@@ -28,14 +28,11 @@ class MediaLibDevice (nerve.Device):
         self.current = 'default'
 
     def force_database_update(self):
-        #self.media_updater.stop()
-        #self.youtube_updater.stop()
-
         self.db.where('name', 'last_updated')
         self.db.update('info', { 'value' : 0 })
 
-        # TODO new way to force an update
-        #self.start_updaters()
+    def rehash(self):
+        self.force_database_update()
 
     def get_playlist_list(self):
         files = os.listdir(nerve.configdir() + '/playlists')

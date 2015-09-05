@@ -1,4 +1,14 @@
 
+#nerve-notice {
+    padding: 5px;
+    margin-bottom: 20px;
+}
+
+#nerve-error {
+    padding: 5px;
+    margin-bottom: 20px;
+}
+
 .nerve-row {
     width: 100%;
     display: flex;
@@ -47,7 +57,7 @@ div.nerve-editor > #editor-save {
 }
 
 .nerve-form-list {
-    border: 1px solid #70B008;
+    border: 1px solid #000;
     margin: 0.5em;
     padding: 0.5em;
     display: inline-block;
@@ -68,8 +78,7 @@ div.nerve-editor > #editor-save {
     margin-right: 0.5em;
     text-align: left;
     float: left;
-    font: 12px sans-serif;
-    color: black;
+    font-size: 12px;
 }
 
 .nerve-form-item select,
@@ -84,8 +93,7 @@ div.nerve-editor > #editor-save {
 .nerve-form-item-row label {
     display: inline;
     margin-right: 0.5em;
-    font: 12px sans-serif;
-    color: black;
+    font-size: 12px;
 }
 
 .nerve-form-item-row label + * {
@@ -154,14 +162,14 @@ div.nerve-editor > #editor-save {
 }
 
 .nerve-treeview > ul {
-    width: 30em;
+    width: 40em;
 }
 
 .nerve-treeview li > label {
     width: 100%;
-    /* background: #80C008; */
-    /* border: 1px solid #222; */
-    /* color: #fff; */
+    background: #80C008;
+    border: 1px solid #222;
+    color: #fff;
 }
 
 .nerve-treeview .object-save {
@@ -174,7 +182,7 @@ div.nerve-editor > #editor-save {
 }
 
 .nerve-treeview .directory {
-    border: 1px solid #80C008;
+    /* border: 1px solid #80C008; */
 }
 
 .nerve-treeview .alt-label {
@@ -192,20 +200,25 @@ div.nerve-editor > #editor-save {
 /*** Nerve Tabs Widget ***/
 
 .nerve-tabs {
-    border-top: 5px solid #80C008;
+    border-top: 5px solid #000;
 }
 
 .nerve-tabs .tab {
     cursor: pointer;
     float: left;
-    border-right: 1px solid #80C008;
+    border-right: 1px solid #000;
     padding: 8px;
     font-size: 14px;
-    background-color: #EFFFDF;
 }
 
 .nerve-tabs .selected {
-    background-color: #80C008;
+    background-color: #000;
     color: #fff;
+}
+
+.nerve-tabs:after {
+    content: "";
+    display: block;
+    clear: both;
 }
 

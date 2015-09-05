@@ -5,6 +5,8 @@ import nerve
 import nerve.http
 
 import os.path
+import hashlib
+import http.cookies
 
 
 class Controller (nerve.Controller):
@@ -35,6 +37,7 @@ class Controller (nerve.Controller):
     def template_add_to_section(self, name, view):
         self._view.add_to_section(name, view)
 
+    @nerve.public
     def assets(self, request):
         filename = 'nerve' + request.url.path
 
@@ -46,5 +49,32 @@ class Controller (nerve.Controller):
             self.set_view(nerve.http.PyHTML(request, None, filename))
         else:
             self.load_file_view(filename)
+
+
+class SessionMixIn (object):
+    """Add cookie-based sessions to a Controller"""
+    _sessions = { }
+
+    def initialize(self, request):
+        self.cookie = http.cookies.SimpleCookie('\n'.join(request.get_header_all("cookie")))
+        if 'SESSIONID' in self.cookie:
+            self.sessionid = self.cookie['SESSIONID'].value
+        else:
+            self.sessionid = hashlib.sha512(os.urandom(64)).hexdigest()
+
+        if self.sessionid not in SessionMixIn._sessions:
+            SessionMixIn._sessions[self.sessionid] = { }
+        self.session = SessionMixIn._sessions[self.sessionid]
+        print("Init: ", self.sessionid, self.session)
+        super().initialize(request)
+
+    def finalize(self, request):
+        super().finalize(request)
+        print("Final: ", self.sessionid, self.session)
+        SessionMixIn._sessions[self.sessionid] = self.session
+        self.cookie['SESSIONID'] = self.sessionid
+        print(self.cookie)
+        for morsel in self.cookie.values():
+            self.add_header('Set-Cookie', morsel.output(header=''))
 
 

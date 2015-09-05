@@ -28,6 +28,16 @@ class MediaFilesUpdater (MediaLibUpdater):
         row = self.db.get_single('info', 'name,value', self.db.inline_expr('name', 'last_updated'))
         if row is None or float(row[1]) + 86400 < time.time():
             self.run_update()
+            return
+
+        lasttime = float(row[1])
+        medialib = nerve.get_object('/modules/medialib')
+        self.path = medialib.get_setting('medialib_dirs')
+        for libpath in self.path:
+            mtime = os.path.getmtime(libpath)
+            # if the dir has changed since we last updated, it's been more than 10 minutes since our last update, and more than 2 minutes since the dir changed, then update
+            if mtime > lasttime and mtime + 120 > time.time() and lasttime + 600 > time.time():
+                self.run_update()
 
     def run_update(self):
         medialib = nerve.get_object('/modules/medialib')

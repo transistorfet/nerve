@@ -7,8 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 
     <link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
-    <link rel="stylesheet" type="text/css" href="/assets/css/theme.css" />
     <link rel="stylesheet" type="text/css" href="/assets/css/widgets.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/theme-<%= py.DATA('theme', default='default') %>.css" />
     <% for file in py.DATA('cssfiles', ()): %>
     <link rel="stylesheet" type="text/css" href="<%= file %>" />
     <% end %>
@@ -34,7 +34,7 @@
 <div id="main">
     <% if py.DATA('sidebar'): %>
     <div id="sidebar">
-        <%= '\n'.join(py.DATA('sidebar', ())) %>
+        <%= py.DATA('separator').join(py.DATA('sidebar', ())) %>
     </div>
     <% end %>
 
@@ -42,7 +42,7 @@
         <div id="nerve-notice" style="display: none;"></div>
         <div id="nerve-error" style="display: none;"></div>
 
-        <%= '\n'.join(py.DATA('content')) %>
+        <%= py.DATA('separator').join(py.DATA('content')) %>
     </div>
     <div style="clear: both;"></div>
 </div>

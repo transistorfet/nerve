@@ -21,9 +21,11 @@ class DatalogController (nerve.http.Controller):
         else:
             self.load_json_view({ 'status' : 'error', 'message' : repr(error) })
 
+    @nerve.public
     def index(self, request):
         self.redirect_to('/%s/graph' % (request.segments[0],))
 
+    @nerve.public
     def graph(self, request):
         remain = request.get_remaining_segments().lstrip('/')
         # TODO if remain contains a / then raise an error
@@ -37,6 +39,7 @@ class DatalogController (nerve.http.Controller):
         self.template_add_to_section('jsfiles', '/datalog/assets/js/datalog.js')
         self.template_add_to_section('cssfiles', '/datalog/assets/css/datalog.css')
 
+    @nerve.public
     def get_data(self, request):
         datalog_name = request.args['datalog']
         start_time = request.args['start_time']

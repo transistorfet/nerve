@@ -9,6 +9,7 @@ from ..views.formview import FormView
 
 class ConfigController (nerve.http.Controller):
 
+    @nerve.public
     def index(self, request):
         nerve.users.require_permissions('admin')
 
@@ -17,27 +18,55 @@ class ConfigController (nerve.http.Controller):
         # TODO can you for this path without refering directly to the module (ie. using what's in the request)
         #self.load_html_view("nerve/base/views/config/settings.pyhtml", data)
 
-        #data['formhtml'] = FormView(nerve.main().get_config_info()).get_output()
+        #data['formhtml'] = FormView(nerve.get_main().get_config_info()).get_output()
 
         self.load_template_view('nerve/base/views/config/settings.blk.pyhtml', data, request)
         self.template_add_to_section('jsfiles', '/assets/js/config.js')
 
+    @nerve.public
     def test(self, request):
-        obj = nerve.query("/events/ir/irrecv")
+        obj = nerve.get_object("/")
         self.load_template_view(None, None, request)
         self.template_add_to_section('jsfiles', '/assets/js/config.js')
-        self.template_add_to_section('content', FormView(obj.get_config_info(), obj.get_config_data()))
+        self.template_add_to_section('content', FormView(obj.get_config_data(), nerve.objects.ObjectConfigType()))
+        #self.template_add_to_section('content', FormView(obj.get_config_data(), obj.get_config_info()))
+        #self.template_add_to_section('content', FormView(self._view._sections, nerve.http.views.template.TemplateView.get_config_info()))
 
+    @nerve.public
+    def test2(self, request):
+        self.load_template_view('nerve/base/views/tabstest.blk.pyhtml', None, request)
+        self.template_add_to_section('jsfiles', '/assets/js/config.js')
+
+
+
+    @nerve.public
     def defaults(self, request):
         if request.reqtype != "POST":
             raise nerve.ControllerError("Unexpected request type: " + request.reqtype)
         if not request.arg('type'):
             raise nerve.ControllerError("You must select a type first")
 
-        data = { }
-        data['config_info'] = nerve.ObjectNode.get_class_config_info(request.arg('type'))
-        self.load_html_view("nerve/base/views/config/defaults.blk.pyhtml", data)
+        config_info = nerve.Module.get_class_config_info(request.arg('type'))
+        self.set_view(FormView(config_info.get_defaults(), config_info))
 
+
+    @nerve.public
+    def edit(self, request):
+        if request.reqtype != "POST":
+            raise nerve.ControllerError("Unexpected request type: " + request.reqtype)
+
+        path = request.arg('path')
+        if not path:
+            raise nerve.ControllerError("You must provide a valid object name")
+
+        obj = nerve.get_object(path)
+        if not obj:
+            raise nerve.ControllerError("Object not found: " + path)
+
+        self.set_view(FormView(obj.get_config_data(), obj.get_config_info()))
+
+
+    @nerve.public
     def create(self, request):
         nerve.users.require_permissions('admin')
 
@@ -57,27 +86,33 @@ class ConfigController (nerve.http.Controller):
         if not typeinfo:
             raise nerve.ControllerError("You must select a type.")
 
-        defaults = nerve.ObjectNode.get_class_config_info(typeinfo)
+        defaults = nerve.Module.get_class_config_info(typeinfo)
         config = defaults.get_config_info().validate(request.args)
 
-        obj = nerve.ObjectNode.make_object(typeinfo, config)
+        obj = nerve.Module.make_object(typeinfo, config)
         nerve.set_object(dirname + '/' + name, obj)
         nerve.save_config()
         self.load_json_view({ 'status' : 'success' })
 
+
+    @nerve.public
     def save(self, request):
         nerve.users.require_permissions('admin')
 
         if request.reqtype != "POST":
             raise nerve.ControllerError("Unexpected request type: " + request.reqtype)
 
-        obj = nerve.get_object(request.args['objectname'])
+        print(request.args)
+
+        obj = nerve.get_object(request.args['__name__'])
         config = obj.get_config_info().validate(request.args)
         obj.update_config_data(config)
 
         nerve.save_config()
         self.load_json_view({ 'status' : 'success' })
 
+
+    @nerve.public
     def rename(self, request):
         nerve.users.require_permissions('admin')
 
@@ -103,6 +138,8 @@ class ConfigController (nerve.http.Controller):
         nerve.save_config()
         self.load_json_view({ 'status' : 'success' })
 
+
+    @nerve.public
     def delete(self, request):
         nerve.users.require_permissions('admin')
 

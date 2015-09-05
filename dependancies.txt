@@ -7,6 +7,7 @@ core:
 
 aggregator:
     python3-lxml
+    python-oauth2client
 
 serial:
     python3-serial

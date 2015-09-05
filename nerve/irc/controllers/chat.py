@@ -18,6 +18,7 @@ class IRCChatController (nerve.http.Controller, nerve.connect.ControllerMixIn):
         super().__init__(**config)
         self.client = nerve.query('/devices/irc')
 
+    @nerve.public
     def index(self, request):
         data = { }
         data['hostname'] = self.client.hostname
@@ -26,6 +27,7 @@ class IRCChatController (nerve.http.Controller, nerve.connect.ControllerMixIn):
         self.template_add_to_section('jsfiles', '/irc/assets/js/irc.js')
         self.template_add_to_section('cssfiles', '/irc/assets/css/irc.css')
 
+    @nerve.public
     def connect(self, request):
         if request.reqtype != 'CONNECT':
             raise nerve.ControllerError("expected CONNECT request type; received " + request.reqtype)

@@ -60,10 +60,14 @@
                         "PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0"
                     ]
                 },
+                "youtube": {
+                    "__type__": "aggregator/youtube/YouTubeAggregator"
+                },
                 "player": {
                     "__children__": {},
                     "__type__": "player/devices/PlayerDevice",
-                    "backend": "player/gstreamer/devices/GstreamerPlayer"
+                    "backend": "player/xmms2cli/Xmms2CLI",
+                    "backendold": "player/gstreamer/devices/GstreamerPlayer"
                 },
                 "realtime": {
                     "__children__": {},
@@ -203,6 +207,9 @@
                             "__type__": "base/FileController",
                             "root": "nerve/base/assets"
                         },
+                        "aggregator": {
+                            "__type__": "aggregator/controllers/AggregatorController"
+                        },
                         "config": {
                             "__type__": "base/ConfigController"
                         },
@@ -250,7 +257,8 @@
                     "use_usersdb": true,
                     "username": "",
                     "template": {
-                        "__type__": "pages/views/page/PageView"
+                        "__type__": "pages/views/page/PageView",
+                        "theme": "dark"
                     }
                 },
                 "pyexec": {

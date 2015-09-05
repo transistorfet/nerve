@@ -17,7 +17,7 @@
     <script>
         $(document).ready(function ()
         {
-            var server = new WebSocket("ws://localhost:8888/shell", "Terminal");
+            var server = new WebSocket("ws://"+window.location.hostname+":"+window.location.port+"/shell", "Terminal");
 
             server.onmessage = function (event)
             {

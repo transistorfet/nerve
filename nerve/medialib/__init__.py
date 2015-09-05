@@ -36,11 +36,10 @@ def init():
 def get_config_info():
     from nerve.objects import Module
     config_info = Module.get_config_info()
-    config_info.add_setting('medialib_dirs', 'Directories', default=list())
-    config_info.add_setting('youtube_playlists', 'YouTube Playlists', default=list())
+    config_info.add_setting('medialib_dirs', 'Directories', default=list(), itemtype='str')
+    config_info.add_setting('youtube_playlists', 'YouTube Playlists', default=list(), itemtype='str')
     return config_info
 
 
-# TODO temporary
-#init()
+
 

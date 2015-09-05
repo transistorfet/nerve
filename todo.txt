@@ -1,46 +1,75 @@
 
+    * we have serious issues with security, re controllers specifically, but it affects everything really... all ObjectNode methods are accessible through
+      the controller query (/config/get_child).  It's maybe clumbsy, but we can use our rudimentary permissions system such that do_request will only call
+      a method if it was declared with @nerve.public or something might at least prevent really obvious hacks
     * add a mechanism for specifying access controls, even if it could be circumvented.  It should at least be hard to mess up the system
 
-    * add subtabs for tabs
+    * make theme user selectable somehow
+
+    * should the name of the 'controllers' dict in servers be called something different, like 'paths' or 'handlers' or something?
+    * change server's 'controllers' to 'mappings' to allow multiple parts in the path name ("/things/stuff/config" -> "config controller")
+
+    * how should objects be configured?  A treeview of all objects; do you see all config values at once, possibly hidden, or do you
+      have to click to edit, which fetches the form using ajax, you then save or cancel, and the form closes again.  You could even have
+      a combination, where it shows the config values in summary, not editable, and you click to edit
+    * should formview.py be configview.py?
+
+    * in pages, can we make editpage use FormView, and savepage use config type validation?
+
+    * there's an issue accessing google's oauth and having it redirect to an internal ip.  This prevents it from working on phone
+    * could you have a redirect on jabberwocky.ca that just redirects the browser to a local address?
+
+    * add db method to create or alter table (so that it updates existing databases automatically)
+    * add PUT and DELETE request types to the http server
+    * you could add something to views themselves where you specify the support files (js/css), and a parent view will integrate those into
+      the final template-generated code
+
     * sort out how the users module is a singleton, and how eventthreadpool is a singleton; also how they are created (current just statically made in Main)
+    * views should be more consistent with using str and bytes
+
     * more directly integrate the user system.  especially with mud, there must be much better security and access controls.  This also could apply for an
       irc device that is owned by one user and represents that user, and can only be accessed by that user
-    * finalize in views doesn't work entirely right... the point is to allow errors in the view to be caught while handling the request, rather than when
-      the server fetches output, but sometimes the output renders incorrectly. Views need to be more consistent anyways, with str vs bytes, etc
+    * integrate user permissions and stuff into everything
+    * make it possible for each user to customize their own views somehow (customized remote layouts)
 
-    * A connection could be either text/plain (line terminated), application/json (messages), or possibly text/html, which would be similar to
-      text/plain but allow html tags in the stream.  Sort out how connections negotiate mimetype of messages, and how messages are structured
-    * could you make something (server or connection handler or something), that will act like a terminal, that will respond to arrow
-      keys, completion, and so on, just like console does, but for tcpserver connections, and other things (even the websocket shell)
-
-    * change server's 'controllers' to 'mappings' to allow multiple parts in the path name ("/things/stuff/config" -> "config controller")
-    * add validation to ConfigInfo (to move it out of config controller), and maybe have option to add new types
-    * could you use ConfigInfo in part as a form validation system?  at least for config values
     * should Model actually inherit from object, and Device would be an ObjectNode that's also a Model? (multiple inheritence)
     * should medialib be a model instead of a device?
 
+    * add item count number to playlist page, and media search results page
+    * add pagation to media search results (should be possible through offset/limit)
     * add full row select for playlist and media search, so you can click anywhere to check the box
     * add a loading thing to search.  You can probably just turn off display of the previous results and put a loading icon up
     * add mysensors info webpage things, means of more easily managing sensor network (like buttons to reset each device, when last msg received, etc)
     * make mud using a special module
     * add a system of notifications/messages that's global to the system but specific to a user (ie. can leave messages for individual users)
     * add irc/chat sort of things?
-    * could you use mixin classes for some object features?
+
+    * add a means of browsing (or searching) the medialib by some other means, like according to path, so that you can look at specifically
+      documentary videos in the documentaries directory, for example
+    * it should be possible to easily remove items from the current playlist (like delete current song/delete all by artist/delete previous song)
+      The changes should take effect immediately.  Possibly could have a list of recently played songs to delete
+    * you could have a playlog of recently played tracks, and then you can delete previously played items (so it should list it even if the song played for 2 sec)
+    * add option to mark videos as watched/unwatched so you can easily get a list of things not yet watched
+    * add a hidden flag to videos, to hide certain items from searches or from randomly generated playlists
+    * make updater skip the Incomplete directory for torrents, so it doesn't add any media items it finds there
+    * add a mechanism for getting high/low/average from a datalog, for convenient display on a summary
+    * add is-playing animated icon next to the song title (info to be sent with getsong())
+    * make it possible to paste a link (youtube video or playlist link) to play the link on the server end of things
 
     * make sure it creates a sane default settings file if the config dir doesn't have a file already
     * add run and config instructions to the readme (so that somebody could actually run the thing)
     * update projects website
 
-    * perhaps add a separater field to page configuration, that is inserted between blocks when multiple blocks are used in the same
-      section.  eg. having multiple controls blocks in the content section, or having multiple link blocks in the sidebar
     * make it so that if a block is renamed, it's references in page definitions is updated
+    * would it be useful (or more complicated) to add a 'parent' or 'template' field to pages in the pages module, so that a parent
+      page can be specified other than '__default__'?
+
     * use @querymethod everywhere
-    * add command/path completion to shell
     * should you overload print instead of redirecting stdout in pyhtml??  This wont work for code in other files that use print, since they have the global vars of their scope
     * there needs to be a way to convert a normal module into a Module object if it contains 'get_config_data'...  Right now, only modules
       that have config data in the settings file get created as Module objects, and the rest are just regular modules
     * move module stuff to it's own file??
-    * move the make_object stuff to Module??
+
     * allow logging to be output to a file
     * add levels/types to log messages, and possibly add means of muting certain messages
 
@@ -66,32 +95,25 @@
       system
     * make sure when loading config with saved module data that it gets used
 
-    * would it be useful (or more complicated) to add a 'parent' or 'template' field to pages in the pages module, so that a parent
-      page can be specified other than '__default__'?
+    * A connection could be either text/plain (line terminated), application/json (messages), or possibly text/html, which would be similar to
+      text/plain but allow html tags in the stream.  Sort out how connections negotiate mimetype of messages, and how messages are structured
+    * could you make something (server or connection handler or something), that will act like a terminal, that will respond to arrow
+      keys, completion, and so on, just like console does, but for tcpserver connections, and other things (even the websocket shell)
+    * add command/path completion to shell
+
+    * add SSL support to HTTP server
+    * add support for running nerve using WSGI (PEP 3333), so that apache or something else can launch nerve to handle a web request.  It would
+      have to bypass the normal main loop, but that should be doable by not creating Main(), creating a different class like Main()
+    * make more advanced widgets for various things (ideas?)
+    * there could be a way to automatically minify js and css files on the fly
+    * add support for multiline comments in pyhtml
 
     * add module that can maximize a particular window (like firefox), and then have a means of programming mouse clicks on the screen and mapping
       them to queries, so that a nerve button can cause that mouse click to happen, with the window focused and maximized.  You could also click an
       area, and if the colour of that pixel is a certain one, then return true instead of false (eg. a play/pause status indicator that uses some kind
       of html element to drive it).  The ease of programmability of this is the key to it being usable
 
-    * add a user system that stores user data in a users.db database.  Depending on the user name and password sent along with the HTTP
-      request, the system would display according to their preferences (so that multiple users can use the system, customize their own
-      remote control layouts, and have those changes only apply to their usage).  (remote control layouts, theme info, etc)
-
-    * add a means of browsing (or searching) the medialib by some other means, like according to path, so that you can look at specifically
-      documentary videos in the documentaries directory, for example
-    * it should be possible to easily remove items from the current playlist (like delete current song/delete all by artist/delete previous song)
-      The changes should take effect immediately.  Possibly could have a list of recently played songs to delete
-
-    * add a theme system
-    * add is-playing animated icon next to the song title (info to be sent with getsong())
-    * make it possible to paste a link (youtube video or playlist link) to play the link on the server end of things
-
-    * add SSL support to HTTP server
-    * make more advanced widgets for various things (ideas?)
-    * there could be a way to automatically minify js and css files on the fly
-    * add support for running nerve using WSGI (PEP 3333), so that apache or something else can launch nerve to handle a web request.  It would
-      have to bypass the normal main loop, but that should be doable by not creating Main(), creating a different class like Main()
+    * add voice commands or clapping commands (beepish?).  Only critical controls are needed, like play/pause, skip, volume up/down
 
     * make it as much like a generic hmi/plc/data disemination/control thing as possible.  Make it so that it's easy to have it automatically
       query the server to fill in data fields.
@@ -100,7 +122,6 @@
 STRUCTURAL/REFACTORING:
 
     * change module type references to include the '/modules/' part
-    * should the name of the 'controllers' dict in servers be called something different, like 'paths' or 'handlers' or something?
     * how should view files be referenced relative to?  Right now it's nerve/module/views/view.pyhtml but it should be easier to reference
       the parent module (so the code doesn't have that hardcoded) and also how will this work with the possibility of a second module location
     * if you convert jquery files to send post requests as json, then it will preserve the numeric/string type distinction.  Without it,
@@ -156,7 +177,7 @@ POSSIBLE FEATURES:
       would be most handy when watching F1 stuff, but I want to switch to music for a bit, and then later continue watching F1
     * make a mysensors node for the fridge to monitor temperature
 
-    * you could have some system of assign a mood or energy level to a song, possibly something automatic or something manually
+    * you could have some system to assign a mood or energy level to a song, possibly something automatic or something manually
       assigned (or at the least manually adjustable).  Then you can randomly generate a playlist using certain rules of what
       types of songs should come after which, to more intelligently currate a playlist.  It could also use data from the
       environment to select songs to play.

@@ -13,6 +13,7 @@ class ShellController (nerve.Controller, nerve.connect.ControllerMixIn):
         super().__init__(**config)
         self.pwd = '/devices'
 
+    @nerve.public
     def index(self, request):
         if request.reqtype == 'CONNECT':
             self.handle_connection(request)
@@ -156,8 +157,8 @@ class ShellController (nerve.Controller, nerve.connect.ControllerMixIn):
             nerve.logs.redirect(None)
 
     def cmd_owner(self, args):
-        self.print(str(nerve.main().users.thread_owner()))
+        self.print(str(nerve.users.thread_owner()))
 
     def cmd_thread_count(self, args):
-        self.print(str(nerve.main().users.thread_count()))
+        self.print(str(nerve.users.thread_count()))
 

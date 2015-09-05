@@ -37,8 +37,10 @@ function NerveInputSubmit(element)
         var sourceid = $(element).attr('data-source');
         var query = $(element).attr('data-query');
         var data = $('#'+sourceid).val();
+        var postvars = { };
+        postvars[$(element).attr('name')] = data;
         if (query && data) {
-            $.post('/query/'+query, { 'a' : data }, function(response) {
+            $.post('/query/'+query, postvars, function(response) {
             }, 'json');
         }
     }
@@ -149,38 +151,64 @@ function NerveEditor(element)
 
 function NerveTabs(element)
 {
-    var container = $(element).attr('data-container');
+    function select_tab(tab) {
+        // unselect all tabs in this tab container, and select the clicked tab
+        $(tab).parent().show();
+        $(tab).parent().find('.tab').removeClass('selected');
+        $(tab).addClass('selected');
+
+        // if there are parent tabs, then select the right parent tab
+        var parenttabs = $(tab).parent().attr('data-parent');
+        if (parenttabs) {
+            select_tab($('#' + parenttabs).find('.tab[data-content=#' + $(tab).parent().attr('id') + ']'));
+        }
+    }
+
+    function hide_containers(tabs) {
+        $('div [data-parent=' + $(tabs).attr('id') + ']').each(function () {
+            $(this).hide();
+            hide_containers(this);
+        });
+    }
+
+    function show_container(data_content) {
+        window.location.hash = data_content;
+        hide_containers(element);
+        $(data_content).show();
+
+        if ($(data_content).is('.nerve-tabs')) {
+            var selected = $(data_content).find('.tab.selected');
+            if (selected.length == 0)
+                selected = $(data_content).find('.tab').first();
+            $(selected).trigger('click');
+        }
+    }
 
     // hide all elements in the tab's container
-    $('#' + container + ' > div').hide();
+    $('div [data-parent=' + $(element).attr('id') + ']').hide();
 
     // highlight the initially selected tab
     $(element).find('.tab').each(function() {
         var data_content = $(this).attr('data-content');
 
         if (data_content == window.location.pathname) {
-            $(element).find('.tab').removeClass('selected');
-            $(this).addClass('selected');
+            select_tab(this);
         }
-    });
-
-    $(element).find('.tab .selected').each(function () {
-        var data_content = $(this).attr('data-content');
-        $('#' + container + ' > #' + data_content).show();
+        else if (data_content == window.location.hash) {
+            select_tab(this);
+            show_container(data_content);
+        }
     });
 
     $(element).find('.tab').click(function() {
         var data_content = $(this).attr('data-content');
 
         if (data_content[0] == '/') {
-            document.location = data_content;
+            window.location = data_content;
         }
-        else {
-            $('#' + container + ' > div').hide();
-            $('#' + container + ' > #' + data_content).show();
-
-            $(element).find('.tab').removeClass('selected');
-            $(this).addClass('selected');
+        else if (data_content[0] == '#') {
+            select_tab(this);
+            show_container(data_content);
         }
     }); 
 }

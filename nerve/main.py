@@ -61,7 +61,7 @@ class Main (nerve.ObjectNode):
         self.eventpool = nerve.events.EventThreadPool()
         self.eventpool.start()
 
-        self.users = nerve.Users()
+        nerve.users.init()
 
         try:
             if not self.load_config(os.path.join(self.configdir, 'settings.json')):
@@ -140,7 +140,7 @@ class Main (nerve.ObjectNode):
         else:
             modules_config = { '__type__': 'objects/Module' }
 
-        modules = nerve.ObjectNode.make_object(modules_config['__type__'], modules_config)
+        modules = nerve.Module.make_object(modules_config['__type__'], modules_config)
         self.set_child('modules', modules)
         super().make_object_children(config)
 
@@ -181,7 +181,7 @@ def quit():
     global mainloops
     mainloops[0].stopflag.set()
 
-def main():
+def get_main():
     global mainloops
     return mainloops[0]
 

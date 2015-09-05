@@ -4,5 +4,5 @@
 from .views.pyhtml import PyHTML
 from .views.template import TemplateView
 from .servers import HTTPServer
-from .controllers import Controller
+from .controllers import Controller, SessionMixIn
 

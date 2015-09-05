@@ -14,14 +14,15 @@ class ClientController (nerve.http.Controller, nerve.connect.ControllerMixIn):
         super().__init__(**config)
         self.client = nerve.query('/devices/lambdamoo')
 
-    def initialize(self):
-        super().initialize()
+    def initialize(self, request):
+        super().initialize(request)
         self.client.set_object('event_message/'+str(id(self)), self.send_message)
 
-    def finalize(self):
-        super().finalize()
+    def finalize(self, request):
+        super().finalize(request)
         self.client.del_object('event_message/'+str(id(self)))
 
+    @nerve.public
     def index(self, request):
         if request.reqtype == 'CONNECT':
             self.handle_connection(request)

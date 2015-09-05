@@ -32,7 +32,7 @@ class TelnetClient (nerve.Device, nerve.connect.Connection):
         self.linebuffer = [ ]
         self.callbacks = [ ]
         if not self.get_child('event_message'):
-            self.set_child('event_message', nerve.ObjectNode.make_object('objects/ObjectNode', dict()))
+            self.set_child('event_message', nerve.Module.make_object('objects/ObjectNode', dict()))
 
         self.thread = TelnetClientTask(self)
         self.thread.start()
@@ -76,11 +76,11 @@ class TelnetClient (nerve.Device, nerve.connect.Connection):
             self.linebuffer = self.linebuffer[len(self.linebuffer) - 100:]
         self.notify('event_message/*', msg)
 
-    @nerve.querymethod
+    @nerve.public
     def connected(self):
         return self.connected
 
-    @nerve.querymethod
+    @nerve.public
     def address(self):
         return self.hostname + ":" + str(self.port)
 

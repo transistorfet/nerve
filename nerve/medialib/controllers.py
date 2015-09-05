@@ -23,6 +23,7 @@ class MediaLibController (nerve.http.Controller):
             # TODO this has a different format than what's used with other controllers
             self.load_json_view({ 'error' : repr(error) })
 
+    @nerve.public
     def index(self, request):
         medialib = nerve.get_object('/devices/medialib')
 
@@ -32,6 +33,7 @@ class MediaLibController (nerve.http.Controller):
         self.template_add_to_section('jsfiles', '/medialib/assets/js/medialib.js')
         self.template_add_to_section('cssfiles', '/medialib/assets/css/medialib.css')
 
+    @nerve.public
     def get_playlist(self, request):
         medialib = nerve.get_object('/devices/medialib')
         playlist = request.args['playlist'] if 'playlist' in request.args else 'default'
@@ -40,6 +42,7 @@ class MediaLibController (nerve.http.Controller):
         data['playlist'] = medialib.get_playlist(playlist)
         self.load_html_view('nerve/medialib/views/playlist-data.blk.pyhtml', data)
 
+    @nerve.public
     def search(self, request):
         medialib = nerve.get_object('/devices/medialib')
 
@@ -62,6 +65,7 @@ class MediaLibController (nerve.http.Controller):
         self.template_add_to_section('jsfiles', '/medialib/assets/js/medialib.js')
         self.template_add_to_section('cssfiles', '/medialib/assets/css/medialib.css')
 
+    @nerve.public
     def search_youtube(self, request):
         medialib = nerve.get_object('/devices/medialib')
 
@@ -79,16 +83,19 @@ class MediaLibController (nerve.http.Controller):
 
         self.load_template_view('nerve/medialib/views/search_youtube.blk.pyhtml', data, request)
 
+    @nerve.public
     def shuffle_playlist(self, request):
         medialib = nerve.get_object('/devices/medialib')
         playlist = request.args['playlist']
         medialib.shuffle_playlist(playlist)
 
+    @nerve.public
     def sort_playlist(self, request):
         medialib = nerve.get_object('/devices/medialib')
         playlist = request.args['playlist']
         medialib.sort_playlist(playlist)
 
+    @nerve.public
     def create_playlist(self, request):
         medialib = nerve.get_object('/devices/medialib')
         playlist_name = request.args['playlist']
@@ -99,6 +106,7 @@ class MediaLibController (nerve.http.Controller):
         playlist = nerve.medialib.Playlist.create(playlist_name)
         self.load_json_view({ 'notice' : "Playlist created successfully" })
 
+    @nerve.public
     def delete_playlist(self, request):
         medialib = nerve.get_object('/devices/medialib')
         playlist_name = request.args['playlist']
@@ -109,6 +117,7 @@ class MediaLibController (nerve.http.Controller):
                 return
         self.load_json_view({ 'error' : "That playlist no longer exists" })
 
+    @nerve.public
     def add_tracks(self, request):
         medialib = nerve.get_object('/devices/medialib')
         result = dict(count=0)
@@ -132,6 +141,7 @@ class MediaLibController (nerve.http.Controller):
                     result['count'] = playlist.add_list(media)
         self.load_json_view(result)
 
+    @nerve.public
     def add_urls(self, request):
         result = dict(count=0)
         urls = [ ]
@@ -145,6 +155,7 @@ class MediaLibController (nerve.http.Controller):
                 result['count'] = playlist.add_files(urls)
         self.load_json_view(result)
 
+    @nerve.public
     def remove_urls(self, request):
         result = dict(count=0)
         urls = [ ]
@@ -155,6 +166,7 @@ class MediaLibController (nerve.http.Controller):
             result['count'] = playlist.remove_files(urls)
         self.load_json_view(result)
 
+    @nerve.public
     def rehash_database(self, request):
         medialib = nerve.get_object('/devices/medialib')
         medialib.force_database_update()

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import nerve
+import nerve.medialib
 
 import os
 import sys
@@ -84,18 +85,14 @@ class GstreamerPlayer (nerve.Device):
         self.current_song = parts[1]
         (self.artist, _, self.title) = self.current_song.partition(" - ")
 
-    def load_playlist(self, url):
-        os.system("xmms2 clear")
+    def load_playlist(self, name):
+        self.pipeline.stop()
+        self.pipeline.queue = [ ]
 
-        if url.find('/') < 0:
-            url = nerve.configdir() + '/playlists/' + url + '.m3u'
-
-        with open(url, 'r') as f:
-            for line in f.read().split('\n'):
-                line = line.strip()
-                if line and not line.startswith('#'):
-                    media_url = "file://" + line
-                    os.system("xmms2 add \"" + media_url + "\"")
+        for media in nerve.medialib.Playlist(name).get_list():
+            nerve.log("adding to playlist: " + media['artist'] + " - " + media['title'] + " (" + media['filename'] + ")")
+            self.pipeline.queue.append(media['filename'])
+        self.pipeline.play()
 
 
 class GstreamerPipeline (object):

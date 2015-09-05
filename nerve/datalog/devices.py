@@ -38,7 +38,7 @@ class DatalogDevice (nerve.Device):
         config_info.add_setting('name', "Table Name", default='')
         config_info.add_setting('update_time', "Update Time", default=60.0)
 
-        datapoints_config = nerve.ConfigInfo()
+        datapoints_config = nerve.objects.StructConfigType()
         datapoints_config.add_setting('name', "Column Name", default='')
         datapoints_config.add_setting('ref', "Target URI", default='')
         datapoints_config.add_setting('datatype', "Data Type", default='')
@@ -46,7 +46,7 @@ class DatalogDevice (nerve.Device):
         datapoints_config.add_setting('min', "Minimum Value", default=0.0)
         datapoints_config.add_setting('max', "Maximum Value", default=0.0)
         datapoints_config.add_setting('units', "Units", default='')
-        config_info.add_setting('datapoints', "Data Points", default=list(), iteminfo=datapoints_config)
+        config_info.add_setting('datapoints', "Data Points", default=list(), itemtype=datapoints_config)
         return config_info
 
     def add_datapoint(self, column_name, ref, datatype="TEXT", label=None, rangemin=0, rangemax=100, units=''):

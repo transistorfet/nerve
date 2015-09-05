@@ -138,7 +138,12 @@
                     }
                 },
                 "player": {
-                    "__type__": "player/vlc/VLCHTTP"
+                    "__type__": "player/vlc/VLCHTTP",
+                    "__children__": {
+                        "projectm": {
+                            "__type__": "player/projectm/ProjectMDevice"
+                        }
+                    }
                 },
                 "datalogs": {
                     "__children__": {
@@ -246,6 +251,10 @@
                                 "N:6F9DC23": {
                                     "__type__": "events/PyCodeEvent",
                                     "code": "nerve.query('/devices/player/load_playlist?url=default')"
+                                },
+                                "N:6F90CF3": {
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/devices/medialib/shuffle_playlist?name=default')\nnerve.query('/devices/player/load_playlist?url=default')"
                                 },
                                 "N:6F99C63": {
                                     "__type__": "events/PyCodeEvent",
@@ -378,6 +387,9 @@
                             "__type__": "base/FileController",
                             "root" : "nerve/base/assets"
                         },
+                        "aggregator": {
+                            "__type__": "aggregator/controllers/AggregatorController"
+                        },
                         "query": {
                             "__type__": "base/QueryController"
                         },
@@ -392,6 +404,9 @@
                         },
                         "pages": {
                             "__type__": "pages/PagesController"
+                        },
+                       "shell": {
+                            "__type__": "base/controllers/shell/ShellController"
                         },
                         "remote": {
                             "__type__": "remote/RemoteController"

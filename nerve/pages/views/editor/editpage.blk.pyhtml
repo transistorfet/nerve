@@ -7,14 +7,14 @@
             <label>Page Name</label>
             <input id="page-editor-name" type="text" value="<%= pagename %>" />
         </div>
-        <% for (name, title, typename) in sections: %>
+        <% for (name, title, datatype, default) in sections.get_items(None): %>
             <div class="nerve-form-item">
                 <label><%= title %></label>
-                <% if typename == 'text': %>
+                <% if datatype.is_type('scalar'): %>
                     <input name="<%= name %>" class="page-section" type="text" value="<%= pagedata[name] if name in pagedata else '' %>" />
-                <% elif typename == 'list:blocks': %>
+                <% elif datatype.is_type('list:textarea'): %>
                     <textarea name="<%= name %>" class="page-section"><%= '\n'.join(pagedata[name]) if name in pagedata else '' %></textarea>
-                <% elif typename.startswith('list:'): %>
+                <% elif datatype.is_type('list'): %>
                     <textarea name="<%= name %>" class="page-section"><%= '\n'.join(pagedata[name]) if name in pagedata else '' %></textarea>
                 <% end %>
             </div>

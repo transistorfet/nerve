@@ -6,8 +6,8 @@ import nerve.http
 
 
 class TemplateView (nerve.View):
-    def __init__(self, filename, data=dict()):
-        super().__init__()
+    def __init__(self, filename, data=dict(), **config):
+        super().__init__(**config)
         self._mimetype = 'text/html'
         self._filename = filename
         self._data = data
@@ -15,18 +15,18 @@ class TemplateView (nerve.View):
 
     @classmethod
     def get_config_info(cls):
-        #config_info = super().get_config_info()
-        config_info = nerve.ConfigInfo()
+        config_info = super().get_config_info()
         config_info.add_setting('title', "Page Title", default='')
-        config_info.add_setting('jsfiles', "JavaScript Files", default=list())
-        config_info.add_setting('cssfiles', "CSS Files", default=list())
-        config_info.add_setting('header', "Header", default=list())
-        config_info.add_setting('subheader', "Sub-Header", default=list())
-        config_info.add_setting('sidebar', "Sidebar", default=list())
-        config_info.add_setting('content', "Content", default=list())
-        config_info.add_setting('separator', "Separator", default=list())
-        config_info.add_setting('footer', "Footer", default=list())
-        config_info.add_setting('subfooter', "Sub-Footer", default=list())
+        config_info.add_setting('theme', "Theme Name", default='default')
+        config_info.add_setting('jsfiles', "JavaScript Files", default=list(), itemtype='str')
+        config_info.add_setting('cssfiles', "CSS Files", default=list(), itemtype='str')
+        config_info.add_setting('separator', "Separator", datatype='textarea', default="<hr/>\n")
+        config_info.add_setting('header', "Header", default=list(), itemtype='textarea')
+        config_info.add_setting('subheader', "Sub-Header", default=list(), itemtype='textarea')
+        config_info.add_setting('sidebar', "Sidebar", default=list(), itemtype='textarea')
+        config_info.add_setting('content', "Content", default=list(), itemtype='textarea')
+        config_info.add_setting('footer', "Footer", default=list(), itemtype='textarea')
+        config_info.add_setting('subfooter', "Sub-Footer", default=list(), itemtype='textarea')
         return config_info
 
     def add_to_section(self, name, view):

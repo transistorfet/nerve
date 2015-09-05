@@ -249,8 +249,9 @@ class VLCHTTP (nerve.Device):
 
                 if self.status['currentplid'] != self.lastplid:
                     self.lastplid = self.status['currentplid']
-                    if self.lastmsg is not None:
-                        self.lastmsg.reply(self.device_name() + ".getsong " + self._get_title())
+                    # TODO notify something that the song has changed
+                    #if self.lastmsg is not None:
+                    #    self.lastmsg.reply(self.device_name() + ".getsong " + self._get_title())
 
             except requests.ConnectionError:
                 nerve.log("Error connecting to vlc http server...")

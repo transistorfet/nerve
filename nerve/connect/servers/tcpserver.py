@@ -24,7 +24,7 @@ class TCPServer (nerve.Server):
     def get_config_info(cls):
         config_info = super().get_config_info()
         config_info.add_setting('port', "Port", default=12345)
-        config_info.add_setting('controllers', "Controllers", default={
+        config_info.set_default('controllers', default={
             '__default__' : {
                 '__type__' : 'base/ShellController'
             }
