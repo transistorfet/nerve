@@ -13,7 +13,7 @@ class QueryController (nerve.Controller):
 
     def do_request(self, request):
         result = None
-        querystr = request.get_remaining_segments()
+        querystr = request.get_slug()
 
         if querystr != '':
             result = self.execute_query(querystr, **request.args)

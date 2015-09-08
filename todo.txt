@@ -1,4 +1,6 @@
 
+    * add weight option or something to StructConfigType so that certain items can appear near the bottom (like controllers in server objects)
+
     * we have serious issues with security, re controllers specifically, but it affects everything really... all ObjectNode methods are accessible through
       the controller query (/config/get_child).  It's maybe clumbsy, but we can use our rudimentary permissions system such that do_request will only call
       a method if it was declared with @nerve.public or something might at least prevent really obvious hacks

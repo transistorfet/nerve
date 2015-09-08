@@ -414,7 +414,8 @@
                     },
                     "__type__": "http/HTTPServer",
                     "template": {
-                        "__type__": "pages/views/page/PageView"
+                        "__type__": "pages/views/page/PageView",
+                        "theme": "dark"
                     }
                 }
             }

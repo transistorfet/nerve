@@ -55,7 +55,7 @@ class HTTPServer (nerve.Server, socketserver.ThreadingMixIn, http.server.HTTPSer
         config_info.add_setting('password', "Admin Password", default='')
         config_info.add_setting('ssl_enable', "SSL Enable", default=False)
         config_info.add_setting('ssl_cert', "SSL Certificate File", default='')
-        config_info.add_setting('template', "Default Template", datatype='object', default=dict(__type__='http/views/template/TemplateView', filename='nerve/http/views/template.pyhtml'))
+        config_info.add_setting('template', "Default Template", datatype='object', weight=1, default=dict(__type__='http/views/template/TemplateView', filename='nerve/http/views/template.pyhtml'))
         return config_info
 
 
@@ -152,12 +152,12 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
         output = controller.get_output()
 
         if redirect:
-            self.send_content(302, mimetype, output, [ ('Location', redirect) ])
+            self.send_content(302, mimetype, output, [ ('Location', redirect) ] + headers)
         elif error:
             if type(error) == nerve.users.UserPermissionsRequired:
                 self.send_401(str(error))
             else:
-                self.send_content(404 if type(error) is nerve.NotFoundError else 500, mimetype, output)
+                self.send_content(404 if type(error) is nerve.NotFoundError else 500, mimetype, output, headers)
         else:
             self.send_content(200, mimetype, output, headers)
         return

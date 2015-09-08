@@ -87,6 +87,19 @@ function MediaLibPlaylist(element)
     $('.pl_create').click(this.create_playlist);
     $('.pl_delete').click(this.delete_playlist);
     $('.pl_load').click(this.load_playlist);
+
+    /*
+    // TODO update the current showing song based on the songname display at the top?  This might be too hard or too messy to do
+    $('.nerve-query[data-query="player/getsong"]').change(function ()
+    {
+        $('.playlist-contents tr[class="nerve-highlight"]').removeClass('nerve-highlight');
+        $('.playlist-contents tbody').each(function ()
+        {
+            //if ($(this).
+            //addClass('nerve-highlight');
+        });
+    });
+    */
 }
 
 function MediaLibSearch(element)

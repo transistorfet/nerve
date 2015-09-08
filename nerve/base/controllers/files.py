@@ -16,7 +16,7 @@ class FileController (nerve.Controller):
         return config_info
 
     def do_request(self, request):
-        filename = os.path.join(self.get_setting('root'), request.get_remaining_segments())
+        filename = os.path.join(self.get_setting('root'), request.get_slug())
 
         if os.path.isdir(filename):
             filename = os.path.join(filename, "index.html")

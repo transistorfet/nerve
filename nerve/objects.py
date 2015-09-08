@@ -3,6 +3,7 @@
 
 import nerve
 
+import types
 import traceback
 
 
@@ -76,13 +77,16 @@ class ConfigType (object):
         return True
 
     def __init__(self):
-        pass
+        self.options = None
 
     def validate(self, data):
         raise NotImplementedError
 
     def get_items(self, data):
         return ()
+
+    def get_options(self):
+        return self.options
 
 
 def RegisterConfigType(name):
@@ -97,10 +101,12 @@ class ScalarConfigType (ConfigType):
     pass
 
 
+@RegisterConfigType('complex')
 class ComplexConfigType (ConfigType):
     htmltype = None
 
 
+@RegisterConfigType('container')
 class ContainerConfigType (ComplexConfigType):
     def __init__(self, itemtype=None):
         super().__init__()
@@ -176,11 +182,10 @@ class ListConfigType (ContainerConfigType):
             raise ValueError("expected type 'list', received type '" + type(data).__name__ + "'")
         result = [ ]
         for item in data:
-            result.append(self.itemtype.validate(item, None))
+            result.append(self.itemtype.validate(item))
         return result
 
     def get_items(self, data):
-        #return enumerate(data)
         for (key, value) in enumerate(data):
             yield (str(key), str(key), self.itemtype, value)
 
@@ -192,15 +197,31 @@ class DictConfigType (ContainerConfigType):
             raise ValueError("expected type 'dict', received type '" + type(data).__name__ + "'")
         result = { }
         for (key, item) in data.items():
-            result[key] = self.itemtype.validate(item, None)
+            result[key] = self.itemtype.validate(item)
         return result
 
     def get_items(self, data):
-        #return sorted(data.items())
         if not data:
             return ()
         for (key, value) in data.items():
             yield (key, key, self.itemtype, value)
+
+
+@RegisterConfigType('object-type')
+class ObjectTypeConfigType (StrConfigType):
+    def __init__(self):
+        super().__init__()
+        self.options = [ ]
+
+    def validate(self, data):
+        # TODO check to make sure the object of that name exsists
+        return str(data)
+
+    def get_options(self):
+        self.options = [ ("(select object type)", '') ]
+        for typename in nerve.Module.get_types():
+            self.options.append( (typename, typename) )
+        return self.options
 
 
 @RegisterConfigType('object')
@@ -213,21 +234,30 @@ class ObjectConfigType (ComplexConfigType):
 
         typeinfo = data['__type__']
         configinfo = nerve.Module.get_class(typeinfo).get_config_info()
-        return configinfo.validate(data)
+        config = configinfo.validate(data)
+        config['__type__'] = typeinfo
+        return config
 
     def get_items(self, data):
         #return sorted(data.items())
         # TODO you should add the __type__ here, specifically, as a setting with options set to any object that can be used...
         # you'd have to add some javascript that would somehow update the items...
-        if isinstance(data, ObjectNode):
+        if not data:
+            typename = ''
+            items = ()
+            children = ()
+        elif isinstance(data, ObjectNode):
+            typename = data.get_setting('__type__')
             items = data.get_config_info().get_items(data)
             children = [ (key, data.get_child(key)) for key in data.keys_children() ]
         elif type(data) == dict:
-            items = Module.get_class_config_info(data['__type__']).get_items(data)
+            typename = data['__type__']
+            items = Module.get_class_config_info(typename).get_items(data)
             children = data['__children__'].items() if '__children__' in data else ()
         else:
             raise ValueError("Invalid datatype in get_items(): " + type(data).__name__)
 
+        yield ('__type__', 'Type', ConfigType.get_type('object-type'), typename)
         for tup in items:
             yield tup
         # TODO might the key here get mixed up with a setting of the same name?
@@ -240,7 +270,7 @@ class StructConfigType (ComplexConfigType):
         super().__init__()
         self.settings = [ ]
 
-    def add_setting(self, name, propername, default=None, datatype=None, itemtype=None):
+    def add_setting(self, name, propername, default=None, datatype=None, itemtype=None, weight=0):
         for i in range(len(self.settings)):
             if self.settings[i]['name'] == name:
                 del self.settings[i]
@@ -254,13 +284,19 @@ class StructConfigType (ComplexConfigType):
         if not datatype_class:
             raise Exception("Unsupported setting datatype: " + datatype)
 
-        self.settings.append({
+        setting = {
             'name' : name,
             'propername' : propername,
             'default' : default,
             'datatype' : datatype_class,
-            'options' : None
-        })
+            'options' : None,
+            'weight' : weight
+        }
+
+        i = 0
+        while i < len(self.settings) and self.settings[i]['weight'] <= weight:
+            i += 1
+        self.settings.insert(i, setting)
 
     def add_option(self, settingname, propername, value):
         for setting in self.settings:
@@ -298,6 +334,9 @@ class StructConfigType (ComplexConfigType):
             value = data[setting['name']] if setting['name'] in data else setting['default']
             yield (setting['name'], setting['propername'], setting['datatype'], value)
 
+    def __len__(self):
+        return len(self.settings)
+
 
 
 def public(funcobj):
@@ -307,7 +346,7 @@ def public(funcobj):
 
 
 def is_public(funcobj):
-    if not hasattr(funcobj, '__ispublic__') or funcobj.__ispublic__ is not True
+    if not hasattr(funcobj, '__ispublic__') or funcobj.__ispublic__ is not True:
         return False
     return True
 
@@ -547,33 +586,21 @@ class Module (ObjectNode, metaclass=_ModuleSingleton):
         print(keys)
         return keys
 
-    """
-    def get_types(self, classtype=None, module=None):
-        typelist = [ ]
-        if not module:
-            module = nerve
-            typelist = [ 'objects/ObjectNode', 'core/QueryObject', 'events/Event' ]
-
-        modulename = module.__name__
-        for typename in dir(module):
-            attrib = getattr(module, typename)
-
-            if isinstance(attrib, type) and issubclass(attrib, classtype):
-                typelist.append(modulename.replace('.', '/') + '/' + typename)
-            elif isinstance(attrib, type(nerve)) and attrib.__package__.startswith(modulename):
-                typelist.extend(self.get_types(classtype, attrib))
-
-        # TODO holy fuck bad hack
-        return [ typename.replace('nerve/', '') for typename in typelist ]
-        #return typelist
-    """
-
-    def get_types(self, classtype=None, module=None):
-        return [ 'core/Server' ]
-
     # TODO this doesn't work because it only gets proper modules
     def get_module_list(self):
         return self.keys_children()
+
+    @classmethod
+    def get_types(cls, classtype=ObjectNode, module=nerve):
+        typelist = set()
+        modulename = module.__name__
+        for attribname in dir(module):
+            attrib = getattr(module, attribname)
+            if isinstance(attrib, type) and issubclass(attrib, classtype) and attrib.__module__ == modulename:
+                typelist.add(modulename.replace('nerve.', '').replace('.', '/') + '/' + attribname)
+            elif isinstance(attrib, types.ModuleType) and attrib.__package__.startswith(modulename) and attrib.__name__ != 'nerve':
+                typelist.update(cls.get_types(classtype, attrib))
+        return sorted(typelist)
 
     @classmethod
     def get_class(cls, typeinfo):

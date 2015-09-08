@@ -35,11 +35,11 @@ class VLCHTTP (nerve.Device):
 
     def next(self):
         self._send_command('pl_next')
-        self.next_update = time.time() + 2
+        self.next_update = time.time() + 1
 
     def previous(self):
         self._send_command('pl_previous')
-        self.next_update = time.time() + 2
+        self.next_update = time.time() + 1
 
     def toggle(self):
         self._send_command('pl_pause')
@@ -119,7 +119,11 @@ class VLCHTTP (nerve.Device):
 
     def get_position(self):
         # TODO read the playlist position so that you can have the playlist display and anchor in the playlist webpage
-        pass
+
+        for (i, song) in enumerate(self.getplaylist(), 1):
+            if 'current' in song:
+                return i
+        return 0
 
     def get_current_track(self, key='uri'):
         r = requests.get('http://%s/requests/playlist.json' % (self.server,), auth=('', 'test'))

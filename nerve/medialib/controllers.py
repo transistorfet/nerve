@@ -26,6 +26,7 @@ class MediaLibController (nerve.http.Controller):
     @nerve.public
     def index(self, request):
         medialib = nerve.get_object('/devices/medialib')
+        playlist = request.args['playlist'] if 'playlist' in request.args else 'default'
 
         data = { }
         data['list_of_playlists'] = medialib.get_playlist_list()
@@ -40,6 +41,10 @@ class MediaLibController (nerve.http.Controller):
 
         data = { }
         data['playlist'] = medialib.get_playlist(playlist)
+        try:
+            data['current_pos'] = nerve.query('/devices/player/get_position')
+        except:
+            data['current_pos'] = 0
         self.load_html_view('nerve/medialib/views/playlist-data.blk.pyhtml', data)
 
     @nerve.public

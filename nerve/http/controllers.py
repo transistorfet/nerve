@@ -51,12 +51,29 @@ class Controller (nerve.Controller):
             self.load_file_view(filename)
 
 
-class SessionMixIn (object):
+class CookiesMixIn (object):
+    """Add cookie to a Controller"""
+
+    def initialize(self, request):
+        self.cookie = http.cookies.SimpleCookie('\n'.join(request.get_header_all("cookie")))
+        super().initialize(request)
+
+    def finalize(self, request):
+        super().finalize(request)
+        for morsel in self.cookie.values():
+            self.add_header('Set-Cookie', morsel.output(header='').lstrip())
+
+    def set_cookie(self, name, value):
+        self.cookie[name] = value
+
+
+class SessionMixIn (CookiesMixIn):
     """Add cookie-based sessions to a Controller"""
     _sessions = { }
 
     def initialize(self, request):
-        self.cookie = http.cookies.SimpleCookie('\n'.join(request.get_header_all("cookie")))
+        super().initialize(request)
+        #self.cookie = http.cookies.SimpleCookie('\n'.join(request.get_header_all("cookie")))
         if 'SESSIONID' in self.cookie:
             self.sessionid = self.cookie['SESSIONID'].value
         else:
@@ -65,16 +82,12 @@ class SessionMixIn (object):
         if self.sessionid not in SessionMixIn._sessions:
             SessionMixIn._sessions[self.sessionid] = { }
         self.session = SessionMixIn._sessions[self.sessionid]
-        print("Init: ", self.sessionid, self.session)
-        super().initialize(request)
 
     def finalize(self, request):
-        super().finalize(request)
-        print("Final: ", self.sessionid, self.session)
         SessionMixIn._sessions[self.sessionid] = self.session
         self.cookie['SESSIONID'] = self.sessionid
-        print(self.cookie)
-        for morsel in self.cookie.values():
-            self.add_header('Set-Cookie', morsel.output(header=''))
+        super().finalize(request)
+        #for morsel in self.cookie.values():
+        #    self.add_header('Set-Cookie', morsel.output(header='').lstrip())
 
 

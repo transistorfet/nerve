@@ -33,6 +33,33 @@
     margin-bottom: 5px;
 }
 
+
+/*** Nerve Tabs Widget ***/
+
+.nerve-tabs {
+    border-top: 5px solid #000;
+}
+
+.nerve-tabs .tab {
+    cursor: pointer;
+    float: left;
+    border-right: 1px solid #000;
+    padding: 8px;
+    font-size: 14px;
+}
+
+.nerve-tabs .selected {
+    background-color: #000;
+    color: #fff;
+}
+
+.nerve-tabs:after {
+    content: "";
+    display: block;
+    clear: both;
+}
+
+
 /*** Nerve Editor Widget ***/
 
 div.nerve-editor {
@@ -50,6 +77,7 @@ div.nerve-editor > #editor-area {
 div.nerve-editor > #editor-save {
     float: right;
 }
+
 
 /*** Nerve Forms ***/
 
@@ -70,6 +98,7 @@ div.nerve-editor > #editor-save {
 .nerve-form-item,
 .nerve-form-item-row {
     margin-bottom: 0.5em;
+    display: inline-block;
 }
 
 .nerve-form-item label {
@@ -99,6 +128,10 @@ div.nerve-editor > #editor-save {
 .nerve-form-item-row label + * {
     margin-left: 0.5em;
     width: 10em;
+}
+
+.nerve-form-buttons {
+    float: right;
 }
 
 /*** Nerve Treeview Widget ***/
@@ -145,10 +178,12 @@ div.nerve-editor > #editor-save {
 
 .nerve-treeview input + label + ul {
     /* margin of sub elements*/
+    margin-top: 6px;
     padding-left: 30px;
-    padding-top: 0.25em;
-    padding-bottom: 0.5em;
-    min-width: 16em;
+}
+
+.nerve-treeview > ul {
+    min-width: 30em;
 }
 
 .nerve-treeview label,
@@ -159,10 +194,6 @@ div.nerve-editor > #editor-save {
 .nerve-treeview label,
 .nerve-treeview label::before {
     display: inline-block;
-}
-
-.nerve-treeview > ul {
-    width: 40em;
 }
 
 .nerve-treeview li > label {
@@ -193,32 +224,7 @@ div.nerve-editor > #editor-save {
 }
 
 .nerve-treeview ul > li {
-    margin-bottom: 6px;
-    margin-right: 6px;
+    margin-top: 6px;
 }
 
-/*** Nerve Tabs Widget ***/
-
-.nerve-tabs {
-    border-top: 5px solid #000;
-}
-
-.nerve-tabs .tab {
-    cursor: pointer;
-    float: left;
-    border-right: 1px solid #000;
-    padding: 8px;
-    font-size: 14px;
-}
-
-.nerve-tabs .selected {
-    background-color: #000;
-    color: #fff;
-}
-
-.nerve-tabs:after {
-    content: "";
-    display: block;
-    clear: both;
-}
 

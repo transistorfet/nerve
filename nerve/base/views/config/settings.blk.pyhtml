@@ -161,24 +161,34 @@
             last_label += 1
 
             %>
-            <li class="directory"><input type="checkbox" id="<%= 'diritem-' + str(last_label) %>" <%= ' checked' %> />
-            <label for="<%= 'diritem-' + str(last_label) %>"><%= path %><button class="object-delete" data-object="<%= path %>">x</button></label>
+            <li class="directory"><input type="checkbox" id="<%= 'diritem-' + str(last_label) %>" />
+            <label for="<%= 'diritem-' + str(last_label) %>"><%= path %><!-- <button class="object-delete" data-object="<%= path %>">x</button> --></label>
             <ul>
             <%
 
             obj = nerve.get_object(path)
-            if path == '/': path = ''
 
             #print(nerve.base.views.formview.FormView(obj.get_config_data(), obj.get_config_info()))
             %>
-            <div class="nerve-config-edit-form">
+            <li><div class="nerve-config-buttons">
+                <% if len(obj.get_config_info()) > 0: %>
                 <button class="nerve-config-edit" name="<%= path %>">Edit</button>
-            </div>
+                <% end %>
+                <button class="nerve-config-rename" name="<%= path %>">Rename</button>
+                <button class="nerve-config-delete" name="<%= path %>">Delete</button>
+            </div></li>
             <%
 
-            for child in obj.keys_children():
+            if path == '/': path = ''
+            for child in sorted(obj.keys_children()):
                 output_objects(path + '/' + child)
             end
+
+            %>
+            <li><div class="nerve-config-buttons">
+                <button class="nerve-config-add" name="<%= path %>">Add</button>
+            </div></li>
+            <%
 
             %>
             </ul></li>
@@ -188,12 +198,14 @@
 
     <h3>Modules</h3>
     <div class="nerve-treeview">
-        <% for name in nerve.query('/modules/get_module_list'): %>
-        <div class="nerve-form-item">
-            <label><%= name %></label>
-            <input type="checkbox" name="<%= name %>" <%= ' checked' %> />
-        </div>
-        <% end %>
+        <ul>
+            <% for name in nerve.query('/modules/get_module_list'): %>
+            <li><div class="nerve-form-item">
+                <label><%= name %></label>
+                <input type="checkbox" name="<%= name %>" <%= ' checked' %> />
+            </div></li>
+            <% end %>
+        </ul>
         <button class="modules-save">Save</button>
     </div>
     <div style="clear: both;"></div>

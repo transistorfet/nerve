@@ -69,12 +69,18 @@ class Request (object):
     def segments_left(self):
         return len(self.segments) - self.current_segment
 
-    def get_remaining_segments(self):
+    def get_slug(self):
         if self.current_segment < len(self.segments):
             seg = '/'.join(self.segments[self.current_segment:])
             self.current_segment = len(self.segments)
             return seg
         return ''
+
+    def get_host(self):
+        host = self.get_header('Host', default=None)
+        if host == None:
+            host = 'localhost:' + str(self.source.get_setting('port'))
+        return host
 
     def get_location(self, leaf=''):
         location = '/' + '/'.join(self.segments[:self.current_segment-1])
@@ -83,10 +89,7 @@ class Request (object):
         return location
 
     def make_url(self, leaf=''):
-        host = self.get_header('Host', default=None)
-        if host == None:
-            host = 'localhost:' + str(self.source.get_setting('port'))
-        return 'http://' + host + self.get_location(leaf)
+        return 'http://' + self.get_host() + self.get_location(leaf)
 
 
 class NotFoundError (Exception): pass
@@ -280,7 +283,7 @@ class Server (nerve.ObjectNode):
             for option in servers.keys():
                 config_info.add_option('parent', option, '/servers/' + option)
         """
-        config_info.add_setting('controllers', "Controllers", default=dict(), itemtype='object')
+        config_info.add_setting('controllers', "Controllers", default=dict(), itemtype='object', weight=1)
         return config_info
 
     def start_server(self):
@@ -326,7 +329,7 @@ class PyCodeQuery (nerve.ObjectNode):
     @classmethod
     def get_config_info(cls):
         config_info = super().get_config_info()
-        config_info.add_setting('code', "Python Code", default='')
+        config_info.add_setting('code', "Python Code", default='', datatype='textarea')
         return config_info
 
     def __call__(self, *args):

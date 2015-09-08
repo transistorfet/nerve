@@ -22,6 +22,8 @@ class ProjectMDevice (nerve.Device):
     def start(self):
         if not self.process:
             self.process = subprocess.Popen([ 'projectM-pulseaudio' ], stdin=None, stdout=None, stderr=None, close_fds=True, shell=False)
+        else:
+            self.raise_window()
 
     @nerve.public
     def stop(self):
@@ -30,11 +32,15 @@ class ProjectMDevice (nerve.Device):
             self.process = None
 
     @nerve.public
+    def raise_window(self):
+        os.system('xdotool search --class "projectM" windowraise')
+
+    @nerve.public
     def fullscreen(self):
-        os.system("xdotool search --pid %s key f windowraise" % (self.process.pid,))
+        os.system('xdotool search --class "projectM" key f windowraise')
 
     @nerve.public
     def minimize(self):
-        os.system("xdotool search --pid %s key f minimize" % (self.process.pid,))
+        os.system('xdotool search --class "projectM" key f minimize')
 
 

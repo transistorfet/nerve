@@ -11,8 +11,8 @@
     </tr></thead>
     <tbody>
 	<% for num,media in enumerate(playlist, 1): %>
-	    <tr>
-		<td><%= num %></td>
+	    <tr <%= ' class="nerve-highlight"' if current_pos == num else '' %>>
+		<td><%= '<a name="current">' if current_pos == num else '' %><%= num %></td>
 		<td><input type="checkbox" name="urls" value="<%= urlencode(media['filename']) %>" /></td>
 		<td><%= media['artist'] %></td>
 		<td><%= media['title'] %></td>
