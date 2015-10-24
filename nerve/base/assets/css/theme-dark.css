@@ -88,20 +88,20 @@ td {
     border: 1px solid #000;
 }
 
-.nerve-treeview li > label {
+.nerve-form-tree li > label {
     background: #3A8ECD;
     border: 1px solid #222;
     color: #fff;
 }
 
-.nerve-treeview .directory {
-    /* border: 1px solid #80C008; */
-}
-
-.nerve-treeview .alt-label {
+.nerve-form-tree .alt-label {
     background: #505050;
     border: 1px solid #222;
     color: #CCC;
+}
+
+.nerve-background {
+    background-color: #2E2E2E;
 }
 
 .nerve-highlight {

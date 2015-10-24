@@ -38,10 +38,16 @@ class SerialDevice (nerve.Device):
         #nerve.log("SEND -> " + str(self.file) + ": " + data)
         self.serial.write(bytes(data + '\n', 'utf-8'))
 
-    def do_receive(self, line):
+    def on_connect(self):
         pass
 
-    def do_idle(self):
+    def on_receive(self, line):
+        pass
+
+    def on_idle(self):
+        pass
+
+    def on_disconnect(self):
         pass
 
     def readline_posix(self):
@@ -60,26 +66,28 @@ class SerialDevice (nerve.Device):
                 filename = self.get_setting('file')
                 baud = self.get_setting('baud')
                 self.serial = serial.Serial(filename, baud)
+                self.on_connect()
 
             except serial.serialutil.SerialException as exc:
-                nerve.log("serial error: " + str(exc))
+                nerve.log("serial error: " + str(exc), logtype='error')
                 self.thread.stopflag.wait(30)
 
             else:
                 while not self.thread.stopflag.is_set():
                     try:
-                        self.do_idle()
+                        self.on_idle()
                         line = self.readline_func()
                         if line:
                             line = line.decode('utf-8').strip()
-                            self.do_receive(line)
+                            self.on_receive(line)
 
                     except serial.serialutil.SerialException as exc:
-                        nerve.log("serial error: " + repr(exc))
+                        nerve.log("serial error: " + repr(exc), logtype='error')
                         break
 
                     except:
-                        nerve.log(traceback.format_exc())
+                        nerve.log(traceback.format_exc(), logtype='error')
+                self.on_disconnect()
 
 
 class NerveSerialQuery (object):
@@ -113,6 +121,12 @@ class NerveSerialDevice (SerialDevice):
         self.lock = threading.Lock()
         self.waiting = [ ]
 
+    @classmethod
+    def get_config_info(cls):
+        config_info = super().get_config_info()
+        config_info.add_setting('notify', "Notify", default='/events/serial')
+        return config_info
+
     def __getattr__(self, name):
         try:
             return super().__getattr__(name)
@@ -126,7 +140,7 @@ class NerveSerialDevice (SerialDevice):
             self.waiting.append(query)
         self.send(query_string)
 
-    def do_receive(self, line):
+    def on_receive(self, line):
         nerve.log("RECV <- " + self.file + ": " + line)
         (ref, _, args) = line.partition(" ")
         if not ref:
@@ -141,6 +155,9 @@ class NerveSerialDevice (SerialDevice):
 
         if not args:
             return
+        #notify_ref = self.get_setting('notify').rstrip('/') + '/' + ref + '/*'
+        #nerve.notify(notify_ref, args)
+
         print("Received unmatched serial return: " + ref + " " + str(args))
         nerve.query("/events/ir/irrecv/" + args)
 

@@ -8,7 +8,11 @@
                     "name": "nerve.medialib",
                     "medialib_dirs": [
                         "/media/media/Torrents",
-                        "/media/media/Music"
+                        "/media/media/Music",
+                        "/media/media/Comedy"
+                    ],
+                    "ignore_dirs": [
+			"zz Incomplete zz"
                     ],
                     "youtube_playlists": [
                         "FL_VkJGWFV9ZEIv87E-0NM5w"
@@ -32,14 +36,7 @@
                     "__type__": "player/xmms2cli/Xmms2CLI"
                 },
                 "medialib": {
-                    "__type__": "medialib/MediaLibDevice",
-                    "medialib_dirs": [
-                        "/media/media/Music", 
-                        "/media/media/Torrents"
-                    ],
-                    "youtube_playlists": [
-                        "FL_VkJGWFV9ZEIv87E-0NM5w"
-                    ]
+                    "__type__": "medialib/MediaLibDevice"
                 }
             }
         },
@@ -84,9 +81,16 @@
                         "medialib": {
                             "__type__": "medialib/MediaLibController"
                         },
+                        "pages": {
+                            "__type__": "pages/controllers/PagesController"
+                        },
                         "remote": {
                             "__type__": "remote/RemoteController"
                         }
+                    },
+                    "template": {
+                        "__type__": "pages/views/page/PageView",
+                        "theme": "dark"
                     },
                     "__type__": "http/HTTPServer"
                 }

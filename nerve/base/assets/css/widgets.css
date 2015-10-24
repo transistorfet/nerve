@@ -17,16 +17,24 @@
 .nerve-row > * {
     flex: 1;
     width: 100%;
+    margin-left: 2px;
+    margin-right: 2px;
 }
 
-.nerve-row div {
-    margin-right: 4px;
+.nerve-row > *:first-child {
+    margin-left: 0px;
+}
+
+.nerve-row > *:last-child {
+    margin-right: 0px;
 }
 
 .nerve-row button {
     width: 100%;
-    margin: 2px;
+    margin-top: 2px;
+    margin-bottom: 2px;
 }
+
 
 .nerve-display {
     padding: 5px;
@@ -98,21 +106,18 @@ div.nerve-editor > #editor-save {
 .nerve-form-item,
 .nerve-form-item-row {
     margin-bottom: 0.5em;
-    display: inline-block;
+}
+
+.nerve-form-item > * {
+    display: table-cell;
 }
 
 .nerve-form-item label {
-    display: block;
-    width: 8em;
     margin-right: 0.5em;
+    width: 8em;
     text-align: left;
-    float: left;
     font-size: 12px;
-}
-
-.nerve-form-item select,
-.nerve-form-item-row select {
-    width: 16em;
+    vertical-align: middle;
 }
 
 .nerve-form-item-row {
@@ -126,8 +131,18 @@ div.nerve-editor > #editor-save {
 }
 
 .nerve-form-item-row label + * {
-    margin-left: 0.5em;
+    margin-left: 0.15em;
     width: 10em;
+}
+
+.nerve-form-item textarea,
+.nerve-form-item-row textarea {
+    vertical-align: top;
+}
+
+.nerve-form-item select,
+.nerve-form-item-row select {
+    width: 16em;
 }
 
 .nerve-form-buttons {
@@ -136,31 +151,38 @@ div.nerve-editor > #editor-save {
 
 /*** Nerve Treeview Widget ***/
 
-.nerve-treeview {
-    /* float: left; */
-    display: inline-block;
-}
-
-.nerve-treeview ul,
-.nerve-treeview li {
+ul.nerve-form-tree {
     padding: 0;
     margin: 0;
+}
+
+.nerve-form-tree > li > input + label + ul {
+    /* margin of sub elements*/
+    margin-top: 6px;
+    padding-left: 30px;
+}
+
+.nerve-form-tree > li {
+    margin-top: 6px;
+}
+
+.nerve-form-tree li {
     list-style: none;
 }
 
-.nerve-treeview li > input {
+.nerve-form-tree > li > input {
     display: none;
 }
 
-.nerve-treeview input ~ ul {
+.nerve-form-tree > li > input ~ ul {
     display: none;
 }
 
-.nerve-treeview input:checked ~ ul {
+.nerve-form-tree > li > input:checked ~ ul {
     display: block;
 }
 
-.nerve-treeview input + label::before {
+label.nerve-form-tree::before {
     /* content: "\25b8"; */	/* right-pointing triangle icon */
     content: "+";
     margin-right: 4px;
@@ -168,7 +190,7 @@ div.nerve-editor > #editor-save {
     vertical-align: bottom;
 }
 
-.nerve-treeview input:checked + label::before {
+label.nerve-form-tree::before {
     /* content: "\25be"; */	/* downward-pointing triangle icon */
     content: "-";
     margin-right: 4px;
@@ -176,55 +198,57 @@ div.nerve-editor > #editor-save {
     vertical-align: bottom;
 }
 
-.nerve-treeview input + label + ul {
-    /* margin of sub elements*/
-    margin-top: 6px;
-    padding-left: 30px;
-}
-
-.nerve-treeview > ul {
-    min-width: 30em;
-}
-
-.nerve-treeview label,
-.nerve-treeview label::before {
+label.nerve-form-tree,
+label.nerve-form-tree::before {
     cursor: pointer;
-}
-
-.nerve-treeview label,
-.nerve-treeview label::before {
     display: inline-block;
 }
 
-.nerve-treeview li > label {
+label.nerve-form-tree {
     width: 100%;
     background: #80C008;
     border: 1px solid #222;
     color: #fff;
 }
 
-.nerve-treeview .object-save {
-    float: right;
-    margin-right: 1em;
-}
-
-.nerve-treeview .object-delete {
-    float: right;
-}
-
-.nerve-treeview .directory {
-    /* border: 1px solid #80C008; */
-}
-
-.nerve-treeview .alt-label {
-    /* background: #80C008; */
+label.nerve-form-tree .alt-label {
     background: #EFFFDF;
     border: 1px solid #222;
     color: #000;
 }
 
-.nerve-treeview ul > li {
-    margin-top: 6px;
+.nerve-form-tree > li > div {
+    display: inline-block;
 }
 
+
+/*** Nerve FixedBar Widget ***/
+
+.nerve-fixedbar-top {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    padding: 4px;
+    border-bottom: 1px solid black;
+    z-index: 1000;
+}
+
+.nerve-fixedbar-bottom {
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    padding: 4px;
+    border-top: 1px solid black;
+    z-index: 1000;
+}
+
+.nerve-floatingbar-top {
+    left: 0px;
+    right: 0px;
+    padding: 4px;
+    border-bottom: 1px solid black;
+    z-index: 1000;
+}
 

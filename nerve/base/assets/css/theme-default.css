@@ -85,6 +85,10 @@ td {
     border: 1px solid #70B008;
 }
 
+.nerve-background {
+    background: white;
+}
+
 .nerve-highlight {
     background: #80C008;
 }

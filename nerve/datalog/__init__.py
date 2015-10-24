@@ -9,9 +9,7 @@ from .tasks import DatalogTask
 def init():
     DatalogTask().start()
 
-def get_config_info():
-    from nerve.objects import Module
-    config_info = Module.get_config_info()
+def get_config_info(config_info):
     return config_info
 
 

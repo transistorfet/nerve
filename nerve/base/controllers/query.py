@@ -3,6 +3,8 @@
 
 import nerve
 
+import traceback
+
 
 class QueryController (nerve.Controller):
     @classmethod
@@ -18,9 +20,13 @@ class QueryController (nerve.Controller):
         if querystr != '':
             result = self.execute_query(querystr, **request.args)
         elif 'requests[]' in request.args:
-            result = { }
-            for i, querystr in enumerate(request.args['requests[]']):
-                result[i] = self.execute_query(querystr)
+            result = [ ]
+            for querystr in request.args['requests[]']:
+                try:
+                    result.append(self.execute_query(querystr))
+                except:
+                    nerve.log(traceback.format_exc(), logtype='error')
+                    result.append('error')
         self.load_json_view(result)
 
     def execute_query(self, querystr, **args):

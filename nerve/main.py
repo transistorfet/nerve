@@ -76,7 +76,7 @@ class Main (nerve.ObjectNode):
                 pass
             nerve.log("exiting main loop")
         except:
-            nerve.log(traceback.format_exc())
+            nerve.log(traceback.format_exc(), logtype='error')
 
         self.shutdown()
 
@@ -106,25 +106,25 @@ class Main (nerve.ObjectNode):
                 code = f.read()
             self.init = { 'nerve' : nerve }
             exec(code, self.init)
-            nerve.log(filename + " has completed sucessfully")
+            nerve.log(filename + " has completed sucessfully", logtype='success')
             return True
         except:
-            nerve.log("error running init from " + filename + "\n\n" + traceback.format_exc())
+            nerve.log("error running init from " + filename + "\n\n" + traceback.format_exc(), logtype='error')
             return False
 
     def load_config(self, filename):
         #config = self.get_config_info().get_defaults()
 
         if not os.path.exists(filename):
-            nerve.log("error config not found in " + filename + "\n")
+            nerve.log("error config not found in " + filename + "\n", logtype='error')
             return False
 
         try:
             with open(filename, 'r') as f:
                 config = json.load(f)
-                nerve.log("config loaded from " + filename)
+                nerve.log("config loaded from " + filename, logtype='success')
         except:
-            nerve.log("error loading config from " + filename + "\n\n" + traceback.format_exc())
+            nerve.log("error loading config from " + filename + "\n\n" + traceback.format_exc(), logtype='error')
             return False
 
         self.set_config_data(config)
@@ -222,7 +222,7 @@ def has_object(name):
 def query(urlstring, *args, **kwargs):
     global mainloops
 
-    nerve.log("executing query: " + urlstring + " " + repr(args) + " " + repr(kwargs))
+    nerve.log("executing query: " + urlstring + " " + repr(args) + " " + repr(kwargs), logtype='query')
     url = urllib.parse.urlparse(urlstring)
 
     if url.netloc:
@@ -231,11 +231,11 @@ def query(urlstring, *args, **kwargs):
             #      still ignore args, or we could use a POST request instead, and send the json of the arguments (possible JSON-RPC style)
 
             if len(kwargs) <= 0:
-                nerve.log("remote query: GET " + urlstring)
+                nerve.log("remote query: GET " + urlstring, logtype='query')
                 r = requests.get(urlstring)
             else:
                 # TODO should there be an option to encode the args as json?
-                nerve.log("remote query: POST " + urlstring)
+                nerve.log("remote query: POST " + urlstring, logtype='query')
                 r = requests.post(urlstring, data=kwargs)
 
             if r.status_code != 200:
@@ -262,12 +262,12 @@ def query(urlstring, *args, **kwargs):
             result = obj
 
         rstr = str(result)
-        nerve.log("result: " + ( rstr[:75] + '...' if len(rstr) > 75 else rstr ))
+        nerve.log("result: " + ( rstr[:75] + '...' if len(rstr) > 75 else rstr ), logtype='debug')
         return result
 
 def notify(querystring, *args, **kwargs):
     global mainloops
-    return mainloops[0].notify(name.lstrip('/'), obj, **config)
+    return mainloops[0].notify(querystring, *args, **kwargs)
 
 
 def load_file(filename):

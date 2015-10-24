@@ -11,7 +11,7 @@ import mimetypes
 import traceback
 import threading
 
-import mutagen
+#import mutagen
 import subprocess
 
 from .. import MediaLibUpdater
@@ -33,6 +33,7 @@ class MediaFilesUpdater (MediaLibUpdater):
         lasttime = float(row[1])
         medialib = nerve.get_object('/modules/medialib')
         self.path = medialib.get_setting('medialib_dirs')
+
         for libpath in self.path:
             mtime = os.path.getmtime(libpath)
             # if the dir has changed since we last updated, it's been more than 10 minutes since our last update, and more than 2 minutes since the dir changed, then update
@@ -42,19 +43,24 @@ class MediaFilesUpdater (MediaLibUpdater):
     def run_update(self):
         medialib = nerve.get_object('/modules/medialib')
         self.path = medialib.get_setting('medialib_dirs')
+        self.ignore = medialib.get_setting('ignore_dirs')
+
         if not self.path:
-            nerve.log("warning: medialib_dirs not set")
+            nerve.log("warning: medialib_dirs not set", logtype='warning')
             return
 
         nerve.log("Starting medialib update...")
         for libpath in self.path:
             for root, dirs, files in os.walk(libpath):
+                if len(tuple(name for name in self.ignore if name in root)) > 0:
+                    continue
+
                 if self.task.stopflag.is_set():
                     return
                 nerve.log("Searching " + root)
                 for media in files:
                     #if media.endswith('.mp3'):
-                    self.update_file(os.path.join(root, media))
+                    self.update_file(os.path.join(root, media), len(libpath.rstrip('/')) + 2)
 
         self.check_for_deleted()
         self.db.insert('info', { 'name' : 'last_updated', 'value' : str(time.time()) }, replace=True)
@@ -72,7 +78,7 @@ class MediaFilesUpdater (MediaLibUpdater):
                     self.db.where('id', row[0])
                     self.db.delete('media')
 
-    def update_file(self, filename):
+    def update_file(self, filename, rootlen):
         (mimetype, encoding) = mimetypes.guess_type(filename)
 
         if not mimetype or (not mimetype.startswith('audio/') and not mimetype.startswith('video/')):
@@ -81,38 +87,48 @@ class MediaFilesUpdater (MediaLibUpdater):
 
         (mode, inode, dev, nlink, uid, gid, size, atime, mtime, ctime) = os.stat(filename)
 
-        rows = list(self.db.get('media', 'id,file_last_modified', self.db.inline_expr('filename', filename)))
-        if len(rows) > 0 and mtime <= rows[0][1]:
-            #nerve.log("Skipping " + filename)
-            return
+        existing_id = None
+        rows = list(self.db.get('media', 'id,last_modified', self.db.inline_expr('filename', filename)))
+        if len(rows) > 0:
+            if mtime <= rows[0][1]:
+                #nerve.log("Skipping " + filename)
+                return
+            existing_id = rows[0][0]
 
         try:
             meta = MetaData(filename, media_type)
         except:
-            nerve.log(traceback.format_exc())
+            nerve.log(traceback.format_exc(), logtype='error')
             return
+
+        file_hash = meta.get('hash')
+        rows = list(self.db.get('media', 'id,filename', self.db.inline_expr('file_hash', file_hash)))
+        if len(rows) > 0 and not os.path.exists(rows[0][1]):
+            existing_id = rows[0][0]
+            print("Using existing id: " + str(existing_id) + " " + str(rows[0][1]))
 
         data = {
             'filename' : filename,
+            'rootlen' : rootlen,
             'artist' : meta.get('artist'),
             'title' : meta.get('title'),
             'album' : meta.get('album'),
             'track_num' : meta.get('trackno'), #meta.get('tracknumber'),
             'genre' : meta.get('genre'),
-            'tags' : '',
             'media_type' : media_type,
             'mimetype' : mimetype,
             'duration' : float(meta.get('length', default=-1)),
-            'file_hash' : meta.get('hash'),
+            'file_hash' : file_hash,
             'file_size' : size,
-            'file_last_modified' : mtime,
+            'last_modified' : mtime,
         }
-        if len(rows) <= 0:
+        if existing_id == None:
             nerve.log("Adding " + filename)
+            data['tags'] = ''
             self.db.insert('media', data)
         else:
             nerve.log("Updating " + filename)
-            self.db.where('id', rows[0][0])
+            self.db.where('id', existing_id)
             self.db.update('media', data)
 
 

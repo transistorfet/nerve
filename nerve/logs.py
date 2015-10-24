@@ -4,6 +4,9 @@
 import sys
 import time
 
+import colorama
+
+colorama.init()
 
 stdin = sys.stdin
 stdout = sys.stdout
@@ -13,6 +16,17 @@ logbuffermax = 2000
 
 logto = stdout
 
+colours = {
+    'info': '',
+    'error': colorama.Style.BRIGHT + colorama.Fore.RED,
+    'warning': colorama.Style.BRIGHT + colorama.Fore.YELLOW,
+    'success': colorama.Fore.GREEN,
+    'query': colorama.Style.BRIGHT + colorama.Fore.BLUE,
+    'debug': colorama.Style.BRIGHT + colorama.Fore.BLACK
+}
+
+colour_reset = colorama.Fore.RESET + colorama.Back.RESET + colorama.Style.RESET_ALL
+
 def redirect(dest):
     global logto
     logto = dest
@@ -20,20 +34,18 @@ def redirect(dest):
 def buffer():
     return list(logbuffer)
 
-def log(logtype, text=None):
+def log(text, logtype='info'):
     global logbuffer
 
-    if text is None:
-        text = logtype
-        logtype = 'info'
-    #output = "%s [%s] %s\n" % (time.strftime("%Y-%m-%d %H:%M"), logtype, text)
-    output = "%s %s\n" % (time.strftime("%Y-%m-%d %H:%M"), text)
+    output = "%s [%s] %s\n" % (time.strftime("%Y-%m-%d %H:%M"), logtype, text)
+    #output = "%s %s\n" % (time.strftime("%Y-%m-%d %H:%M"), text)
 
     logbuffer.append(output)
     if len(logbuffer) > logbuffermax:
         logbuffer = logbuffer[logbuffermax - len(logbuffer):]
 
     if logto:
-        logto.write(output)
+        colour = colours[logtype] if logtype in colours else ''
+        logto.write(colour + output + colour_reset)
 
 

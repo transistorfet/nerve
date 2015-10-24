@@ -58,7 +58,7 @@ class MooBot (IRCClient):
                     self.do_channel_command(msg)
         except:
             self.sendprivmsg(msg.nick, traceback.format_exception_only(sys.exc_type, sys.exc_value))
-            nerve.log(traceback.format_exc())
+            nerve.log(traceback.format_exc(), logtype='error')
 
     def do_channel_command(self, msg):
         args = msg.text.split()

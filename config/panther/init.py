@@ -10,19 +10,26 @@ class Stereo (nerve.Device):
         self.serial = serial
 
     def power(self):
-        self.serial.send("ir S 0xA81")
+        #self.serial.send("ir S 0xA81")
+        nerve.query("/devices/mysensors/11/1/send_msg", 32, 0xA81)
 
     def volup(self):
-        self.serial.send("ir S 0x481")
+        #self.serial.send("ir S 0x481")
+        nerve.query("/devices/mysensors/11/1/send_msg", 32, 0x481)
+        nerve.query("/devices/mysensors/11/1/send_msg", 32, 0x481)
 
     def voldown(self):
-        self.serial.send("ir S 0xC81")
+        #self.serial.send("ir S 0xC81")
+        nerve.query("/devices/mysensors/11/1/send_msg", 32, 0xC81)
+        nerve.query("/devices/mysensors/11/1/send_msg", 32, 0xC81)
 
     def tape(self):
-        self.serial.send("ir S 0xC41")
+        #self.serial.send("ir S 0xC41")
+        nerve.query("/devices/mysensors/11/1/send_msg", 32, 0xC41)
 
     def tuner(self):
-        self.serial.send("ir S 0x841")
+        #self.serial.send("ir S 0x841")
+        nerve.query("/devices/mysensors/11/1/send_msg", 32, 0x841)
 
 
 class Television (nerve.Device):

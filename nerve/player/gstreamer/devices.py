@@ -168,7 +168,7 @@ class GstreamerPipeline (object):
         self.pipeline.set_state(target_state)
         (statechange, state, pending) = self.pipeline.get_state(timeout=5 * Gst.SECOND)
         if statechange != Gst.StateChangeReturn.SUCCESS:
-            nerve.log("gstreamer failed waiting for state change to " + str(pending))
+            nerve.log("gstreamer failed waiting for state change to " + str(pending), logtype='error')
             return False
         return True
 
@@ -201,13 +201,13 @@ class GstreamerPipeline (object):
 
         elif message.type == Gst.MessageType.ERROR:
             err, debug = message.parse_error()
-            nerve.log("gstreamer error: %s, %s, %s" % (err, debug, err.code))
+            nerve.log("gstreamer error: %s, %s, %s" % (err, debug, err.code), logtype='error')
             #self.pipeline.set_state(Gst.State.READY)
             #self.player.request_update.set()
 
         elif message.type == Gst.MessageType.WARNING:
             err, debug = message.parse_warning()
-            nerve.log("gstreamer warning: %s, %s, %s" % (err, debug, err.code))
+            nerve.log("gstreamer warning: %s, %s, %s" % (err, debug, err.code), logtype='warning')
 
         elif message.type == Gst.MessageType.INFO:
             err, debug = message.parse_info()

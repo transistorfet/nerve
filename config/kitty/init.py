@@ -25,7 +25,7 @@ class DeskClock (nerve.serial.SerialDevice):
         else:
             self.send('R1=0\n')
 
-    def do_idle(self):
+    def on_idle(self):
         self.send('L0=' + time.strftime("%H:%M %a %b %d") + '\n')
 
         player = nerve.get_object("/devices/player")
@@ -37,7 +37,7 @@ class DeskClock (nerve.serial.SerialDevice):
         else:
             self.send('L1=                \n')
 
-    def do_receive(self, line):
+    def on_receive(self, line):
         #print line
         if line == "B7=0" or line == 'I0=N:A25DC837':
             nerve.query("/devices/player/next")

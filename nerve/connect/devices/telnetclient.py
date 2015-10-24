@@ -101,7 +101,7 @@ class TelnetClientTask (nerve.Task):
                 return
 
             except OSError as e:
-                nerve.log("error connecting to " + hostname + ":" + port + ": " + str(e))
+                nerve.log("error connecting to " + hostname + ":" + port + ": " + str(e), logtype='error')
             self.stopflag.wait(10)
 
     def run(self):
@@ -116,8 +116,8 @@ class TelnetClientTask (nerve.Task):
                     self.client.lastcontact = time.time()
                     self.client.dispatch(msg)
                 except:
-                    nerve.log("error on telnet connection to " + self.client.hostname + ":" + str(self.client.port))
-                    nerve.log(traceback.format_exc())
+                    nerve.log("error on telnet connection to " + self.client.hostname + ":" + str(self.client.port), logtype='error')
+                    nerve.log(traceback.format_exc(), logtype='error')
                     break
             self.client.close()
             self.stopflag.wait(10)

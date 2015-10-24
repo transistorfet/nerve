@@ -36,7 +36,7 @@ class ShellController (nerve.Controller, nerve.connect.ControllerMixIn):
         self.conn.send_message(nerve.connect.Message(text=self.get_output().decode('utf-8')))
 
     def handle_connection_error(self, error, tb):
-        nerve.log(tb)
+        nerve.log(tb, logtype='error')
         self.conn.send_message(nerve.connect.Message(text=tb))
 
     def run_command(self, command_line):

@@ -16,6 +16,6 @@ class DatalogTask (nerve.Task):
                 for datalog in DatalogDevice.datalogs:
                     datalog._collect_data()
             except:
-                nerve.log(traceback.format_exc())
+                nerve.log(traceback.format_exc(), logtype='error')
 
 

@@ -55,7 +55,7 @@ class HTTPServer (nerve.Server, socketserver.ThreadingMixIn, http.server.HTTPSer
         config_info.add_setting('password', "Admin Password", default='')
         config_info.add_setting('ssl_enable', "SSL Enable", default=False)
         config_info.add_setting('ssl_cert', "SSL Certificate File", default='')
-        config_info.add_setting('template', "Default Template", datatype='object', weight=1, default=dict(__type__='http/views/template/TemplateView', filename='nerve/http/views/template.pyhtml'))
+        config_info.add_setting('template', "Default Template", datatype='object', weight=1, default=dict(__type__='http/views/template/TemplateView'))
         return config_info
 
 
@@ -125,10 +125,10 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
             if mimetype == None:
                 postvars = { }
             elif mimetype == 'multipart/form-data':
-                postvars = cgi.parse_multipart(self.rfile, pdict)
+                postvars = nerve.core.delistify(cgi.parse_multipart(self.rfile, pdict))
             elif mimetype == 'application/x-www-form-urlencoded':
                 contents = self.rfile.read(int(self.headers['content-length'])).decode('utf-8')
-                postvars = urllib.parse.parse_qs(contents, keep_blank_values=True)
+                postvars = nerve.core.delistify(urllib.parse.parse_qs(contents, keep_blank_values=True))
             elif mimetype == 'application/json':
                 contents = self.rfile.read(int(self.headers['content-length'])).decode('utf-8')
                 postvars = json.loads(contents)
@@ -331,9 +331,9 @@ class WebSocketConnection (nerve.connect.Connection):
         opcode = headbyte1 & 0xf
         length = headbyte2 & WS_B2_LENGTH
         if length == 0x7e:
-            length = struct.unpack("!H", self.websocket_read_bytes(2))
+            (length,) = struct.unpack("!H", self.websocket_read_bytes(2))
             if length == 0x7f:
-                length = struct.unpack("!Q", self.websocket_read_bytes(8))
+                (length,) = struct.unpack("!Q", self.websocket_read_bytes(8))
         maskkey = self.websocket_read_bytes(4) if headbyte2 & WS_B2_MASKBIT else None
 
         payload = self.websocket_read_bytes(length)

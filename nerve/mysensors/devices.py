@@ -28,10 +28,16 @@ class MySensorsSerialGateway (nerve.serial.SerialDevice):
     def del_child(self, index):
         return False
 
-    def do_receive(self, line):
+    def on_connect(self):
+        time.sleep(2)
+        for node in self.keys_children():
+            self.reset_node(int(node))
+            time.sleep(3)
+
+    def on_receive(self, line):
         args = line.split(';')
         if len(args) != 6:
-            nerve.log("mysensors: invalid message received: " + line)
+            nerve.log("mysensors: invalid message received: " + line, logtype='error')
             return
         nodeid = args[0]
         sensorid = args[1]
@@ -80,9 +86,9 @@ class MySensorsSerialGateway (nerve.serial.SerialDevice):
         elif msgtype == MsgType.STREAM:
             pass
         else:
-            nerve.log("received an invalid message type: " + line)
+            nerve.log("received an invalid message type: " + line, logtype='error')
 
-    def do_idle(self):
+    def on_idle(self):
         pass
 
     def _add_sensor(self, nodeid, sensorid, subtype=0, version=''):
@@ -164,7 +170,6 @@ class MySensorsSensor (nerve.Device):
     def set_value(self, val, subtype=None):
         if subtype == None:
             subtype = SubTypeSet.V_LIGHT
-        #self.node.serialdev.send("%s;%s;1;0;%d;%s" % (self.node.nodeid, self.sensorid, int(subtype), str(val)))
         self.send_msg(subtype, val)
         self.last_value = val
         self.last_type = subtype
@@ -174,9 +179,11 @@ class MySensorsSensor (nerve.Device):
         if val is not None:
             self.set_value(val, subtype)
         else:
+            """
             if time.time() > self.last_recv + 3600:
                 # TODO you should probably send a message to the node or something... reset it perhaps?
                 return None
+            """
             return self.last_value
 
     def last_recv(self):

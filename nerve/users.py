@@ -24,10 +24,12 @@ def init():
         add_role('admin', 0)
         add_role('user', 1)
         add_role('guest', 100)
+        add_role('system', 1000)
 
     if not _user_db.table_exists('users'):
         _user_db.create_table('users', "id INTEGER PRIMARY KEY, username TEXT, password TEXT, role TEXT, last_login NUMERIC")
         add_user('admin', 'admin', 'admin')
+        add_user('system', None, 'system')
         add_user('guest', '', 'guest')
 
     _user_db.create_table('user_data', "username TEXT PRIMARY KEY, dataname TEXT, data TEXT")
@@ -54,7 +56,7 @@ def add_user(username, password, role):
         return False
 
     _user_db.where('username', username)
-    _user_db.insert('users', { 'username' : username, 'password' : hash_password(password), 'role' : role })
+    _user_db.insert('users', { 'username' : username, 'password' : hash_password(password) if password != None else None, 'role' : role })
     return True
 
 
@@ -108,6 +110,15 @@ def require_permissions(role):
     if len(results) > 0:
         return True
     raise UserPermissionsRequired()
+
+
+def check_access(require, owner, group, access):
+    t = threading.current_thread()
+    if t in _user_threads:
+        username = _user_threads[t]
+    else:
+        username = 'system'
+    #if username == owner or in_group(username, group) or access matches
 
 
 def hash_password(password):

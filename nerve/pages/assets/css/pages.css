@@ -26,49 +26,6 @@ input.nerve-slider {
 }
 
 
-
-#block-editor {
-    padding: 4px;
-    width: 40em;
-    margin-bottom: 2em;
-}
-
-#block-editor-name {
-    width: 100%;
-    margin-bottom: 1em;
-}
-
-#block-editor-text {
-    width: 100%;
-    height: 20em;
-}
-
-#block-editor-save {
-    float: right;
-}
-
-#page-editor {
-    padding: 4px;
-    width: 40em;
-    margin-bottom: 2em;
-}
-
-#page-editor-name {
-    /* width: 100%;
-    margin-bottom: 1em; */
-}
-
-#page-editor-text {
-    width: 100%;
-    height: 20em;
-}
-
-#page-editor-save {
-}
-
-.page-blocks {
-}
-
 #main {
     width: 100%;
     display: table;
@@ -80,7 +37,7 @@ input.nerve-slider {
 
 #sidebar {
     display: table-cell;
-    width: 10em;
+    width: 6em;
 }
 
 /*
@@ -110,16 +67,42 @@ sure which way I prefer.  The cells method is kinda nice though
 */
 
 
-.page-item,
-.block-item {
-    margin-top: 2px;
-    margin-bottom: 2px;
+
+#block-editor {
+    margin-right: 1em;
 }
 
-.page-item a:first-child,
-.block-item span:first-child {
-    display: inline-block;
-    width: 14em;
+#block-editor-name {
+    width: 100%;
+    margin-bottom: 1em;
 }
 
+#block-editor-text {
+    width: 100%;
+    height: 20em;
+    margin-bottom: 0.5em;
+
+    overflow: auto;
+    white-space: pre;
+}
+
+
+#page-editor {
+    margin-right: 1em;
+}
+
+
+.page-block-list {
+    border: none;
+    margin-bottom: 6px;
+}
+
+.page-block-list td {
+    border: none;
+    padding: 2px;
+}
+
+.page-block-list td:first-child {
+    padding-right: 1em;
+}
 

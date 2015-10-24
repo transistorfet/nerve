@@ -20,8 +20,10 @@ class VLCHTTP (nerve.Device):
         super().__init__(**config)
         self.proc = None
         self.status = None
-        self.lastplid = 0
-        self.lastmsg = None
+        self.current_pos = 0
+        self.current_plid = 0
+        self.playlist = None
+        self.playlist_name = None
         self.next_update = 0
 
         self.server = 'localhost:8081'
@@ -33,6 +35,9 @@ class VLCHTTP (nerve.Device):
         self.thread = nerve.Task('VLCTask', self.run)
         self.thread.start()
 
+    def toggle(self):
+        self._send_command('pl_pause')
+
     def next(self):
         self._send_command('pl_next')
         self.next_update = time.time() + 1
@@ -41,8 +46,10 @@ class VLCHTTP (nerve.Device):
         self._send_command('pl_previous')
         self.next_update = time.time() + 1
 
-    def toggle(self):
-        self._send_command('pl_pause')
+    def getsong(self):
+        if self.status is not None:
+            return self._get_title()
+        return ""
 
     def getvolume(self):
         if self.status is not None:
@@ -85,10 +92,20 @@ class VLCHTTP (nerve.Device):
     def disable_video(self):
         self._send_command('video_track', -1)
 
-    def getsong(self):
-        if self.status is not None:
-            return self._get_title()
-        return ""
+    def play(self, url):
+        self._send_command_and_uri('in_play', urllib.parse.quote(url))
+
+    def enqueue(self, url):
+        self._send_command_and_uri('in_enqueue', urllib.parse.quote(url))
+
+    def load_playlist(self, url):
+        self._send_command('pl_empty')
+        if url.find('/') < 0:
+            self.playlist_name = url
+            url = nerve.configdir() + '/playlists/' + url + '.m3u'
+        else:
+            self.playlist_name = None
+        self._send_command_and_uri('in_play', urllib.parse.quote(url))
 
     def clear_playlist(self):
         self._send_command('pl_empty')
@@ -113,17 +130,11 @@ class VLCHTTP (nerve.Device):
                 ret.append(song)
         return ret
 
-    def current_playlist(self):
-        # TODO return the name of the current playlist that the player is playing, such that you can match it with the playlists in medialib
-        pass
+    def get_playlist_name(self):
+        return self.playlist_name
 
     def get_position(self):
-        # TODO read the playlist position so that you can have the playlist display and anchor in the playlist webpage
-
-        for (i, song) in enumerate(self.getplaylist(), 1):
-            if 'current' in song:
-                return i
-        return 0
+        return self.current_pos
 
     def get_current_track(self, key='uri'):
         r = requests.get('http://%s/requests/playlist.json' % (self.server,), auth=('', 'test'))
@@ -171,21 +182,16 @@ class VLCHTTP (nerve.Device):
     def get_states(self):
         return self.saved_states
 
+    def goto(self, pos):
+        pos = int(pos)
+        playlist = self._read_playlist(self.playlist)
+        if 0 < pos < len(playlist):
+            self.playlist_seek(playlist[pos]['id'])
+
     def playlist_seek(self, id):
         url = 'http://%s/requests/status.json?command=pl_play&id=%s' % (self.server, id)
         r = requests.get(url, auth=('', 'test'))
 
-    def play(self, url):
-        self._send_command_and_uri('in_play', urllib.parse.quote(url))
-
-    def enqueue(self, url):
-        self._send_command_and_uri('in_enqueue', urllib.parse.quote(url))
-
-    def load_playlist(self, url):
-        self._send_command('pl_empty')
-        if url.find('/') < 0:
-            url = nerve.configdir() + '/playlists/' + url + '.m3u'
-        self._send_command_and_uri('in_play', urllib.parse.quote(url))
 
     def kill_instance(self):
         if self.proc is not None:
@@ -251,14 +257,16 @@ class VLCHTTP (nerve.Device):
                     self.status = json.loads(r.text)
                 #print (r.text)
 
-                if self.status['currentplid'] != self.lastplid:
-                    self.lastplid = self.status['currentplid']
-                    # TODO notify something that the song has changed
-                    #if self.lastmsg is not None:
-                    #    self.lastmsg.reply(self.device_name() + ".getsong " + self._get_title())
+                if self.status['currentplid'] != self.current_plid:
+                    self.current_plid = self.status['currentplid']
+                    self.current_pos = 0
+                    for (i, song) in enumerate(self.getplaylist(), 1):
+                        if 'current' in song:
+                            self.current_pos = i
+                            break
 
             except requests.ConnectionError:
-                nerve.log("Error connecting to vlc http server...")
+                nerve.log("Error connecting to vlc http server...", logtype='error')
                 retry_counter += 1
                 if retry_counter >= 3:
                     retry_counter = 0
@@ -266,8 +274,7 @@ class VLCHTTP (nerve.Device):
                     self.next_update = 4
 
             except:
-                t = traceback.format_exc()
-                nerve.log(t)
+                nerve.log(traceback.format_exc(), logtype='error')
 
 
         nerve.log("killing VLC process")
@@ -292,8 +299,7 @@ class VLCHTTP (nerve.Device):
                     proc = subprocess.Popen(cmdline.split(' '), stdin=None, stdout=None, stderr=None, close_fds=True)
                 return proc
             except:
-                t = traceback.format_exc()
-                nerve.log(t)
+                nerve.log(traceback.format_exc(), logtype='error')
             # if the process fails to launch, we sleep for a while and then try again
             time.sleep(7)
 

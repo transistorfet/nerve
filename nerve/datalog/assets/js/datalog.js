@@ -5,6 +5,7 @@ function NerveGraph(element)
 
     var graphData;
     var canvas = $(element).find('#graph')[0];
+    $(canvas).width($(window).width() - 20);
     var height = canvas.height;
     var width = canvas.width;
     var leftMargin = 50;
@@ -119,9 +120,9 @@ function NerveGraph(element)
 	c.strokeStyle = colour;
 
 	c.beginPath();
-	c.moveTo(originX + ((data.data[0][1] - start_time) * domainRes), originY - ((data.data[0][column] - base) * rangeRes));
+	c.moveTo(originX + ((data.data[0][1] - start_time) * domainRes), originY - ((data.data[0][column] ? (data.data[0][column] - base) : 0) * rangeRes));
 	for (var i = 1; i < data.data.length && data.data[i][1] - start_time < domain; i++) {
-	    c.lineTo(originX + ((data.data[i][1] - start_time) * domainRes), originY - ((data.data[i][column] - base) * rangeRes));
+	    c.lineTo(originX + ((data.data[i][1] - start_time) * domainRes), originY - ((data.data[i][column] ? (data.data[i][column] - base) : 0) * rangeRes));
 	}
 	c.stroke();
     }
@@ -191,42 +192,53 @@ function NerveGraph(element)
     }, false);
 
 
+
     $(element).delegate('.legend', 'change', function () {
 	var c = canvas.getContext('2d');
         graphobj.draw_graph(c, graphData);
     });
 
-    $(element).find('#oldest').click(function () {
-	
-    });
 
-    $(element).find('#older').click(function () {
-	end_time -= (domain / 4);
+    // TODO add oldest and newest buttons
+
+    new NerveClickCounter($(element).find('#older'), function (count) {
+        for (var i = 0; i < count; i++)
+	    end_time -= (domain / 4);
 	graphobj.update_graph();
     });
 
-    $(element).find('#newer').click(function () {
-	end_time += (domain / 4);
+    new NerveClickCounter($(element).find('#newer'), function (count) {
+        for (var i = 0; i < count; i++)
+	    end_time += (domain / 4);
 	graphobj.update_graph();
     });
 
-    $(element).find('#zoomin').click(function () {
-	domain = domain / 1.25;
+    new NerveClickCounter($(element).find('#zoomin'), function (count) {
+        for (var i = 0; i < count; i++)
+	    domain = domain / 1.25;
 	graphobj.update_graph();
     });
 
-    $(element).find('#zoomout').click(function () {
-        domain = domain * 1.25;
+    new NerveClickCounter($(element).find('#zoomout'), function (count) {
+        for (var i = 0; i < count; i++)
+            domain = domain * 1.25;
 	graphobj.update_graph();
     });
 
-    this.interval = setInterval(this.update_graph, 60000)
-    this.update_graph();
+
+    // update graph data periodically
+    this.update_timer = new NerveTimedEvent(60000, function ()
+    {
+        graphobj.update_graph();
+    });
+    this.update_timer.trigger_and_start_timer();
 
     $('#select-datalog').change(graphobj.update_graph);
+
+    return graphobj;
 }
 
 $(document).ready(function () {
-    NerveGraph('.nerve-graph');
+    new NerveGraph('.nerve-graph');
 });
 

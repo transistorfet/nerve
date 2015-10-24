@@ -165,11 +165,10 @@ class PagesController (nerve.http.Controller):
         self.model.delete_block(blockname)
         self.load_json_view({ 'status' : 'success', 'message' : 'Block deleted successfully' })
 
-    def handle_error(self, error, traceback):
-        if type(error) == nerve.NotFoundError or self.get_mimetype() != None:
-            super().handle_error(error, traceback)
-        else:
-            nerve.log(traceback)
+    def handle_error(self, error, traceback, request):
+        if request.reqtype == 'POST' and type(error) is not nerve.users.UserPermissionsRequired:
             self.load_json_view({ 'status' : 'error', 'message' : error.args[0] })
+        else:
+            super().handle_error(error, traceback, request)
 
 

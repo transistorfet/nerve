@@ -1,169 +1,14 @@
 
     <%
-    typeslist = nerve.query('/modules/get_types', nerve.Device)
-
-    last_label = 0
-    def treeview_object(dirname, expand=False):
-        global last_label
-        last_label += 1
-
-        obj = nerve.get_object(dirname)
-
-        %>
-        <li class="directory"><input type="checkbox" id="<%= 'item-' + str(last_label) %>" <%= ' checked' if expand else '' %> />
-        <label for="<%= 'item-' + str(last_label) %>"><%= dirname %><button class="object-delete" data-object="<%= dirname %>">x</button></label>
-        <%
-
-            %>
-            <ul>
-                <div id="nerve-notice" style="display: none;"></div>
-                <div id="nerve-error" style="display: none;"></div>
-            <%
-
-            if hasattr(obj, '__type__'):
-                %>
-                <li><div class="nerve-form-item">
-                    <label>Type</label>
-                    <span><%= obj.__type__ %></span>
-                </div></li>
-                <%
-            end
-
-            config_info = obj.get_config_info()
-            for setting in config_info:
-                if setting['datatype'] in ('int', 'float', 'str', 'bool', 'textarea'):
-                    %>
-                    <li><div class="nerve-form-item">
-                        <label><%= setting['propername'] %></label>
-                        <span>
-                            <% if setting['datatype'] == 'bool': %>
-                            <input type="checkbox" name="<%= setting['name'] %>" value="1" <%= ' checked' if obj.get_setting(setting['name']) else '' %> />
-                            <% elif setting['datatype'] == 'textarea': %>
-                            <textarea name="<%= setting['name'] %>"><%= obj.get_setting(setting['name']) %></textarea>
-                            <% else: %>
-                            <input type="text" name="<%= setting['name'] %>" value="<%= obj.get_setting(setting['name']) %>" />
-                            <% end %>
-                        </span>
-                    </div></li>
-                    <%
-                end
-            end
-
-            for setting in config_info:
-                if setting['datatype'] in ('list', 'tuple'):
-                    output_list_treeview(obj.get_setting(setting['name']), setting['name'])
-                elif setting['datatype'] in ('dict',):
-                    output_dict_treeview(obj.get_setting(setting['name']), setting['name'])
-                end
-            end
-
-            if len(config_info) > 0:
-                %>
-                <button class="object-save" data-object="<%= dirname %>">Save</button>
-                <div style="clear: both;"></div>
-                <%
-            end
-
-            for name in sorted(obj.keys_children()):
-                treeview_object(dirname + '/' + name if not dirname.endswith('/') else '/' + name)
-            end
-            %>
-                <button class="add" data-object="<%= dirname %>">Add</button>
-                <div style="display: none;">
-                    <div id="nerve-notice" style="display: none;"></div>
-                    <div id="nerve-error" style="display: none;"></div>
-                    <div class="nerve-form-item-row">
-                        <input type="text" name="__name__" />
-                        <select class="add-select-type">
-                            <option value="">(select type)</option>
-                            <% for typename in typeslist: %>
-                            <option value="<%= typename %>"><%= typename %></option>
-                            <% end %>
-                        </select>
-                    </div>
-                    <div id="add-settings"></div>
-                    <div>
-                        <button class="add-create" data-object="<%= dirname %>">Create</button>
-                        <button class="add-cancel">Cancel</button>
-                    </div>
-                </div>
-            <%
-
-            %>
-            </ul>
-        </li>
-        <%
-    end
-
-    def output_dict_treeview(obj, objname):
-        global last_label
-        last_label += 1
-
-        if not obj:
-            return
-        end
-
-        %>
-        <li><input type="checkbox" id="<%= 'item-' + str(last_label) %>" /><label class="nerve-treeview alt-label" for="<%= 'item-' + str(last_label) %>"><%= objname %></label>
-        <ul>
-        <%
-
-        for name in sorted(obj.keys()):
-            if type(obj[name]) in [ int, float, str ]:
-                %>
-                <li><div class="nerve-form-item">
-                    <label><%= name.capitalize() %></label>
-                    <span><input type="text" name="<%= name %>" value="<%= obj[name] %>" /></span>
-                </div></li>
-                <%
-            elif type(obj[name]) == dict:
-                output_dict_treeview(obj[name], name)
-            end
-        end
-
-        %>
-        </ul></li>
-        <%
-    end
-
-    def output_list_treeview(objectlist, objname):
-        global last_label
-        last_label += 1
-
-        %>
-        <li><input type="checkbox" id="<%= 'item-' + str(last_label) %>" /><label class="nerve-treeview alt-label" for="<%= 'item-' + str(last_label) %>"><%= objname %></label>
-        <ul>
-        <%
-
-        for index, obj in enumerate(objectlist):
-            if type(obj) in [ int, float, str ]:
-                %>
-                <li><div class="nerve-form-item">
-                    <label><%= name.capitalize() %></label>
-                    <span><input type="text" name="<%= index %>" value="<%= obj %>" /></span>
-                </div></li>
-                <%
-            elif type(obj) == dict:
-                output_dict_treeview(obj, index)
-            end
-        end
-
-        %>
-        </ul></li>
-        <%
-    end
-    %>
-
-    <%
         last_label = 0
-        def output_objects(path):
+        def output_objects(path, expand=False):
             global last_label
             last_label += 1
 
             %>
-            <li class="directory"><input type="checkbox" id="<%= 'diritem-' + str(last_label) %>" />
-            <label for="<%= 'diritem-' + str(last_label) %>"><%= path %><!-- <button class="object-delete" data-object="<%= path %>">x</button> --></label>
-            <ul>
+            <li class="directory"><input type="checkbox" id="<%= 'diritem-' + str(last_label) %>" <%= ' checked' if expand else '' %>/>
+            <label class="nerve-form-tree" for="<%= 'diritem-' + str(last_label) %>"><%= path %><!-- <button class="object-delete" data-object="<%= path %>">x</button> --></label>
+            <ul class="nerve-form-tree">
             <%
 
             obj = nerve.get_object(path)
@@ -196,24 +41,12 @@
         end
     %>
 
-    <h3>Modules</h3>
-    <div class="nerve-treeview">
-        <ul>
-            <% for name in nerve.query('/modules/get_module_list'): %>
-            <li><div class="nerve-form-item">
-                <label><%= name %></label>
-                <input type="checkbox" name="<%= name %>" <%= ' checked' %> />
-            </div></li>
-            <% end %>
-        </ul>
-        <button class="modules-save">Save</button>
-    </div>
-    <div style="clear: both;"></div>
-
     <h3>Objects</h3>
-    <div class="nerve-treeview"><ul>
-        <% output_objects('/') #treeview_object('/', True) %>
-    </ul></div>
+    <div class="nerve-treeview">
+        <ul class="nerve-form-tree">
+            <% output_objects('/', expand=True) %>
+        </ul>
+    </div>
     <div style="clear: both;"></div>
 
 

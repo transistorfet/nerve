@@ -4,6 +4,7 @@ The following is a list of Debian packages that are needed to run each module:
 core:
     python3-apsw
     python3-requests
+    python3-colorama
 
 aggregator:
     python3-lxml

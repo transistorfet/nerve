@@ -13,6 +13,13 @@ import mimetypes
 import urllib.parse
 
 
+def delistify(kwargs):
+    for name in kwargs.keys():
+        if not name.endswith("[]") and isinstance(kwargs[name], list) and len(kwargs[name]) == 1:
+            kwargs[name] = kwargs[name][0]
+    return kwargs
+
+
 class Request (object):
     def __init__(self, source, user, reqtype, urlstring, args, headers=dict()):
         self.source = source
@@ -32,11 +39,7 @@ class Request (object):
         if not kwargs:
             kwargs = dict()
         url = urllib.parse.urlparse(urlstring)
-        kwargs.update(urllib.parse.parse_qs(url.query, keep_blank_values=True))
-        # TODO should you only do this on the arguments received in the query string, and not all kwargs?
-        for name in kwargs.keys():
-            if not name.endswith("[]") and isinstance(kwargs[name], list) and len(kwargs[name]) == 1:
-                kwargs[name] = kwargs[name][0]
+        kwargs.update(delistify(urllib.parse.parse_qs(url.query, keep_blank_values=True)))
         return (url, kwargs)
 
     def arg(self, name, default=None):
@@ -162,9 +165,9 @@ class Controller (nerve.ObjectNode):
 
         except Exception as e:
             try:
-                self.handle_error(e, traceback.format_exc())
+                self.handle_error(e, traceback.format_exc(), request)
             except:
-                nerve.log("error while handling exception:\n" + traceback.format_exc())
+                nerve.log("error while handling exception:\n" + traceback.format_exc(), logtype='error')
 
         finally:
             self.finalize(request)
@@ -173,11 +176,11 @@ class Controller (nerve.ObjectNode):
             return True
         return False
 
-    def handle_error(self, error, traceback):
+    def handle_error(self, error, traceback, request):
         self.set_error(error)
         if not self._view:
             self.load_plaintext_view('')
-        nerve.log(traceback)
+        nerve.log(traceback, logtype='error')
         #if 'text/html' in request.headers['accept']:
         #   render some html
         #else:

@@ -65,6 +65,6 @@ class Console (nerve.Server):
                     break
 
                 except:
-                    nerve.log(traceback.format_exc())
+                    nerve.log(traceback.format_exc(), logtype='error')
 
  

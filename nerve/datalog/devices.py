@@ -78,8 +78,10 @@ class DatalogDevice (nerve.Device):
 
     def get_data(self, start_time=None, length=None):
         self.db.select('*')
-        if start_time is not None:
+        if start_time != None:
             self.db.where_gt('timestamp', start_time)
+            if length != None:
+                self.db.where_lt('timestamp', start_time + length)
         result = self.db.get(self.name)
 
         columns = [ ]
@@ -89,15 +91,64 @@ class DatalogDevice (nerve.Device):
 
     def _collect_data(self):
         data = { }
-        #data['timestamp'] = time.strftime("%Y-%m-%d %H:%M:%S")
         data['timestamp'] = time.time()
         for datapoint in self.get_setting('datapoints'):
             try:
                 data[datapoint['name']] = nerve.query(datapoint['ref'])
             except Exception as exc:
-                nerve.log("error collecting ref: " + str(datapoint['ref']) + ": " + repr(exc))
+                nerve.log("error collecting ref: " + str(datapoint['ref']) + ": " + repr(exc), logtype='error')
                 data[datapoint['name']] = None
         self.db.insert(self.name, data)
 
+    def __getattr__(self, index):
+        for datapoint in self.get_setting('datapoints'):
+            if datapoint['name'] == index:
+                return DatalogReference(db=self.db, dbtable=self.name, **datapoint)
+        return super().__getattr__(index)
+
+    def keys_queries(self):
+        return super().keys_queries() + [ datapoint['name'] for datapoint in self.get_setting('datapoints') ]
+
+
+class DatalogReference (object):
+    def __init__(self, **datapoint):
+        for attrib in datapoint:
+            setattr(self, attrib, datapoint[attrib])
+
+    def __call__(self):
+        return nerve.query(self.ref)
+
+    def get_data(self, start=None, length=86400):
+        length = self._get_time_value(length)
+        if start == None:
+            start = time.time() - length
+        else:
+            start = self._get_time_value(start)
+            if start < 0:
+                start = time.time() - start
+        self.db.select(self.name)
+        self.db.where_gt('timestamp', start)
+        self.db.where_lt('timestamp', start + length)
+        return [ data[0] for data in self.db.get(self.dbtable) if data[0] != '' ]
+
+    @staticmethod
+    def _get_time_value(value):
+        if type(value) == str:
+            factor = 60 if value[-1] == 'm' else 3600 if value[-1] == 'h' else 86400 if value[-1] == 'd' else 604800 if value[-1] == 'w' else 1
+            return int(float(value if factor == 1 else value[:-1]) * factor)
+        else:
+            return int(value)
+
+    def average(self, start=None, length=86400):
+        results = self.get_data(start, length)
+        return sum(results) / float(len(results))
+
+    def low(self, start=None, length=86400):
+        results = self.get_data(start, length)
+        return min(results)
+
+    def high(self, start=None, length=86400):
+        results = self.get_data(start, length)
+        return max(results)
 
 

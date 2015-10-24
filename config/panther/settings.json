@@ -1,154 +1,16 @@
 {
     "__children__": {
-        "modules": {
-            "__children__": {
-                "datalog": {
-                    "__children__": {},
-                    "__type__": "objects/Module",
-                    "name": "nerve.datalog"
-                },
-                "medialib": {
-                    "__children__": {},
-                    "__type__": "objects/Module",
-                    "name": "nerve.medialib",
-                    "medialib_dirs": [
-                        "/media/media/Torrents",
-                        "/media/media/Music",
-                        "/media/media/Video"
-                    ],
-                    "youtube_playlists": [
-                        "FL_VkJGWFV9ZEIv87E-0NM5w"
-                    ]
-                },
-                "pages": {
-                    "__children__": {},
-                    "__type__": "objects/Module",
-                    "name": "nerve.pages"
-                }
-            },
-            "__type__": "objects/Module",
-            "name": "nerve"
-        },
         "devices": {
             "__children__": {
-                "restart": {
-                    "__type__": "core/PyCodeQuery",
-                    "code": "nerve.query('/restart')"
-                },
-                "medialib": {
-                    "__type__": "medialib/MediaLibDevice",
-                    "medialib_dirs": [
-                        "/media/media/Music", 
-                        "/media/media/Video", 
-                        "/media/media/Torrents"
-                    ],
-                    "youtube_playlists": [
-                        "FL_VkJGWFV9ZEIv87E-0NM5w"
-                    ]
-                },
                 "computer": {
-                    "__type__": "system/SystemDevice"
-                },
-                "rgb": {
-                    "baud": 19200,
-                    "file": "/dev/ttyACM0",
-                    "__type__": "serial/NerveSerialDevice"
-                },
-                "sensors": {
-                    "__children__": {
-                        "relay_toggle": {
-                            "__type__": "events/PyCodeEvent",
-                            "code": "if nerve.query('/devices/mysensors/12/1'):\n  nerve.query('/devices/mysensors/12/1', 0)\nelse:\n  nerve.query('/devices/mysensors/12/1', 1)"
-                        }
-                    }
-                },
-                "mysensors": {
-                    "baud": 115200,
-                    "file": "/dev/ttyACM1",
-                    "__type__": "mysensors/MySensorsSerialGateway",
-                    "__children__": {
-                        "11": {
-                            "__children__": {
-                                "1": {
-                                    "__children__": {},
-                                    "__type__": "mysensors/MySensorsSensor",
-                                    "sensorid": "1",
-                                    "type": 20,
-                                    "version": "1.4.1"
-                                },
-                                "20": {
-                                    "__children__": {},
-                                    "__type__": "mysensors/MySensorsSensor",
-                                    "sensorid": "20",
-                                    "type": 6,
-                                    "version": "1.4.1"
-                                },
-                                "255": {
-                                    "__children__": {},
-                                    "__type__": "mysensors/MySensorsSensor",
-                                    "sensorid": "255",
-                                    "type": 18,
-                                    "version": "1.4.1"
-                                }
-                            },
-                            "__type__": "mysensors/MySensorsNode",
-                            "nodeid": "11"
-                        },
-                        "12": {
-                            "__children__": {
-                                "1": {
-                                    "__children__": {},
-                                    "__type__": "mysensors/MySensorsSensor",
-                                    "sensorid": "1",
-                                    "type": 3,
-                                    "version": "1.4.1"
-                                },
-                                "20": {
-                                    "__children__": {},
-                                    "__type__": "mysensors/MySensorsSensor",
-                                    "sensorid": "20",
-                                    "type": 6,
-                                    "version": "1.4.1"
-                                },
-                                "21": {
-                                    "__children__": {},
-                                    "__type__": "mysensors/MySensorsSensor",
-                                    "sensorid": "21",
-                                    "type": 6,
-                                    "version": "1.4.1"
-                                },
-                                "255": {
-                                    "__children__": {},
-                                    "__type__": "mysensors/MySensorsSensor",
-                                    "sensorid": "255",
-                                    "type": 18,
-                                    "version": "1.4.1"
-                                },
-                                "40": {
-                                    "__children__": {},
-                                    "__type__": "mysensors/MySensorsSensor",
-                                    "sensorid": "40",
-                                    "type": 7,
-                                    "version": "1.4.1"
-                                }
-                            },
-                            "__type__": "mysensors/MySensorsNode",
-                            "nodeid": "12"
-                        }
-                    }
-                },
-                "player": {
-                    "__type__": "player/vlc/VLCHTTP",
-                    "__children__": {
-                        "projectm": {
-                            "__type__": "player/projectm/ProjectMDevice"
-                        }
-                    }
+                    "__children__": {},
+                    "__type__": "system/_linux/devices/SystemDevice"
                 },
                 "datalogs": {
                     "__children__": {
                         "temperature": {
-                            "__type__": "datalog/DatalogDevice",
+                            "__children__": {},
+                            "__type__": "datalog/devices/DatalogDevice",
                             "datapoints": [
                                 {
                                     "datatype": "NUMERIC",
@@ -227,6 +89,153 @@
                             "update_time": 60
                         }
                     }
+                },
+                "medialib": {
+                    "__children__": {},
+                    "__type__": "medialib/devices/MediaLibDevice"
+                },
+                "mysensors": {
+                    "__children__": {
+                        "11": {
+                            "__children__": {
+                                "1": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/MySensorsSensor",
+                                    "sensorid": "1",
+                                    "type": 20,
+                                    "version": "1.4.1"
+                                },
+                                "20": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/MySensorsSensor",
+                                    "sensorid": "20",
+                                    "type": 6,
+                                    "version": "1.4.1"
+                                },
+                                "255": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/MySensorsSensor",
+                                    "sensorid": "255",
+                                    "type": 18,
+                                    "version": "1.4.1"
+                                }
+                            },
+                            "__type__": "mysensors/MySensorsNode",
+                            "nodeid": "11"
+                        },
+                        "12": {
+                            "__children__": {
+                                "1": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/MySensorsSensor",
+                                    "sensorid": "1",
+                                    "type": 3,
+                                    "version": "1.4.1"
+                                },
+                                "20": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/MySensorsSensor",
+                                    "sensorid": "20",
+                                    "type": 6,
+                                    "version": "1.4.1"
+                                },
+                                "21": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/MySensorsSensor",
+                                    "sensorid": "21",
+                                    "type": 6,
+                                    "version": "1.4.1"
+                                },
+                                "255": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/MySensorsSensor",
+                                    "sensorid": "255",
+                                    "type": 18,
+                                    "version": "1.4.1"
+                                },
+                                "40": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/MySensorsSensor",
+                                    "sensorid": "40",
+                                    "type": 7,
+                                    "version": "1.4.1"
+                                }
+                            },
+                            "__type__": "mysensors/MySensorsNode",
+                            "nodeid": "12"
+                        },
+                        "13": {
+                            "__children__": {
+                                "20": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/devices/MySensorsSensor",
+                                    "sensorid": "20",
+                                    "type": 6,
+                                    "version": "1.4.1"
+                                },
+                                "255": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/devices/MySensorsSensor",
+                                    "sensorid": "255",
+                                    "type": 18,
+                                    "version": "1.4.1"
+                                },
+                                "40": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/devices/MySensorsSensor",
+                                    "sensorid": "40",
+                                    "type": 7,
+                                    "version": "1.4.1"
+                                },
+                                "60": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/devices/MySensorsSensor",
+                                    "sensorid": "60",
+                                    "type": 8,
+                                    "version": "1.4.1"
+                                },
+                                "80": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/devices/MySensorsSensor",
+                                    "sensorid": "80",
+                                    "type": 16,
+                                    "version": "1.4.1"
+                                }
+                            },
+                            "__type__": "mysensors/devices/MySensorsNode",
+                            "nodeid": "13"
+                        }
+                    },
+                    "__type__": "mysensors/MySensorsSerialGateway",
+                    "baud": 115200,
+                    "file": "/dev/ttyACM1"
+                },
+                "player": {
+                    "__children__": {
+                        "projectm": {
+                            "__type__": "player/projectm/ProjectMDevice"
+                        }
+                    },
+                    "__type__": "player/vlc/VLCHTTP"
+                },
+                "restart": {
+                    "__children__": {},
+                    "__type__": "core/PyCodeQuery",
+                    "code": "nerve.query('/restart')"
+                },
+                "rgb": {
+                    "__children__": {},
+                    "__type__": "serial/devices/NerveSerialDevice",
+                    "baud": 19200,
+                    "file": "/dev/ttyACM0"
+                },
+                "sensors": {
+                    "__children__": {
+                        "relay_toggle": {
+                            "__type__": "events/PyCodeEvent",
+                            "code": "if nerve.query('/devices/mysensors/12/1'):\n  nerve.query('/devices/mysensors/12/1', 0)\nelse:\n  nerve.query('/devices/mysensors/12/1', 1)"
+                        }
+                    }
                 }
             }
         },
@@ -236,109 +245,194 @@
                     "__children__": {
                         "irrecv": {
                             "__children__": {
-                                "N:6F928D7": {
-                                    "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/player/toggle')"
-                                },
-                                "N:6F9906F": {
-                                    "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/player/next')"
-                                },
-                                "N:6F950AF": {
-                                    "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/player/previous')"
-                                },
-                                "N:6F9DC23": {
-                                    "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/player/load_playlist?url=default')"
-                                },
-                                "N:6F90CF3": {
-                                    "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/medialib/shuffle_playlist?name=default')\nnerve.query('/devices/player/load_playlist?url=default')"
-                                },
-                                "N:6F99C63": {
-                                    "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/sensors/relay_toggle')"
-                                },
-                                "N:679E817": {
-                                    "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/rgb/power')"
-                                },
-                                "N:6799867": {
-                                    "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/rgb/key?a=0x258')"
-                                },
                                 "N:67918E7": {
+                                    "__children__": {},
                                     "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/rgb/key?a=0x278')"
-                                },
-                                "N:679B04F": {
-                                    "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/rgb/channel?a=1')"
-                                },
-                                "N:679708F": {
-                                    "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/rgb/channel?a=2')"
-                                },
-                                "N:679F00F": {
-                                    "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/rgb/channel?a=3')"
-                                },
-                                "N:67938C7": {
-                                    "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/rgb/channel?a=4')"
-                                },
-                                "N:679B847": {
-                                    "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/rgb/channel?a=5')"
-                                },
-                                "N:6797887": {
-                                    "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/rgb/channel?a=6')"
-                                },
-                                "N:679F807": {
-                                    "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/rgb/channel?a=7')"
+                                    "code": "nerve.query('/devices/rgb/key?a=0x278')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
                                 },
                                 "N:67920DF": {
+                                    "__children__": {},
                                     "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/rgb/channel?a=8')"
+                                    "code": "nerve.query('/devices/rgb/channel?a=8')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                },
+                                "N:67938C7": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/devices/rgb/channel?a=4')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                },
+                                "N:679708F": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/devices/rgb/channel?a=2')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                },
+                                "N:6797887": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/devices/rgb/channel?a=6')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                },
+                                "N:6799867": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/devices/rgb/key?a=0x258')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
                                 },
                                 "N:679A05F": {
+                                    "__children__": {},
                                     "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/rgb/channel?a=9')"
+                                    "code": "nerve.query('/devices/rgb/channel?a=9')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
                                 },
-                                "N:AF5E817": {
+                                "N:679B04F": {
+                                    "__children__": {},
                                     "__type__": "events/PyCodeEvent",
-                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/power')"
+                                    "code": "nerve.query('/devices/rgb/channel?a=1')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
                                 },
-                                "N:6F9827D": {
+                                "N:679B847": {
+                                    "__children__": {},
                                     "__type__": "events/PyCodeEvent",
-                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/ps3')"
+                                    "code": "nerve.query('/devices/rgb/channel?a=5')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                },
+                                "N:679E817": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/devices/rgb/power')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                },
+                                "N:679F00F": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/devices/rgb/channel?a=3')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                },
+                                "N:679F807": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/devices/rgb/channel?a=7')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                },
+                                "N:6F908F7": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/devices/player/projectm/random')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                },
+                                "N:6F90CF3": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/devices/medialib/shuffle_playlist?name=default')\nnerve.query('/devices/player/load_playlist?url=default')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                },
+                                "N:6F928D7": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/devices/player/toggle')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
                                 },
                                 "N:6F942BD": {
+                                    "__children__": {},
                                     "__type__": "events/PyCodeEvent",
-                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/netbook')"
+                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/netbook')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
                                 },
-                                "N:AF59867": {
+                                "N:6F950AF": {
+                                    "__children__": {},
                                     "__type__": "events/PyCodeEvent",
-                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/volup')"
+                                    "code": "nerve.query('/devices/player/previous')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
                                 },
-                                "N:AF518E7": {
+                                "N:6F9827D": {
+                                    "__children__": {},
                                     "__type__": "events/PyCodeEvent",
-                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/voldown')"
+                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/ps3')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                },
+                                "N:6F9906F": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/devices/player/next')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                },
+                                "N:6F99C63": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/devices/sensors/relay_toggle')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                },
+                                "N:6F9DC23": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/devices/player/load_playlist?url=default')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
                                 },
                                 "N:6F9E817": {
+                                    "__children__": {},
                                     "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/stereo/power')"
+                                    "code": "nerve.query('/devices/stereo/power')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                },
+                                "N:AF518E7": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/voldown')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
                                 },
                                 "N:AF548B7": {
+                                    "__children__": {},
                                     "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/stereo/volup')"
+                                    "code": "nerve.query('/devices/stereo/volup')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                },
+                                "N:AF59867": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/volup')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
                                 },
                                 "N:AF5A857": {
+                                    "__children__": {},
                                     "__type__": "events/PyCodeEvent",
-                                    "code": "nerve.query('/devices/stereo/voldown')"
+                                    "code": "nerve.query('/devices/stereo/voldown')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                },
+                                "N:AF5E817": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "time.sleep(0.2)\nnerve.query('/devices/tv/power')",
+                                    "repeat": 0.0,
+                                    "trigger": ""
                                 }
                             }
                         }
@@ -346,70 +440,84 @@
                 }
             }
         },
+        "modules": {
+            "__children__": {
+                "datalog": {
+                    "__children__": {},
+                    "__type__": "objects/Module",
+                    "name": "nerve.datalog"
+                },
+                "medialib": {
+                    "__children__": {},
+                    "__type__": "objects/Module",
+                    "name": "nerve.medialib",
+                    "medialib_dirs": [
+                        "/media/media/Torrents",
+                        "/media/media/Music",
+                        "/media/media/Comedy",
+                        "/media/media/Video"
+                    ],
+                    "ignore_dirs": [
+			"/media/media/Torrents/zz Incomplete zz"
+                    ],
+                    "youtube_playlists": [
+                        "FL_VkJGWFV9ZEIv87E-0NM5w"
+                    ]
+                },
+                "pages": {
+                    "__children__": {},
+                    "__type__": "objects/Module",
+                    "name": "nerve.pages"
+                }
+            },
+            "__type__": "objects/Module",
+            "name": "nerve"
+        },
         "servers": {
             "__children__": {
                 "console": {
+                    "__children__": {},
                     "controllers": {
                         "__default__": {
-                            "__type__": "base/ShellController"
+                            "__type__": "base/controllers/shell/ShellController"
                         }
                     },
                     "__type__": "base/servers/console/Console"
                 },
-                "pyexec": {
-                    "port": 6060,
-                    "controllers": {
-                        "__default__": {
-                            "__type__": "base/PyCodeController"
-                        }
-                    },
-                    "__type__": "connect/servers/tcpserver/TCPServer"
-                },
-                "udp": {
-                    "port": 5959,
-                    "controllers": {
-                        "__default__": {
-                            "__type__": "base/QueryController"
-                        }
-                    },
-                    "__type__": "base/servers/udpserver/UDPServer"
-                },
                 "http": {
+                    "__children__": {},
                     "username": "",
                     "password": "",
                     "port": 8888,
                     "controllers": {
                         "__default__": {
-                            "__type__": "base/FileController",
-                            "root" : "nerve/base/assets"
-                        },
-                        "assets": {
-                            "__type__": "base/FileController",
+                            "__type__": "base/controllers/files/FileController",
                             "root" : "nerve/base/assets"
                         },
                         "aggregator": {
                             "__type__": "aggregator/controllers/AggregatorController"
                         },
-                        "query": {
-                            "__type__": "base/QueryController"
+                        "assets": {
+                            "__type__": "base/controllers/files/FileController",
+                            "root" : "nerve/base/assets"
                         },
                         "config": {
-                            "__type__": "base/ConfigController"
-                        },
-                        "medialib": {
-                            "__type__": "medialib/MediaLibController"
+                            "__type__": "base/controllers/config/ConfigController"
                         },
                         "datalog": {
-                            "__type__": "datalog/DatalogController"
+                            "__type__": "datalog/controllers/DatalogController"
+                        },
+                        "medialib": {
+                            "__type__": "medialib/controllers/MediaLibController"
+                        },
+                        "query": {
+                            "__type__": "base/controllers/query/QueryController"
                         },
                         "pages": {
-                            "__type__": "pages/PagesController"
+                            "__type__": "pages/controllers/PagesController"
                         },
-                       "shell": {
+                        "shell": {
                             "__type__": "base/controllers/shell/ShellController"
-                        },
-                        "remote": {
-                            "__type__": "remote/RemoteController"
                         }
                     },
                     "__type__": "http/HTTPServer",
@@ -417,6 +525,26 @@
                         "__type__": "pages/views/page/PageView",
                         "theme": "dark"
                     }
+                },
+                "pyexec": {
+                    "__children__": {},
+                    "__type__": "connect/servers/tcpserver/TCPServer",
+                    "controllers": {
+                        "__default__": {
+                            "__type__": "base/controllers/pycode/PyCodeController"
+                        }
+                    },
+                    "port": 6060
+                },
+                "udp": {
+                    "__children__": {},
+                    "__type__": "base/servers/udpserver/UDPServer",
+                    "controllers": {
+                        "__default__": {
+                            "__type__": "base/controllers/query/QueryController"
+                        }
+                    },
+                    "port": 5959
                 }
             }
         }

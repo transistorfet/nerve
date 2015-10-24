@@ -4,7 +4,7 @@
         #nerve-shell-output {
             width: 75%;
             height: 25em;
-            border: 1px solid #80C008;
+            border: 1px solid black;
             white-space: pre-wrap;
         }
 
@@ -36,8 +36,7 @@
         });
     </script>
 
-    <pre id="nerve-shell-output">
-    </pre>
+    <pre id="nerve-shell-output"></pre>
 
     <input id="nerve-shell-input" type="text" />
 

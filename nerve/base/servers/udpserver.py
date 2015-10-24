@@ -70,11 +70,11 @@ class UDPServer (nerve.Server):
                         self.send(controller.get_output() + '\n', addr)
 
                 except socket.error as e:
-                    nerve.log("Socket Error: " + str(e))
+                    nerve.log("Socket Error: " + str(e), logtype='error')
                     break
 
                 except:
-                    nerve.log(traceback.format_exc())
+                    nerve.log(traceback.format_exc(), logtype='error')
 
             nerve.log("closing socket and retrying in 5 seconds")
             self.close()

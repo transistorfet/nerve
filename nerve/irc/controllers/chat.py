@@ -53,7 +53,7 @@ class IRCChatController (nerve.http.Controller, nerve.connect.ControllerMixIn):
             self.conn.send_message(nerve.connect.Message(text=json.dumps(data)))
 
     def handle_connection_error(self, error, traceback):
-        nerve.log(traceback)
+        nerve.log(traceback, logtype='error')
         if self.conn:
             self.conn.send_message(nerve.connect.Message(text=traceback))
 

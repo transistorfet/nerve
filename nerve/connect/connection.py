@@ -36,18 +36,18 @@ class ControllerMixIn (object):
                 break
 
             except OSError as e:
-                nerve.log("OSError: " + str(e))
+                nerve.log("OSError: " + str(e), logtype='error')
                 break
 
             except Exception as e:
-                self.handle_connection_error(e, traceback.format_exc())
+                self.handle_connection_error(e, traceback.format_exc(), logtype='error')
 
         self.on_disconnect()
         # TODO should this close maybe be on the server side?
         #self.conn.close()
 
     def handle_connection_error(self, error, tb):
-        nerve.log(tb)
+        nerve.log(tb, logtype='error')
 
 
 class Message (object):

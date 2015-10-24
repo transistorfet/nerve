@@ -21,8 +21,8 @@ class PlayerDevice (nerve.Device):
         try:
             self.driver = nerve.Module.make_object(backend, config)
         except:
-            nerve.log("failed to initialize player backend: " + backend)
-            nerve.log(traceback.format_exc())
+            nerve.log("failed to initialize player backend: " + backend, logtype='error')
+            nerve.log(traceback.format_exc(), logtype='error')
 
         self.playlist = []
 

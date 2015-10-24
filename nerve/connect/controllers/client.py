@@ -41,6 +41,6 @@ class ClientController (nerve.http.Controller, nerve.connect.ControllerMixIn):
             self.conn.send_message(msg)
 
     def handle_connection_error(self, error, traceback):
-        nerve.log(traceback)
+        nerve.log(traceback, logtype='error')
         self.send_message(traceback)
 

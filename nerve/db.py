@@ -77,6 +77,9 @@ class Database (object):
     def where_like(self, where, val):
         self.where(where, val, " LIKE ")
 
+    def where_not_like(self, where, val):
+        self.where(where, val, " NOT LIKE ")
+
     def set_where(self, where):
         self.cache_where = where
 
@@ -129,7 +132,7 @@ class Database (object):
 
     def get_assoc(self, table, select=None, where=None):
         query = self.compile_select(table, select, where)
-        #print (query.encode('utf-8', 'replace'))
+        #print (query)
         result = self.query(query)
 
         keys = self.columns

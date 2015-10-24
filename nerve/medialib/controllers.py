@@ -14,15 +14,6 @@ import requests
 
 class MediaLibController (nerve.http.Controller):
 
-    def handle_error(self, error, traceback):
-        if type(error) == nerve.NotFoundError or self.get_mimetype() != None:
-            super().handle_error(error, traceback)
-        else:
-            #if 'application/json' in request.header['accept']:
-
-            # TODO this has a different format than what's used with other controllers
-            self.load_json_view({ 'error' : repr(error) })
-
     @nerve.public
     def index(self, request):
         medialib = nerve.get_object('/devices/medialib')
@@ -52,17 +43,19 @@ class MediaLibController (nerve.http.Controller):
         medialib = nerve.get_object('/devices/medialib')
 
         data = { }
+        data['medialib'] = medialib
         data['list_of_playlists'] = medialib.get_playlist_list()
         data['mode'] = request.arg('mode', default='album')
         data['order'] = request.arg('order', default='artist')
         data['offset'] = request.arg('offset', default=0)
         data['limit'] = request.arg('limit', default=1000)
         data['search'] = request.arg('search', default='')
+        data['tags'] = request.arg('tags', default='')
         data['recent'] = request.arg('recent', default=None)
         data['media_type'] = request.arg('media_type', default=None)
 
         if request.arg('mode'):
-            data['media_list'] = medialib.get_media_list(data['mode'], data['order'], data['offset'], data['limit'], data['search'], data['recent'], data['media_type'])
+            data['media_list'] = medialib.get_media_list(data['mode'], data['order'], data['offset'], data['limit'], data['search'], data['recent'], data['media_type'], data['tags'])
         else:
             data['media_list'] = None
 
@@ -87,6 +80,8 @@ class MediaLibController (nerve.http.Controller):
                 #print(json.dumps(data['media_list'], sort_keys=True, indent=4, separators=(',', ':')))
 
         self.load_template_view('nerve/medialib/views/search_youtube.blk.pyhtml', data, request)
+        self.template_add_to_section('jsfiles', '/medialib/assets/js/medialib.js')
+        self.template_add_to_section('cssfiles', '/medialib/assets/css/medialib.css')
 
     @nerve.public
     def shuffle_playlist(self, request):
@@ -138,6 +133,9 @@ class MediaLibController (nerve.http.Controller):
                     for media_item in media[1:]:
                         player.enqueue(media_item['filename'])
                 result['count'] = len(media)
+            elif request.arg('method') == 'markwatched':
+                for media_item in media:
+                    medialib.add_tag(media_item['id'], 'watched')
             else:
                 playlist = nerve.medialib.Playlist(request.arg('playlist'))
                 if request.arg('method') == 'replace':
@@ -172,8 +170,38 @@ class MediaLibController (nerve.http.Controller):
         self.load_json_view(result)
 
     @nerve.public
+    def add_tag(self, request):
+        medialib = nerve.get_object('/devices/medialib')
+        id = request.arg('id')
+        tag = request.arg('tag')
+        if tag.startswith('"'):
+            tag = tag[1:]
+        if tag.endswith('"'):
+            tag = tag[:-1]
+        medialib.add_tag(id, tag)
+        self.load_json_view({ 'status': 'success' })
+
+    @nerve.public
+    def remove_tag(self, request):
+        medialib = nerve.get_object('/devices/medialib')
+        id = request.arg('id')
+        tag = request.arg('tag')
+        if tag.startswith('"'):
+            tag = tag[1:]
+        if tag.endswith('"'):
+            tag = tag[:-1]
+        medialib.remove_tag(id, tag)
+        self.load_json_view({ 'status': 'success' })
+
+    @nerve.public
     def rehash_database(self, request):
         medialib = nerve.get_object('/devices/medialib')
         medialib.force_database_update()
+
+    def handle_error(self, error, traceback, request):
+        if request.reqtype == 'POST' and type(error) is not nerve.users.UserPermissionsRequired:
+            self.load_json_view({ 'error' : repr(error) })
+        else:
+            super().handle_error(error, traceback, request)
 
 

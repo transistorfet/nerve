@@ -24,7 +24,7 @@ class Controller (nerve.Controller):
         if not template and request:
             template = request.source.get_setting('template')
         if not template:
-            template = { '__type__': 'http/views/template/TemplateView', 'filename': 'nerve/http/views/template.pyhtml' }
+            template = { '__type__': 'http/views/template/TemplateView' }
         template = template.copy()
 
         template_class = nerve.Module.get_class(template['__type__'])

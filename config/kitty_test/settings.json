@@ -54,19 +54,19 @@
                         "/media/media/Video",
                         "/media/media/Torrents"
                     ],
+                    "ignore_dirs": [
+                        "zz Incomplete zz"
+                    ],
                     "youtube_playlists": [
                         "PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4",
                         "FL_VkJGWFV9ZEIv87E-0NM5w",
                         "PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0"
                     ]
                 },
-                "youtube": {
-                    "__type__": "aggregator/youtube/YouTubeAggregator"
-                },
                 "player": {
                     "__children__": {},
                     "__type__": "player/devices/PlayerDevice",
-                    "backend": "player/xmms2cli/Xmms2CLI",
+                    "backend": "player/xmms2cli/devices/Xmms2CLI",
                     "backendold": "player/gstreamer/devices/GstreamerPlayer"
                 },
                 "realtime": {
@@ -116,6 +116,9 @@
                         }
                     },
                     "__type__": "objects/ObjectNode"
+                },
+                "youtube": {
+                    "__type__": "aggregator/youtube/YouTubeAggregator"
                 }
             },
             "__type__": "objects/ObjectNode"
@@ -172,6 +175,9 @@
                         "/media/media/Video",
                         "/media/media/Torrents"
                     ],
+                    "ignore_dirs": [
+			"/media/media/Torrents/zz Incomplete zz"
+                    ],
                     "youtube_playlists": [
                         "PL303Lldd6pIgDFgO9RWRXLnXiBcnAqJW4",
                         "FL_VkJGWFV9ZEIv87E-0NM5w",
@@ -203,12 +209,12 @@
                             "__type__": "base/FileController",
                             "root": "nerve/base/assets"
                         },
+                        "aggregator": {
+                            "__type__": "aggregator/controllers/AggregatorController"
+                        },
                         "assets": {
                             "__type__": "base/FileController",
                             "root": "nerve/base/assets"
-                        },
-                        "aggregator": {
-                            "__type__": "aggregator/controllers/AggregatorController"
                         },
                         "config": {
                             "__type__": "base/ConfigController"

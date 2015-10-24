@@ -1,11 +1,15 @@
 
+    <h4>Pages</h4>
+
+    <table class="page-block-list">
     <% for (id, page) in pages: %>
-        <div class="page-item" data-name="<%= page %>">
-            <a href="/pages/<%= page %>"><%= page %></a>
-            <a href="/pages/editpage/<%= page %>"><button>Edit</button></a>
-            <button class="delete-page" data-target="<%= page %>">Delete</button>
-        </div>
+        <tr>
+            <td><a href="/pages/<%= page %>"><%= page %></a></td>
+            <td><a href="/pages/editpage/<%= page %>"><button>Edit</button></a></td>
+            <td><button class="delete-page" data-target="<%= page %>">Delete</button></td>
+        </tr>
     <% end %>
+    </table>
 
     <a href="/pages/editpage"><button>Add Page</button></a>
 

@@ -28,14 +28,14 @@ class YoutubePlaylistUpdater (MediaLibUpdater):
         medialib = nerve.get_object('/modules/medialib')
         self.list_ids = medialib.get_setting('youtube_playlists')
         if not self.list_ids:
-            nerve.log("warning: youtube_playlists not set")
+            nerve.log("warning: youtube_playlists not set", logtype='warning')
             return
 
         nerve.log("Starting youtube medialib update...")
         for list_id in self.list_ids:
             json_playlist = self.fetch_json(list_id)
             if json_playlist is None or 'video' not in json_playlist:
-                nerve.log("Unable to fetch youtube playlist " + list_id)
+                nerve.log("Unable to fetch youtube playlist " + list_id, logtype='error')
             else:
                 playlist = [ ]
                 for video in json_playlist['video']:
@@ -56,7 +56,7 @@ class YoutubePlaylistUpdater (MediaLibUpdater):
             if r.text:
                 return json.loads(r.text)
         except:
-            nerve.log("error fetching youtube list " + list_id)
+            nerve.log("error fetching youtube list " + list_id, logtype='error')
         return None
 
     def hash_video(self, meta):
@@ -71,6 +71,7 @@ class YoutubePlaylistUpdater (MediaLibUpdater):
             title = parts[1].strip()
         data = {
             'filename' : url,
+            'rootlen' : 0,
             'artist' : artist,
             'title' : title,
             'album' : 'YouTube',
@@ -80,10 +81,10 @@ class YoutubePlaylistUpdater (MediaLibUpdater):
             'media_type' : 'video',
             'duration' : float(meta['length_seconds']),
             'file_size' : '',
-            'file_last_modified' : meta['time_created'],
+            'last_modified' : meta['time_created'],
         }
 
-        rows = list(self.db.get('media', 'id,file_last_modified', self.db.inline_expr('filename', url)))
+        rows = list(self.db.get('media', 'id,last_modified', self.db.inline_expr('filename', url)))
         if len(rows) > 0 and rows[0][1] >= meta['time_created']:
             #nerve.log("Skipping " + url)
             return data

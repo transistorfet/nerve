@@ -1,21 +1,21 @@
 
 function MediaLibPlaylist(element)
 {
-    var medialib = this;
+    var that = this;
 
-    this.update = function ()
+    that.update = function ()
     {
         $.post('/medialib/get_playlist', { 'playlist' : $('#select-playlist').val() }, function (response) {
-            $('#playlist-contents').html(response);
+            $('#medialib-playlist-contents').html(response);
         }, 'html');
     }
 
-    this.remove_selected = function ()
+    that.remove_selected = function ()
     {
         $('#nerve-error').hide();
         $('#nerve-notice').hide();
         var postvars = { 'playlist' : $('#select-playlist').val(), 'urls' : [ ] };
-        $("input[name='urls']:checked").each(function () {
+        $('input[name="urls[]"]:checked').each(function () {
             postvars['urls'].push($(this).val());
         });
 
@@ -24,11 +24,11 @@ function MediaLibPlaylist(element)
                 $('#nerve-error').html("No tracks were removed").show();
             else
                 $('#nerve-notice').html(response.count + " track(s) were removed from playlist " + postvars['playlist']).show();
-            medialib.update();
+            that.update();
         }, 'json');
     }
 
-    this.create_playlist = function ()
+    that.create_playlist = function ()
     {
         $('#nerve-error').hide();
         $('#nerve-notice').hide();
@@ -42,12 +42,12 @@ function MediaLibPlaylist(element)
                 $('#nerve-notice').html(response.notice).show();
                 $('#select-playlist').append('<option value="'+playlist+'">'+playlist+'</option>');
                 $('#select-playlist').val(playlist);
-                medialib.update();
+                that.update();
             }
         }, 'json');
     }
 
-    this.delete_playlist = function ()
+    that.delete_playlist = function ()
     {
         var playlist = $('#select-playlist').val();
         if (confirm("Are you sure you want to delete the playlist: " + playlist)) {
@@ -57,57 +57,93 @@ function MediaLibPlaylist(element)
                 else if (response.notice) {
                     $('#nerve-notice').html(response.notice).show();
                     $('#select-playlist option[value="'+playlist+'"]').remove();
-                    medialib.update();
+                    that.update();
                 }
             });
         }
     }
 
-    this.sort_playlist = function ()
+    that.sort_playlist = function ()
     {
-        $.post('/medialib/sort_playlist', { 'playlist' : $('#select-playlist').val() }, medialib.update, 'html');
+        $.post('/medialib/sort_playlist', { 'playlist' : $('#select-playlist').val() }, that.update, 'html');
     }
 
-    this.shuffle_playlist = function ()
+    that.shuffle_playlist = function ()
     {
-        $.post('/medialib/shuffle_playlist', { 'playlist' : $('#select-playlist').val() }, medialib.update, 'html');
+        $.post('/medialib/shuffle_playlist', { 'playlist' : $('#select-playlist').val() }, that.update, 'html');
     }
 
-    this.load_playlist = function ()
+    that.load_playlist = function ()
     {
         $.post('/query/player/load_playlist', { 'url' : $('#select-playlist').val() }, function (response) { }, 'json');
     }
 
-    $('#select-playlist').change(this.update);
-    this.update();
+    $('#select-playlist').change(that.update);
+    that.update();
 
-    $('.pl_remove').click(this.remove_selected);
-    $('.pl_sort').click(this.sort_playlist);
-    $('.pl_shuffle').click(this.shuffle_playlist);
-    $('.pl_create').click(this.create_playlist);
-    $('.pl_delete').click(this.delete_playlist);
-    $('.pl_load').click(this.load_playlist);
+    $('.pl_remove').click(that.remove_selected);
+    $('.pl_sort').click(that.sort_playlist);
+    $('.pl_shuffle').click(that.shuffle_playlist);
+    $('.pl_create').click(that.create_playlist);
+    $('.pl_delete').click(that.delete_playlist);
+    $('.pl_load').click(that.load_playlist);
 
-    /*
-    // TODO update the current showing song based on the songname display at the top?  This might be too hard or too messy to do
-    $('.nerve-query[data-query="player/getsong"]').change(function ()
+    $('.pl_current').click(function() {
+        $('html, body').animate({ scrollTop: $('.nerve-highlight').offset().top - 100 }, 500);
+    });
+
+    $(document).on('click', '#medialib-playlist-contents td:last-child', function () {
+        var element = this;
+        $.post('/query/player/goto', { 'pos' : $(element).parent().parent().children().index($(element).parent()) }, function (response) {
+            $('.medialib-list tr.nerve-highlight').removeClass('nerve-highlight');
+            $(element).parent().addClass('nerve-highlight');
+        }, 'json');
+    });
+
+    that.query_songname = new NerveTimedEvent($('.medialib-query-songname').attr('data-time'), function ()
     {
-        $('.playlist-contents tr[class="nerve-highlight"]').removeClass('nerve-highlight');
-        $('.playlist-contents tbody').each(function ()
-        {
-            //if ($(this).
-            //addClass('nerve-highlight');
+        var queries = [
+            $('.medialib-query-songname').attr('data-query'),
+            'player/get_position'
+        ];
+
+        Nerve.send_query(queries, function (response) {
+            $('.medialib-query-songname').html(response[0]);
+            $('#medialib-playlist-contents tr').removeClass('nerve-highlight');
+            $('#medialib-playlist-contents tr').eq(response[1]).addClass('nerve-highlight');
         });
     });
-    */
+    that.query_songname.trigger_and_start_timer();
+
+    $('.medialib-button-next').click(function () {
+        $.post('/query/'+$(this).attr('data-query'), {}, function(response) {
+            var element = $('.medialib-list tr.nerve-highlight');
+            $(element).removeClass('nerve-highlight');
+            if ($(element).next().length)
+                $(element).next().addClass('nerve-highlight');
+            that.query_songname.reset_timer();
+        }, 'json');
+    });
+
+    $('.medialib-button-previous').click(function () {
+        $.post('/query/'+$(this).attr('data-query'), {}, function(response) {
+            var element = $('.medialib-list tr.nerve-highlight');
+            $(element).removeClass('nerve-highlight');
+            if ($(element).prev().length)
+                $(element).prev().addClass('nerve-highlight');
+            that.query_songname.reset_timer();
+        }, 'json');
+    });
+
+    return that;
 }
 
 function MediaLibSearch(element)
 {
-    var medialib = this;
+    var that = this;
 
     /*
-    this.search = function ()
+    that.search = function ()
     {
         var postvars = { };
 
@@ -120,12 +156,12 @@ function MediaLibSearch(element)
         postvars['media_type'] = $(element).find('#media_type').val();
 
         $.post('/medialib/get_search_results', postvars, function (response) {
-            $(element).find('#search-results').html(response);
-            $(element).find('#search-table').show();
+            $(element).find('#medialib-search-results').html(response);
+            $(element).find('#medialib-search-table').show();
         }, 'html');
     }
 
-    this.expand_artist = function (artist)
+    that.expand_artist = function (artist)
     {
         var postvars = { };
         postvars['mode'] = 'title';
@@ -133,29 +169,31 @@ function MediaLibSearch(element)
         postvars['search'] = artist;
 
         $.post("/medialib/get_search_results", postvars, function(response) {
-            $('#search-results').html(response);
+            $('#medialib-search-results').html(response);
         }, 'html');
     }
     */
 
-    this.add_tracks = function (method)
+    that.add_tracks = function (method)
     {
         var postvars = { };
         postvars['method'] = method;
         postvars['playlist'] = $('#select-playlist').val();
         postvars['media'] = [ ];
 
-        $("input[name='media']:checked").each(function () {
+        $("input[name='media[]']:checked").each(function () {
             postvars['media'].push($(this).val());
         });
 
+        $('#nerve-notice').hide();
+        $('#nerve-error').hide();
         $.post('/medialib/add_tracks', postvars, function (response) {
             if (response.count === undefined || response.count <= 0) {
                 $('#nerve-error').html("No tracks were added").show();
             }
             else {
                 $('#nerve-notice').html(response.count + " track(s) were added to playlist " + postvars['playlist']).show();
-                $("input[name='media']:checked").each(function () {
+                $("input[name='media[]']:checked").each(function () {
                     $(this).prop('checked', false);
                 });
             }
@@ -166,32 +204,54 @@ function MediaLibSearch(element)
     $(element).find('#pl_search').click(function () {
         $('#nerve-error').hide();
         $('#nerve-notice').hide();
-        medialib.search();
+        that.search();
     });
     if (window.location.href.indexOf("?") > 0)
-        medialib.search();
+        that.search();
     */
 
 
     $(element).find('.pl_enqueue').click(function () {
-        medialib.add_tracks('enqueue');
+        that.add_tracks('enqueue');
     });
 
     $(element).find('.pl_replace').click(function () {
         if (confirm("Are you sure you want to replace everything on playlist " + $('#select-playlist').val()))
-            medialib.add_tracks('replace');
+            that.add_tracks('replace');
     });
 
     $(element).find('.pl_playnow').click(function () {
-        medialib.add_tracks('playnow');
+        that.add_tracks('playnow');
+    });
+
+    $(element).find('.pl_markwatched').click(function () {
+        that.add_tracks('markwatched');
+    });
+
+    $(element).find('.remove-tag').click(function () {
+        var that = this;
+        var postvars = { };
+        postvars['id'] = $(this).attr('data-id');
+        postvars['tag'] = $(this).prev().text();
+        $.post('/medialib/remove_tag', postvars, function (response) {
+            if (!response.error) {
+                $(that).prev().remove();
+                $(that).remove();
+            }
+        }, 'json');
     });
 
     /*
-    $(element).delegate('.expand-artist', 'click', function () {
-        medialib.expand_artist($(this).html());
+    $(element).on('click', '.expand-artist', function () {
+        that.expand_artist($(this).html());
     });
     */
 
+    $(document).on('submit', '#medialib-search-form', function () {
+        $('#medialib-search-table').html("Searching...");
+    });
+
+    return that;
 }
 
 $(document).ready(function ()
@@ -201,11 +261,7 @@ $(document).ready(function ()
     });
 
     $('.medialib-search').each(function () {
-            new MediaLibSearch(this);
-    });
-
-    $('input[name="pl_search"]').click(function () {
-        $('#search-results').hide();
+        new MediaLibSearch(this);
     });
 });
 

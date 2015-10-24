@@ -28,7 +28,7 @@ class ConfigController (nerve.http.Controller):
         obj = nerve.get_object("/")
         self.load_template_view(None, None, request)
         self.template_add_to_section('jsfiles', '/assets/js/config.js')
-        self.template_add_to_section('content', FormView(nerve.objects.ObjectConfigType(), obj.get_config_data()))
+        self.template_add_to_section('content', FormView(nerve.objects.ObjectConfigType(), obj.get_config_data(), target='/config/save'))
         #self.template_add_to_section('content', FormView(obj.get_config_info(), obj.get_config_data()))
         #self.template_add_to_section('content', FormView(nerve.http.views.template.TemplateView.get_config_info(), self._view._sections))
 
@@ -46,33 +46,6 @@ class ConfigController (nerve.http.Controller):
 
 
     @nerve.public
-    def edit(self, request):
-        nerve.users.require_permissions('admin')
-
-        path = request.get_slug()
-        if not path:
-            raise nerve.ControllerError("You must provide a valid object name")
-
-        obj = nerve.get_object(path)
-        if not obj:
-            raise nerve.ControllerError("Object not found: " + path)
-
-        self.load_template_view(None, None, request)
-        self.template_add_to_section('jsfiles', '/assets/js/config.js')
-        self.template_add_to_section('content', FormView(obj.get_config_info(), obj.get_config_data(), '/config/save/' + path, submitback=True))
-
-    @nerve.public
-    def defaults(self, request):
-        if request.reqtype != "POST":
-            raise nerve.ControllerError("Unexpected request type: " + request.reqtype)
-        if not request.arg('type'):
-            raise nerve.ControllerError("You must select a type first")
-
-        #config_info = nerve.Module.get_class_config_info(request.arg('type'))
-        #self.set_view(FormView(config_info, config_info.get_defaults()))
-        self.set_view(FormView(nerve.ConfigType.get_type('object'), { '__type__': request.arg('type') }))
-
-    @nerve.public
     def add(self, request):
         nerve.users.require_permissions('admin')
 
@@ -85,22 +58,6 @@ class ConfigController (nerve.http.Controller):
         self.load_template_view(None, None, request)
         self.template_add_to_section('jsfiles', '/assets/js/config.js')
         self.template_add_to_section('content', FormView(nerve.ConfigType.get_type('object'), None, '/config/create/' + path + '/new', submit="Create", submitback=True))
-
-
-    @nerve.public
-    def editold(self, request):
-        if request.reqtype != "POST":
-            raise nerve.ControllerError("Unexpected request type: " + request.reqtype)
-
-        path = request.arg('path')
-        if not path:
-            raise nerve.ControllerError("You must provide a valid object name")
-
-        obj = nerve.get_object(path)
-        if not obj:
-            raise nerve.ControllerError("Object not found: " + path)
-
-        self.set_view(FormView(obj.get_config_info(), obj.get_config_data()))
 
 
     @nerve.public
@@ -134,6 +91,36 @@ class ConfigController (nerve.http.Controller):
         nerve.set_object(dirname + '/' + name, obj)
         nerve.save_config()
         self.load_json_view({ 'status' : 'success' })
+
+
+    @nerve.public
+    def edit(self, request):
+        nerve.users.require_permissions('admin')
+
+        path = request.get_slug()
+        if not path:
+            raise nerve.ControllerError("You must provide a valid object name")
+
+        obj = nerve.get_object(path)
+        if not obj:
+            raise nerve.ControllerError("Object not found: " + path)
+
+        self.load_template_view(None, None, request)
+        self.template_add_to_section('jsfiles', '/assets/js/config.js')
+        self.template_add_to_section('content', FormView(obj.get_config_info(), obj.get_config_data(), '/config/save/' + path, submitback=True))
+
+
+    @nerve.public
+    def defaults(self, request):
+        if request.reqtype != "POST":
+            raise nerve.ControllerError("Unexpected request type: " + request.reqtype)
+        if not request.arg('type'):
+            raise nerve.ControllerError("You must select a type first")
+
+        basename = request.arg('basename', default='')
+        #config_info = nerve.Module.get_class_config_info(request.arg('type'))
+        #self.set_view(FormView(config_info, config_info.get_defaults()))
+        self.set_view(FormView(nerve.ConfigType.get_type('object'), { '__type__': request.arg('type') }, basename=basename))
 
 
     @nerve.public
@@ -204,19 +191,11 @@ class ConfigController (nerve.http.Controller):
         self.load_json_view({ 'status' : 'success' })
 
 
-    def handle_error(self, error, traceback):
-        if type(error) == nerve.ControllerError:
+    def handle_error(self, error, traceback, request):
+        if request.reqtype == 'POST' and type(error) is not nerve.users.UserPermissionsRequired:
+            nerve.log(traceback, logtype='error')
             self.load_json_view({ 'status' : 'error', 'message' : repr(error) })
         else:
-            super().handle_error(error, traceback)
+            super().handle_error(error, traceback, request)
 
-
-    # Perhaps save should just write the config file at once, and other operations will manipulate settings without saving them?
-    # - need a mechanism to address subsettings... should there still be obj and setting name? combining them would require a way to figure out what part is object vs setting (checking for
-    #   object and if not then checking for setting??
-    # - there was an idea to use set_setting() instead of set_config_data() but the difference is that the former wont 're-initialize the object'. Are both needed?
-    # - defaults should be usable with anything, including sub-settings, to get an html form for a given object/setting
-    # - add object/setting
-    # - rename object/setting for dicts at least, but should the same mechanism be used for lists, which have order, or should there be a separate move up/move down thing?
-    # - delete object/setting
 

@@ -3,12 +3,16 @@
 {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 4px;
+    margin-bottom: 4px;
 }
 
 .medialib-list th,
 .medialib-list td
 {
     text-align: left;
+    padding-left: 0.15em;
+    padding-right: 0.15em;
 }
 
 .medialib-list td:first-child
@@ -17,9 +21,25 @@
     width: 1.5em;
 }
 
+.medialib-list div.tags {
+    white-space: nowrap;
+}
+
+.medialib-list div.tags .remove-tag {
+    color: #c44;
+    font-size: 0.8em;
+    cursor: pointer;
+}
+
+
 .medialib-links a
 {
     margin: 3px;
 }
+
+#medialib-playlist-contents td:last-child {
+    cursor: pointer;
+}
+
 
 

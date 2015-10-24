@@ -51,11 +51,11 @@ class TCPServer (nerve.Server):
                     conn = TCPConnection(self, sock, addr)
 
                 except OSError as e:
-                    nerve.log("OSError: " + str(e))
+                    nerve.log("OSError: " + str(e), logtype='error')
                     break
 
                 except:
-                    nerve.log(traceback.format_exc())
+                    nerve.log(traceback.format_exc(), logtype='error')
 
             nerve.log("closing socket and retrying in 5 seconds")
             self.socket.close()
@@ -88,7 +88,7 @@ class TCPConnection (nerve.connect.Connection):
         self.socket.send(bytes(msg.text + '\n', 'utf-8'))
 
     def close(self):
-        nerve.log("closing connection to " + str(self.hostname) + ":" + str(self.port))
+        nerve.log("closing connection to " + str(self.hostname) + ":" + str(self.port), logtype='error')
         self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
 
@@ -117,11 +117,11 @@ class TCPConnection (nerve.connect.Connection):
                         self.send(controller.get_output())
 
             except socket.error as e:
-                nerve.log("Socket Error: " + str(e))
+                nerve.log("Socket Error: " + str(e), logtype='error')
                 break
 
             except:
-                nerve.log(traceback.format_exc())
+                nerve.log(traceback.format_exc(), logtype='error')
         self.close()
         self.thread.delete()
         """

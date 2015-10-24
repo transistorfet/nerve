@@ -5,6 +5,7 @@ import nerve
 
 import os
 import time
+import shlex
 import random
 
 from .playlists import Playlist
@@ -22,7 +23,7 @@ class MediaLibDevice (nerve.Device):
         super().__init__(**config)
         self.playlists = 'playlists'
         self.db = nerve.Database('medialib.sqlite')
-        self.db.create_table('media', "id INTEGER PRIMARY KEY, filename TEXT, artist TEXT, album TEXT, title TEXT, track_num NUMERIC, genre TEXT, tags TEXT, duration NUMERIC, media_type TEXT, mimetype TEXT, file_hash TEXT, file_size INT, file_last_modified INT")
+        self.db.create_table('media', "id INTEGER PRIMARY KEY, filename TEXT, rootlen INTEGER, artist TEXT, album TEXT, title TEXT, track_num NUMERIC, genre TEXT, tags TEXT, duration NUMERIC, media_type TEXT, mimetype TEXT, file_hash TEXT, file_size INTEGER, last_modified NUMERIC")
         self.db.create_table('info', "name TEXT PRIMARY KEY, value TEXT")
 
         self.current = 'default'
@@ -35,14 +36,17 @@ class MediaLibDevice (nerve.Device):
         self.force_database_update()
 
     def get_playlist_list(self):
-        files = os.listdir(nerve.configdir() + '/playlists')
+        plroot = nerve.configdir() + '/playlists'
+        if not os.path.isdir(plroot):
+            os.mkdir(plroot)
+        files = os.listdir(plroot)
         playlist_list = [ name[:-4] for name in files if name.endswith(".m3u") ]
         if 'default' in playlist_list:
             playlist_list.remove('default')
         playlist_list.insert(0, 'default')
         return playlist_list
 
-    def get_media_list(self, mode, order, offset, limit, search=None, recent=None, media_type=None):
+    def get_media_list(self, mode, order, offset, limit, search=None, recent=None, media_type=None, tags=None):
         if mode == 'artist':
             self.db.select('artist')
             self.db.where_not('artist', '')
@@ -56,16 +60,24 @@ class MediaLibDevice (nerve.Device):
             self.db.group_by('artist,album')
         elif mode == 'title' or mode == 'tags':
             self.db.select('artist,album,title,track_num,tags,id')
+        elif mode == 'filename':
+            self.db.select('SUBSTR(filename, rootlen) AS filename,artist,album,title,track_num,tags,id')
         else:
             return [ ]
 
         if search and len(search) > 0:
             whereorder = order
-            if order == 'modified':
-                whereorder = 'file_last_modified'
-            elif order == 'random':
+            if order == 'random':
                 whereorder = 'title'
             self.db.where_like(whereorder, '%' + str(search).replace('*', '%') + '%')
+
+        if tags and len(tags) > 0:
+            tags = shlex.split(tags)
+            for tag in tags:
+                if tag[0] != '!':
+                    self.db.where_like('tags', '%' + tag + '%')
+                else:
+                    self.db.where_not_like('tags', '%' + tag[1:] + '%')
 
         if order == 'artist':
             self.db.order_by('artist ASC')
@@ -77,13 +89,13 @@ class MediaLibDevice (nerve.Device):
             self.db.order_by('tags,artist,album ASC')
         elif order == 'title':
             self.db.order_by('title,artist,album ASC')
-        elif order == 'modified':
-            self.db.order_by('file_last_modified DESC')
+        elif order == 'last_modified':
+            self.db.order_by('last_modified DESC')
         elif order == 'filename':
             self.db.order_by('filename ASC')
 
         if recent:
-            self.db.where_gt('file_last_modified', time.time() - (float(recent) * (60*60*24*7)))
+            self.db.where_gt('last_modified', time.time() - (float(recent) * (60*60*24*7)))
 
         if media_type:
             self.db.where('media_type', media_type)
@@ -159,5 +171,50 @@ class MediaLibDevice (nerve.Device):
                     'duration' : 0
                 })
         return info
+
+    def add_tag(self, id, tag):
+        self.db.select('tags')
+        self.db.where('id', id)
+        result = list(self.db.get('media'))
+        if len(result) <= 0:
+            return
+        item_tags = set(self.split_tags(result[0][0]))
+        item_tags.add(tag)
+        self.db.where('id', id)
+        self.db.update('media', { 'tags' : self.join_tags(sorted(item_tags)) })
+
+    def remove_tag(self, id, tag):
+        self.db.select('tags')
+        self.db.where('id', id)
+        result = list(self.db.get('media'))
+        if len(result) <= 0:
+            return
+        item_tags = set(self.split_tags(result[0][0]))
+        item_tags.remove(tag)
+        self.db.where('id', id)
+        self.db.update('media', { 'tags' : self.join_tags(sorted(item_tags)) })
+
+    @staticmethod
+    def split_tags(tags):
+        tagnames = [ ]
+        while tags:
+            tags = tags.lstrip(' ')
+            if tags[0] == '"':
+                (newtag, _, remaining) = tags[1:].partition('"')
+            else:
+                (newtag, _, remaining) = tags.partition(' ')
+            tagnames.append(newtag)
+            tags = remaining
+        return tagnames
+
+    @staticmethod
+    def join_tags(tags):
+        tagstring = ''
+        for tag in tags:
+            if ' ' in tag:
+                tagstring += '"' + tag + '" '
+            else:
+                tagstring += tag + ' '
+        return tagstring.rstrip()
 
 

@@ -35,7 +35,7 @@ class MediaLibUpdaterTask (nerve.Task):
                 for name in self.updaters.keys():
                     self.updaters[name].check_update()
             except:
-                nerve.log(traceback.format_exc())
+                nerve.log(traceback.format_exc(), logtype='error')
 
             if self.stopflag.wait(60):
                 break

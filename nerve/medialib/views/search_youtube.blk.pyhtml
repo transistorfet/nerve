@@ -24,7 +24,7 @@
             <button type="submit" class="pl_playnow" value="1">Play Now</button>
         </div>
 
-        <div id="search-results">
+        <div id="search-results" class="medialib-list">
             <table>
             <thead><tr>
                 <th></th>
@@ -34,7 +34,7 @@
             <tbody>
                 <% for media in media_list['responseData']['results']: %>
                     <tr>
-                        <td><input type="checkbox" name="media" value="url=<%= urlencode(media['url']) %>&title=<%= urlencode(media['title']) %>&album=YouTube&duration=<%= media['duration'] %>" /></td>
+                        <td><input type="checkbox" name="media[]" value="url=<%= urlencode(media['url']) %>&title=<%= urlencode(media['title']) %>&album=YouTube&duration=<%= media['duration'] %>" /></td>
                         <td><img src="<%= media['tbUrl'] %>"></td>
                         <td><%= media['title'] %></td>
                     </tr>

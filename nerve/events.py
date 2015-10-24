@@ -70,6 +70,13 @@ class PyCodeEvent (Event):
 
 
 class EventThreadPool (nerve.Task):
+    _singleton = None
+
+    def __new__(cls):
+        if not cls._singleton:
+            cls._singleton = super().__new__(cls)
+        return cls._singleton
+
     def __init__(self):
         super().__init__("EventSchedulerTask")
         self.queue = queue.PriorityQueue()
@@ -102,7 +109,7 @@ class EventThreadPool (nerve.Task):
                     event.do_event(*args, **kwargs)
                     #self.queue.task_done()
                 except:
-                    nerve.log(traceback.format_exc())
+                    nerve.log(traceback.format_exc(), logtype='error')
             except queue.Empty:
                 pass
 

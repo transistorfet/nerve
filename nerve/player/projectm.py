@@ -36,11 +36,38 @@ class ProjectMDevice (nerve.Device):
         os.system('xdotool search --class "projectM" windowraise')
 
     @nerve.public
-    def fullscreen(self):
+    def toggle_fullscreen(self):
         os.system('xdotool search --class "projectM" key f windowraise')
 
     @nerve.public
     def minimize(self):
         os.system('xdotool search --class "projectM" key f minimize')
 
+    @nerve.public
+    def next(self):
+        os.system('xdotool search --class "projectM" key n')
+
+    @nerve.public
+    def previous(self):
+        os.system('xdotool search --class "projectM" key p')
+
+    @nerve.public
+    def random(self):
+        os.system('xdotool search --class "projectM" key r')
+
+    @nerve.public
+    def toggle_lock(self):
+        os.system('xdotool search --class "projectM" key l')
+
+    @nerve.public
+    def toggle_name(self):
+        os.system('xdotool search --class "projectM" key F3')
+
+    @nerve.public
+    def toggle_info(self):
+        os.system('xdotool search --class "projectM" key F4')
+
+    @nerve.public
+    def toggle_fps(self):
+        os.system('xdotool search --class "projectM" key F5')
 

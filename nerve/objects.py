@@ -7,38 +7,6 @@ import types
 import traceback
 
 
-
-#Scalar:
-# - display html element
-# - package values from html element for post request
-# - verify data conforms to type
-
-#List:
-# - add item (display complete html form for an item) (button displays form)
-# for each item in the list
-#  - display form for item, possibly collapsed (recursive)
-#  - delete item that's displayed
-#  - move item up or down
-# - verify data, either force items to be accessed individually, or possibly allow entire list to be verified at once (how do you reference a subitem inside a config option)
-
-#Dict:
-# - add item (display complete html form for an item) (button displays form)
-# for each item in dict
-#  - display form for item, possibly collapsed (recursive)
-#  - delete item that's displayed
-#  - rename item that's displayed
-
-#Object:
-# - display complete form for all object settings (but you can't add or remove settings)
-# - package values from html element for post request recursively
-# - verify data conforms to type, again recursively
-
-# There needs to be a way of reversing the validation process (verify: convert input into usable data item, ???: convert data item into values to display in html form)
-# A way to retrieve data from an item...
-#
-# in FormView: for each config item: value = datatype.get_value(data, item['name']); output(form with value)
-
-
 class ConfigType (object):
     _datatypes = { }
 
@@ -203,7 +171,7 @@ class DictConfigType (ContainerConfigType):
     def get_items(self, data):
         if not data:
             return ()
-        for (key, value) in data.items():
+        for (key, value) in sorted(data.items()):
             yield (key, key, self.itemtype, value)
 
 
@@ -362,8 +330,11 @@ class ObjectNode (object):
     @classmethod
     def get_config_info(cls):
         config_info = StructConfigType()
-        # TODO i don't like this name, and i don't like the form the data takes... it should be clear what it means.  Do you have to have some kind of owner or at least user_class owner?
-        #config_info.add_setting('permissions', "Permissions", default='rw')
+        # TODO should these be number/ids? or the username/groupname
+        #config_info.add_setting('owner', "Owner", default=nerve.users.thread_owner())
+        #config_info.add_setting('group', "Group\Role", default='system')
+        #config_info.add_setting('access', "Access", default='crw')     # full access: crwx
+
         #config_info.add_setting('__children__', "Child Objects", default=dict(), itemtype="object")
         # TODO if you had a means of dealing with objects as single settings, then you can use the dict recursive validator to add/remove/rename items
         return config_info
@@ -400,14 +371,14 @@ class ObjectNode (object):
             if isinstance(self._children[objname], ObjectNode):
                 config[objname] = self._children[objname].get_config_data()
             else:
-                nerve.log("unable to save child object " + objname + ": " + self._children[objname])
+                nerve.log("unable to save child object " + objname + ": " + self._children[objname], logtype='error')
         return config
 
     def set_setting(self, name, value):
         try:
             self._config[name] = value
         except:
-            nerve.log(traceback.format_exc())
+            nerve.log(traceback.format_exc(), logtype='error')
 
     def get_setting(self, name, typename=None):
         if name in self._config:
@@ -479,7 +450,7 @@ class ObjectNode (object):
         if type(obj) == str:
             obj = Module.make_object(obj, config)
         if not obj:
-            nerve.log("error creating object " + name)
+            nerve.log("error creating object " + name, logtype='error')
             return None
 
         root = self
@@ -538,20 +509,18 @@ class Module (ObjectNode, metaclass=_ModuleSingleton):
     root = None
 
     def __init__(self, **config):
+        self._module = self.get_module(config['name'])
         super().__init__(**config)
         self._name = self.get_setting('name')
         #self._module = eval(self._name)
-        self._module = self.get_module(self._name)
 
-        if hasattr(self._module, 'get_config_info'):
-            defaults = self._module.get_config_info().get_defaults()
-            defaults.update(self._config)
-            self._config = defaults
-
-    @classmethod
-    def get_config_info(cls):
-        config_info = super().get_config_info()
+    def get_config_info(self=None):
+        config_info = ObjectNode.get_config_info()
         config_info.add_setting('name', "Full Name", default='nerve')
+
+        if self and self._module:
+            if hasattr(self._module, 'get_config_info'):
+                config_info = self._module.get_config_info(config_info)
         return config_info
 
     """
@@ -632,11 +601,11 @@ class Module (ObjectNode, metaclass=_ModuleSingleton):
         try:
             exec("import " + modulename, globals(), globals())
         except ImportError:
-            nerve.log("failed loading module " + modulename)
+            nerve.log("failed loading module " + modulename, logtype='error')
             modulename = modulename.replace("nerve.", "modules.")
             nerve.log("loading module " + modulename)
             exec("import " + modulename, globals(), globals())
-        #    nerve.log("error loading module " + modulename + "\n\n" + traceback.format_exc())
+        #    nerve.log("error loading module " + modulename + "\n\n" + traceback.format_exc(), logtype='error')
         #    return
 
         module = eval(modulename)
@@ -655,7 +624,7 @@ class Module (ObjectNode, metaclass=_ModuleSingleton):
             try:
                 exec("import " + currentname, globals(), globals())
             except ImportError:
-                nerve.log(traceback.format_exc())
+                nerve.log(traceback.format_exc(), logtype='error')
                 continue
             else:
                 module = eval(currentname)
