@@ -19,7 +19,7 @@ class PlayerDevice (nerve.Device):
 
         backend = self.get_setting('backend')
         try:
-            self.driver = nerve.Module.make_object(backend, config)
+            self.driver = nerve.Module.make_object(backend['__type__'], backend)
         except:
             nerve.log("failed to initialize player backend: " + backend, logtype='error')
             nerve.log(traceback.format_exc(), logtype='error')
@@ -29,7 +29,7 @@ class PlayerDevice (nerve.Device):
     @classmethod
     def get_config_info(cls):
         config_info = super().get_config_info()
-        config_info.add_setting('backend', "Player Backend", default='player/vlc/VLCHTTP')
+        config_info.add_setting('backend', "Player Backend", datatype='object', default={ '__type__': 'player/vlc/VLCHTTP' })
         for option in os.listdir('nerve/player'):
             if option != '__pycache__' and os.path.isdir('nerve/player/' + option):
                 config_info.add_option('backend', option, 'player/' + option)

@@ -2,24 +2,6 @@
     <h4>Edit Page</h4>
 
     <div id="page-editor">
-        <input id="page-original-name" type="hidden" value="<%= pagename %>" />
-        <div class="nerve-form-item">
-            <label>Page Name</label>
-            <input id="page-editor-name" type="text" value="<%= pagename %>" />
-        </div>
-        <% for (name, title, datatype, default) in sections.get_items(None): %>
-            <div class="nerve-form-item">
-                <label><%= title %></label>
-                <% if datatype.is_type('scalar'): %>
-                    <input name="<%= name %>" class="page-section" type="text" value="<%= pagedata[name] if name in pagedata else '' %>" />
-                <% elif datatype.is_type('list:textarea'): %>
-                    <textarea name="<%= name %>" class="page-section"><%= '\n'.join(pagedata[name]) if name in pagedata else '' %></textarea>
-                <% elif datatype.is_type('list'): %>
-                    <textarea name="<%= name %>" class="page-section"><%= '\n'.join(pagedata[name]) if name in pagedata else '' %></textarea>
-                <% end %>
-            </div>
-        <% end %>
-        <button id="page-editor-save">Save</button>
-        <button id="page-editor-view">View</button>
+        <%= nerve.base.FormView(sections, pagedata, target='/pages/savepage') %>
     </div>
 

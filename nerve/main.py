@@ -40,13 +40,10 @@ class Main (nerve.ObjectNode):
     @classmethod
     def get_config_info(cls):
         config_info = super().get_config_info()
-        """
-        # TODO this is now wrong... these items are children of the parent object, not settings
-        child_info.add_setting('modules', "Modules", default=nerve.Module())
-        child_info.add_setting('devices', "Devices", default=nerve.ObjectNode())
-        child_info.add_setting('events', "Events", default=nerve.ObjectNode())
-        child_info.add_setting('servers', "Servers", default=nerve.ObjectNode())
-        """
+        config_info.add_default_child('devices', { '__type__': 'objects/ObjectNode' })
+        config_info.add_default_child('events', { '__type__': 'objects/ObjectNode' })
+        config_info.add_default_child('modules', { '__type__': 'objects/Module' })
+        config_info.add_default_child('servers', { '__type__': 'objects/ObjectNode' })
         return config_info
 
     def del_child(self, index):
@@ -113,8 +110,6 @@ class Main (nerve.ObjectNode):
             return False
 
     def load_config(self, filename):
-        #config = self.get_config_info().get_defaults()
-
         if not os.path.exists(filename):
             nerve.log("error config not found in " + filename + "\n", logtype='error')
             return False
@@ -133,6 +128,7 @@ class Main (nerve.ObjectNode):
     def make_object_children(self, config):
         # TODO should defaults be set so that this conditional is no longer needed? (it will still need to extra the modules config)
 
+        """
         # make sure to load the /modules config first
         if 'modules' in config:
             modules_config = config['modules']
@@ -142,6 +138,7 @@ class Main (nerve.ObjectNode):
 
         modules = nerve.Module.make_object(modules_config['__type__'], modules_config)
         self.set_child('modules', modules)
+        """
         super().make_object_children(config)
 
     def save_config(self, filename):

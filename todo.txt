@@ -1,97 +1,84 @@
 
-    * refactor all javascript to make it more consistent, using 'that' as the object name, and stuff
+    * merge notify/multiple queries with the normal query system (ie. wildcard queries), possibly tie into querycontroller too?
+    * make special args (_a, _b??) get converted to positional arguments by nerve.query, when a query comes in (used by jquery calls to pass generic args)
+    * change queries to use @nerve.public
+    * fix query() to do something consistent with the arguments passed to it when for an HTTP request in particular.
 
-    * for now I've made eventpool and users be simple attributes on Main, but maybe they should be added to objfs?
+    * change /assets paths to /base/assets so it's more consistent.  This will require either a blank assets controller or http
+      will have to accept more complex controller names
+    * should the name of the 'controllers' dict in servers be called something different, like 'paths' or 'handlers' or something?
+    * change server's 'controllers' to 'mappings' to allow multiple parts in the path name ("/things/stuff/config" -> "config controller")
+
+    * there needs to be a way to convert a normal module into a Module object if it contains 'get_config_data'...  Right now, only modules
+      that have config data in the settings file get created as Module objects, and the rest are just regular modules
+    * move module stuff to it's own file??
+    * make it easier to import modules from outside the nerve subdir 
+
+    * implement symbolic link style redirect.  It has to be really versitile...  Right now it doesn't work with remote references because
+      it implements the getattr, so it has to be able to reference a real object.  It's possible to create a special redirect object though,
+      that's returned when trying to get any subobject from a SymbolicLink object, or AliasObject??
+    * re-evaluate use of getattr for getting objects on ObjectNode and stuff... does it cause too many potential conflicts? or does
+      it simplify objects such as Main where attributes are directly on the object but should also be accessible through the ObjectNode
+      system
+
+    * make sure when loading config with saved module data that it gets used
     * you could have tasks be added to the ObjectFS... you could have tasks be started automatically (or some tasks at least), after
       everything initializes.  Then you could have the EventThreadPool and mediaupdater threads be essentially loose threads in the system,
       started by the system, and accessible through the config system, with config options for them?... Well EventThreadPool is still
       a static object created by the system rather than a configurable object... 
+    * for now I've made eventpool be simple attributes on Main, but maybe they should be added to objfs?
+    * would it be better to have a @Singleton decorator instead of overloading __new__?
 
-    * change error log messages to use logtype='error'
-    * add refresh to android app
-    * clean up media playlist seek/next/prev features, and make it only function if the playlist is currently loaded
     * make projectm kill the process when the program quits
     * move the save/load state feature to the common player object, and have it use the backend driver to actually get and restore the state
-    * make special args (_a, _b??) get converted to positional arguments by nerve.query, when a query comes in (used by jquery calls to pass generic args)
 
-    * change queries to use @nerve.public
-    * add a mechanism for specifying access controls, even if it could be circumvented.  It should at least be hard to mess up the system
+    * allow logging to be output to a file
+
+    * views should be more consistent with using str and bytes
+    * you could add something to views themselves where you specify the support files (js/css), and a parent view will integrate those into
+      the final template-generated code
+    * should you overload print instead of redirecting stdout in pyhtml??  This wont work for code in other files that use print, since they have the global vars of their scope
 
     * integrate user permissions and stuff into everything
+    * more directly integrate the user system.  especially with mud, there must be much better security and access controls.  This also could apply for an
+      irc device that is owned by one user and represents that user, and can only be accessed by that user
     * make it possible for each user to customize their own views somehow (customized remote layouts)
     * make theme user selectable somehow
-
-    * should the name of the 'controllers' dict in servers be called something different, like 'paths' or 'handlers' or something?
-    * change server's 'controllers' to 'mappings' to allow multiple parts in the path name ("/things/stuff/config" -> "config controller")
-
-    * should formview.py be configview.py?
-    * in pages, can we make editpage use FormView, and savepage use config type validation?
 
     * there's an issue accessing google's oauth and having it redirect to an internal ip.  This prevents it from working on phone
     * could you have a redirect on jabberwocky.ca that just redirects the browser to a local address?
 
     * add db method to create or alter table (so that it updates existing databases automatically)
     * add PUT and DELETE request types to the http server
-    * you could add something to views themselves where you specify the support files (js/css), and a parent view will integrate those into
-      the final template-generated code
-
-    * sort out how eventthreadpool is a singleton; also how they are created (current just statically made in Main)
-    * views should be more consistent with using str and bytes
-
-    * more directly integrate the user system.  especially with mud, there must be much better security and access controls.  This also could apply for an
-      irc device that is owned by one user and represents that user, and can only be accessed by that user
-
     * should Model actually inherit from object, and Device would be an ObjectNode that's also a Model? (multiple inheritence)
-    * should medialib be a model instead of a device?
 
-    * add item count number to playlist page, and media search results page
-    * add pagation to media search results (should be possible through offset/limit)
-    * add full row select for playlist and media search, so you can click anywhere to check the box
     * add mysensors info webpage things, means of more easily managing sensor network (like buttons to reset each device, when last msg received, etc)
     * make mud using a special module
     * add a system of notifications/messages that's global to the system but specific to a user (ie. can leave messages for individual users)
     * add irc/chat sort of things?
-    * try to speed up playlist and media search loading times
 
-    * add a means of browsing (or searching) the medialib by some other means, like according to path, so that you can look at specifically
-      documentary videos in the documentaries directory, for example
+    * should medialib be a model instead of a device?
+    * add pagation to media search results (should be possible through offset/limit)
+    * add full row select for playlist and media search, so you can click anywhere to check the box
     * it should be possible to easily remove items from the current playlist (like delete current song/delete all by artist/delete previous song)
       The changes should take effect immediately.  Possibly could have a list of recently played songs to delete
     * you could have a playlog of recently played tracks, and then you can delete previously played items (so it should list it even if the song played for 2 sec)
-    * add option to mark videos as watched/unwatched so you can easily get a list of things not yet watched
-    * add a hidden flag to videos, to hide certain items from searches or from randomly generated playlists
     * add is-playing animated icon next to the song title (info to be sent with getsong())
-    * make it possible to paste a link (youtube video or playlist link) to play the link on the server end of things
+
+    * add 'refresh' to android app
 
     * make sure it creates a sane default settings file if the config dir doesn't have a file already
     * add run and config instructions to the readme (so that somebody could actually run the thing)
-    * update projects website
 
     * make it so that if a block is renamed, it's references in page definitions is updated
     * would it be useful (or more complicated) to add a 'parent' or 'template' field to pages in the pages module, so that a parent
       page can be specified other than '__default__'?
 
-    * should you overload print instead of redirecting stdout in pyhtml??  This wont work for code in other files that use print, since they have the global vars of their scope
-    * there needs to be a way to convert a normal module into a Module object if it contains 'get_config_data'...  Right now, only modules
-      that have config data in the settings file get created as Module objects, and the rest are just regular modules
-    * move module stuff to it's own file??
-
-    * allow logging to be output to a file
-    * add levels/types to log messages, and possibly add means of muting certain messages
-
     * perhaps you could make it so that servers can be individually stopped and started
 
-    * implement symbolic link style redirect.  It has to be really versitile...  Right now it doesn't work with remote references because
-      it implements the getattr, so it has to be able to reference a real object.  It's possible to create a special redirect object though,
-      that's returned when trying to get any subobject from a SymbolicLink object, or AliasObject??
-    * fix query() to do something consistent with the arguments passed to it when for an HTTP request in particular.
     * should you change as many private variables to _leading notation?  I've already done this for ObjectNode because self.config was conflicting
       with path names used by controllers.  In light of the filter that prevents _leading queries to be issued, this might be effective at
       enforcing attribute access permissions.  This rule could be enforced more strictly
-    * re-evaluate use of getattr for getting objects on ObjectNode and stuff... does it cause too many potential conflicts? or does
-      it simplify objects such as Main where attributes are directly on the object but should also be accessible through the ObjectNode
-      system
-    * make sure when loading config with saved module data that it gets used
 
     * A connection could be either text/plain (line terminated), application/json (messages), or possibly text/html, which would be similar to
       text/plain but allow html tags in the stream.  Sort out how connections negotiate mimetype of messages, and how messages are structured

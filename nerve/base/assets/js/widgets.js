@@ -34,18 +34,18 @@ function NerveTimedEvent(interval, ontimeout)
         that.ontimeout();
     }
 
-    that.start_timer = function ()
+    that.start = function ()
     {
-        return that.reset_timer();
+        return that.reset();
     }
 
-    that.trigger_and_start_timer = function ()
+    that.trigger_and_reset = function ()
     {
         that.trigger();
-        that.start_timer();
+        that.reset();
     }
 
-    that.reset_timer = function ()
+    that.reset = function ()
     {
         if (document.hidden) {
             if (that.timer) {
@@ -60,12 +60,12 @@ function NerveTimedEvent(interval, ontimeout)
         }
     }
 
-    that.stop_timer = function ()
+    that.stop = function ()
     {
         clearInterval(that.timer);
     }
 
-    document.addEventListener('visibilitychange', that.start_timer);
+    document.addEventListener('visibilitychange', that.start);
 
     return that;
 }
@@ -164,9 +164,10 @@ function NerveInputSubmit(element)
         var query = $(element).attr('data-query');
         var data = $('#'+sourceid).val();
         var postvars = { };
-        postvars[$(element).attr('name')] = data;
+        postvars[$('#'+sourceid).attr('name')] = data;
         if (query && data) {
             $.post('/query/'+query, postvars, function(response) {
+                $('#'+sourceid).val('');
             }, 'json');
         }
     }
@@ -201,8 +202,8 @@ function NerveQuery(element)
 
     $(element).click(that.query);
 
-    that.update_timer = new NerveTimedEvent($(element).attr('data-time'), that.query);
-    that.update_timer.trigger_and_start_timer();
+    that.update = new NerveTimedEvent($(element).attr('data-time'), that.query);
+    that.update.trigger_and_reset();
 
     return that;
 }
@@ -232,8 +233,8 @@ function NerveQueryBlock(element)
 
     $(element).click(that.query);
 
-    that.update_timer = new NerveTimedEvent($(element).attr('data-time'), that.query);
-    that.update_timer.trigger_and_start_timer();
+    that.update = new NerveTimedEvent($(element).attr('data-time'), that.query);
+    that.update.trigger_and_reset();
 
     return that;
 }
@@ -301,8 +302,8 @@ function NerveTabs(element)
     }
 
     function show_container(data_content) {
-        //window.location.hash = data_content;
-        window.history.pushState({}, '', data_content);
+        window.location.hash = data_content;
+        //window.history.pushState({}, '', data_content);
         hide_containers(element, data_content);
 
         if ($(data_content).is('.nerve-tabs')) {
@@ -337,15 +338,20 @@ function NerveTabs(element)
         }
     });
 
-    $(element).find('.tab').click(function() {
+    $(element).find('.tab').mousedown(function(e) {
         var data_content = $(this).attr('data-content');
 
-        if (data_content[0] == '/') {
-            window.location = data_content;
+        if (e.which == 2) {
+            window.open(data_content, '_blank');
         }
-        else if (data_content[0] == '#') {
-            select_tab(this);
-            show_container(data_content);
+        else if (e.which == 1) {
+            if (data_content[0] == '/') {
+                window.location = data_content;
+            }
+            else if (data_content[0] == '#') {
+                select_tab(this);
+                show_container(data_content);
+            }
         }
     }); 
 
@@ -371,6 +377,20 @@ function NerveFloatingBarTop(element)
             $(element).css('top', 'auto');
             $(element).next().css('margin-top', 'inherit');
         }
+    });
+
+    return that;
+}
+
+
+function NerveDisplayToggle(element)
+{
+    var that = this;
+
+    $(element).click(function ()
+    {
+        var target = $(element).attr('data-target');
+        $(target).slideToggle();
     });
 
     return that;
@@ -409,6 +429,10 @@ $(document).ready(function()
 
     $('.nerve-floatingbar-top').each(function () {
         new NerveFloatingBarTop(this);
+    });
+
+    $('.nerve-display-toggle').each(function () {
+        new NerveDisplayToggle(this);
     });
 
     $('#nerve-notice').click(function () {

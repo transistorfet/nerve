@@ -7,28 +7,28 @@ $(document).ready(function ()
 
         $(form).find('ul.nerve-form-tree').each(function () {
             if ($(this).is(':visible') && $(this).attr('name'))
-                add_form_value(data, $(this).attr('name'), ($(this).hasClass('list')) ? [ ] : { });
+                pack_form_value(data, $(this).attr('name'), ($(this).hasClass('list')) ? [ ] : { });
         });
 
-        $(form).find('.nerve-form-item input[type="text"],textarea').each(function () {
-            if ($(this).is(':visible'))
-                add_form_value(data, $(this).attr('name'), $(this).val());
+        $(form).find('.nerve-form-item input[type!="checkbox"],textarea').each(function () {
+            if ($(this).is(':visible') || $(this).is('[type="hidden"]'))
+                pack_form_value(data, $(this).attr('name'), $(this).val());
         });
 
         $(form).find('.nerve-form-item select').each(function () {
             if ($(this).is(':visible'))
-                add_form_value(data, $(this).attr('name'), $(this).val());
+                pack_form_value(data, $(this).attr('name'), $(this).val());
         });
 
         $(form).find('.nerve-form-item input[type="checkbox"]').each(function () {
             if ($(this).is(':visible'))
-                add_form_value(data, $(this).attr('name'), $(this).is(':checked') ? true : false);
+                pack_form_value(data, $(this).attr('name'), $(this).is(':checked') ? true : false);
         });
 
         return data;
     }
 
-    function add_form_value(data, pathname, value) {
+    function pack_form_value(data, pathname, value) {
         var segments = pathname.split('/');
         var leaf = segments.pop();
         var parent_data = data;
@@ -104,7 +104,7 @@ $(document).ready(function ()
         });
     }
 
-    $('.nerve-form-add').click(function (e) {
+    $(document).on('click', '.nerve-form-add', function (e) {
         var item = $($(this).next().html());
         if ($(item).find('.nerve-form-move-up').length) {
             if ($(this).prev().length) {
@@ -116,7 +116,7 @@ $(document).ready(function ()
                 var base = $(this).attr('data-name').split('/');
                 var newname = '0';
             }
-            rename_form_item(item, base, '(new)', newname);
+            rename_form_item(item, base, '__new__', newname);
         }
         $(this).before(item);
     });

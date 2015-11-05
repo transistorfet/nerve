@@ -162,3 +162,19 @@ class ShellController (nerve.Controller, nerve.connect.ControllerMixIn):
     def cmd_thread_count(self, args):
         self.print(str(nerve.users.thread_count()))
 
+    def cmd_su(self, args):
+        if len(args) != 3:
+            self.print("usage: su <username> <password>")
+            return
+        if nerve.users._login(args[1], args[2]):
+            self.print("logged in as " + args[1])
+        else:
+            self.print("authentication failed")
+
+    def cmd_help(self, args):
+        self.print("Available commands:")
+        for name in sorted(dir(self)):
+            if name.startswith('cmd_'):
+                self.print("  " + name[4:])
+
+

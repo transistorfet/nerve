@@ -66,7 +66,9 @@
                 "player": {
                     "__children__": {},
                     "__type__": "player/devices/PlayerDevice",
-                    "backend": "player/xmms2cli/devices/Xmms2CLI",
+                    "backend": {
+                        "__type__": "player/xmms2cli/devices/Xmms2CLI"
+                    },
                     "backendold": "player/gstreamer/devices/GstreamerPlayer"
                 },
                 "realtime": {
@@ -125,6 +127,18 @@
         },
         "events": {
             "__children__": {
+                "serial": {
+                    "__children__": {
+                        "ir": {
+                            "__children__": {},
+                            "__type__": "events/PyCodeEvent",
+                            "code": "nerve.query('/events/ir/irrecv/' + args[0])",
+                            "repeat": 0.0,
+                            "trigger": ""
+                        }
+                    },
+                    "__type__": "objects/ObjectNode"
+                },
                 "ir": {
                     "__children__": {
                         "irrecv": {
@@ -234,8 +248,8 @@
                         "shell": {
                             "__type__": "base/ShellController"
                         },
-                        "remote": {
-                            "__type__": "remote/RemoteController"
+                        "users": {
+                            "__type__": "base/controllers/users/UsersController"
                         }
                     },
                     "parent": ""

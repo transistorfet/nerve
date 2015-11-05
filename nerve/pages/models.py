@@ -66,7 +66,7 @@ class PagesModel (nerve.Model):
         return json.loads(results[0][1])
 
     def save_page_data(self, original, name, data):
-        data = { 'name': name, 'data': json.dumps(data) }
+        data = { 'name': name, 'data': json.dumps(data, sort_keys=True) }
         if original:
             self.db.where('name', original)
             self.db.update('pages', data)

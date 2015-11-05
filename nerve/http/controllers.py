@@ -13,6 +13,27 @@ class Controller (nerve.Controller):
     def __init__(self, **config):
         super().__init__(**config)
 
+    def initialize(self, request):
+        super().initialize(request)
+        self._cookie = http.cookies.SimpleCookie('\n'.join(request.get_header_all("cookie")))
+        self._set_cookie = http.cookies.SimpleCookie()
+
+    def finalize(self, request):
+        for morsel in self._set_cookie.values():
+            self.add_header('Set-Cookie', morsel.output(header='').lstrip())
+        super().finalize(request)
+
+    def set_cookie(self, name, value, domain=None, path=None, expires=None, secure=False):
+        self._set_cookie[name] = value
+        if domain:
+            self._set_cookie[name]['domain'] = domain
+        if path:
+            self._set_cookie[name]['path'] = path
+        if expires:
+            self._set_cookie[name]['expires'] = expires
+        if secure is True:
+            self._set_cookie[name]['secure'] = True
+
     def make_html_view(self, filename, data=None, request=None):
         return nerve.http.PyHTML(request, data, filename)
 
@@ -51,33 +72,17 @@ class Controller (nerve.Controller):
             self.load_file_view(filename)
 
 
-class CookiesMixIn (object):
-    """Add cookie to a Controller"""
-
-    def initialize(self, request):
-        self.cookie = http.cookies.SimpleCookie('\n'.join(request.get_header_all("cookie")))
-        super().initialize(request)
-
-    def finalize(self, request):
-        super().finalize(request)
-        for morsel in self.cookie.values():
-            self.add_header('Set-Cookie', morsel.output(header='').lstrip())
-
-    def set_cookie(self, name, value):
-        self.cookie[name] = value
-
-
-class SessionMixIn (CookiesMixIn):
+class SessionMixIn (object):
     """Add cookie-based sessions to a Controller"""
     _sessions = { }
 
     def initialize(self, request):
         super().initialize(request)
-        #self.cookie = http.cookies.SimpleCookie('\n'.join(request.get_header_all("cookie")))
-        if 'SESSIONID' in self.cookie:
-            self.sessionid = self.cookie['SESSIONID'].value
+        if 'SESSIONID' in self._cookie:
+            self.sessionid = self._cookie['SESSIONID'].value
         else:
             self.sessionid = hashlib.sha512(os.urandom(64)).hexdigest()
+            self.set_cookie('SESSIONID', self.sessionid, path='/')
 
         if self.sessionid not in SessionMixIn._sessions:
             SessionMixIn._sessions[self.sessionid] = { }
@@ -85,9 +90,6 @@ class SessionMixIn (CookiesMixIn):
 
     def finalize(self, request):
         SessionMixIn._sessions[self.sessionid] = self.session
-        self.cookie['SESSIONID'] = self.sessionid
         super().finalize(request)
-        #for morsel in self.cookie.values():
-        #    self.add_header('Set-Cookie', morsel.output(header='').lstrip())
 
 

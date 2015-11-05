@@ -11,7 +11,7 @@
         <a href="/medialib/search?mode=album&order=last_modified&recent=52">Most Recent</a>
         <a href="/medialib/search?mode=album&order=random">Random</a>
         <a href="/medialib/search_youtube">YouTube</a>
-        <a href="/medialib/search?mode=filename&order=tile&recent=52&media_type=video&tags=!watched">Videos</a>
+        <a href="/medialib/search?mode=filename&order=last_modified&recent=52&media_type=video&tags=!watched">Videos</a>
     </div>
 
     <div class="medialib-links">
@@ -70,10 +70,6 @@
             has_filename = True if 'filename' in media_list[0] else False
             has_track_num = True if 'track_num' in media_list[0] else False
             has_tags = True if 'tags' in media_list[0] else False
-
-            if has_tags:
-                import shlex
-            end
             %>
 
             <table>
@@ -150,19 +146,20 @@
 
         <% end %>
     </div>
-</div>
 
-<div class="nerve-fixedbar-bottom nerve-background">
-    <select id="select-playlist">
-    <% for name in list_of_playlists: %>
-        <option value="<%= name %>"><%= name %></option>
-    <% end %>
-    </select>
+    <div class="nerve-fixedbar-bottom nerve-background">
+        <select id="select-playlist">
+        <% for name in list_of_playlists: %>
+            <option value="<%= name %>"><%= name %></option>
+        <% end %>
+        </select>
 
-    <button type="submit" class="pl_replace" value="1">Replace</button>
-    <button type="submit" class="pl_enqueue" value="1">Enqueue</button>
-    <button type="submit" class="pl_playnow" value="1">Play Now</button>
-    <button type="submit" class="pl_markwatched" value="1">Mark Watched</button>
-    <a href="#top">Top</a>
+        <button type="submit" class="pl_replace" value="1">Replace</button>
+        <button type="submit" class="pl_enqueue" value="1">Enqueue</button>
+        <button type="submit" class="pl_playnow" value="1">Play Now</button>
+        <button type="submit" class="pl_addtags" value="1">Add Tags</button>
+        <input type="text" id="medialib-add-tags" />
+        <a href="#top">Top</a>
+    </div>
 </div>
 

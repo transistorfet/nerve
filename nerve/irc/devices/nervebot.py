@@ -14,8 +14,17 @@ class NerveBot (IRCClient):
         super().__init__(**config)
         self.channel = '#ircmoo'
         self.linebuffer = [ ]
+
+        """
         if not self.get_child('event_privmsg'):
             self.set_child('event_privmsg', nerve.Module.make_object('objects/ObjectNode', dict()))
+        """
+
+    @classmethod
+    def get_config_info(cls):
+        config_info = super().get_config_info()
+        config_info.add_default_child('event_privmsg', { '__type__': 'objects/ObjectNode' })
+        config_info.add_default_child('event_notice', { '__type__': 'objects/ObjectNode' })
 
     def on_connect(self):
         self.sendmsg("JOIN " + self.channel)
@@ -36,12 +45,15 @@ class NerveBot (IRCClient):
         pass
 
     def on_privmsg(self, msg):
-        self.linebuffer.append(msg.text.rstrip())
-        if len(self.linebuffer) > 100:
-            self.linebuffer = self.linebuffer[len(self.linebuffer) - 100:]
+        self._buffer_line(msg.text.rstrip())
         self.notify('event_privmsg/*', msg)
 
     def on_notice(self, msg):
-        pass
+        self._buffer_line(msg.text.rstrip())
+        self.notify('event_notice/*', msg)
 
+    def _buffer_line(self, line):
+        self.linebuffer.append(line)
+        if len(self.linebuffer) > 100:
+            self.linebuffer = self.linebuffer[len(self.linebuffer) - 100:]
 

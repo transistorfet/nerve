@@ -35,12 +35,20 @@
     margin-bottom: 2px;
 }
 
+.nerve-table {
+    display: table;
+    width: 100%;
+    border-collapse: collapse;
+}
 
 .nerve-display {
     padding: 5px;
     margin-bottom: 5px;
 }
 
+.nerve-hidden {
+    display: none;
+}
 
 /*** Nerve Tabs Widget ***/
 
@@ -156,6 +164,14 @@ ul.nerve-form-tree {
     margin: 0;
 }
 
+/*
+@media all and (min-width: 750px) {
+    ul.nerve-form-tree {
+        width: 750px;
+    }
+}
+*/
+
 .nerve-form-tree > li > input + label + ul {
     /* margin of sub elements*/
     margin-top: 6px;
@@ -251,4 +267,25 @@ label.nerve-form-tree .alt-label {
     border-bottom: 1px solid black;
     z-index: 1000;
 }
+
+
+/*** Nerve BigFonts ***/
+
+.nerve-bigfonts button.nerve-button,
+.nerve-bigfonts button.nerve-input-submit {
+    min-height: 1.75em;
+    font-size: 1.25em;
+}
+
+.nerve-bigfonts input.nerve-slider {
+    height: 2.50em;
+    font-size: 1.25em;
+    margin-left: 1.0em;
+    margin-right: 1.0em;
+}
+
+.nerve-bigfonts .nerve-display {
+    font-size: 1.25em;
+}
+
 

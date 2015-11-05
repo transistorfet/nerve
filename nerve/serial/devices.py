@@ -125,6 +125,7 @@ class NerveSerialDevice (SerialDevice):
     def get_config_info(cls):
         config_info = super().get_config_info()
         config_info.add_setting('notify', "Notify", default='/events/serial')
+        config_info.add_default_child('event_recv', { '__type__': 'objects/ObjectNode' })
         return config_info
 
     def __getattr__(self, name):
@@ -157,6 +158,7 @@ class NerveSerialDevice (SerialDevice):
             return
         #notify_ref = self.get_setting('notify').rstrip('/') + '/' + ref + '/*'
         #nerve.notify(notify_ref, args)
+        #self.notify('event_recv/*', args)
 
         print("Received unmatched serial return: " + ref + " " + str(args))
         nerve.query("/events/ir/irrecv/" + args)

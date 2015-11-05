@@ -20,6 +20,7 @@ class Database (object):
         self.cache_where = ""
         self.cache_group = ""
         self.cache_order = ""
+        self.cache_offset = ""
         self.cache_limit = ""
         self.cache_select = "*"
         self.cache_distinct = ""
@@ -56,14 +57,14 @@ class Database (object):
         return text.replace("'", "''")
 
     def inline_expr(self, name, val, compare='='):
-        return "%s%s'%s' " % (name, compare, self.escape(val))
+        return "%s %s '%s' " % (name, compare, self.escape(val))
 
-    def where(self, where, val, compare='='):
+    def where(self, where, val, compare='=', cond='AND'):
         where_sql = self.inline_expr(where, val, compare)
         if not self.cache_where:
             self.cache_where = where_sql
         else:
-            self.cache_where += " AND " + where_sql
+            self.cache_where += " %s %s" % (cond, where_sql)
 
     def where_not(self, where, val):
         self.where(where, val, "<>")
@@ -75,10 +76,28 @@ class Database (object):
         self.where(where, val, "<")
 
     def where_like(self, where, val):
-        self.where(where, val, " LIKE ")
+        self.where(where, val, "LIKE")
 
     def where_not_like(self, where, val):
-        self.where(where, val, " NOT LIKE ")
+        self.where(where, val, "NOT LIKE")
+
+    def or_where(self, where, val):
+        self.where(where, val, "=", "OR")
+
+    def or_where_not(self, where, val):
+        self.where(where, val, "<>", "OR")
+
+    def or_where_gt(self, where, val):
+        self.where(where, val, ">", "OR")
+
+    def or_where_lt(self, where, val):
+        self.where(where, val, "<", "OR")
+
+    def or_where_like(self, where, val):
+        self.where(where, val, "LIKE", "OR")
+
+    def or_where_not_like(self, where, val):
+        self.where(where, val, "NOT LIKE", "OR")
 
     def set_where(self, where):
         self.cache_where = where
@@ -91,6 +110,9 @@ class Database (object):
 
     def limit(self, limit):
         self.cache_limit = limit
+
+    def offset(self, offset):
+        self.cache_offset = offset
 
     def select(self, fields):
         self.cache_select = fields
@@ -111,6 +133,8 @@ class Database (object):
             query += "ORDER BY %s " % (self.cache_order,)
         if self.cache_limit:
             query += "LIMIT %s " % (self.cache_limit,)
+        if self.cache_offset:
+            query += "OFFSET %s " % (self.cache_offset,)
         return query
 
     def compile_select(self, table, select=None, where=None):

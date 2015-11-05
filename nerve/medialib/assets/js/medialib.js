@@ -113,7 +113,8 @@ function MediaLibPlaylist(element)
             $('#medialib-playlist-contents tr').eq(response[1]).addClass('nerve-highlight');
         });
     });
-    that.query_songname.trigger_and_start_timer();
+    that.query_songname.trigger_and_reset();
+    $('.medialib-query-songname').click(that.query_songname.trigger);
 
     $('.medialib-button-next').click(function () {
         $.post('/query/'+$(this).attr('data-query'), {}, function(response) {
@@ -121,7 +122,7 @@ function MediaLibPlaylist(element)
             $(element).removeClass('nerve-highlight');
             if ($(element).next().length)
                 $(element).next().addClass('nerve-highlight');
-            that.query_songname.reset_timer();
+            that.query_songname.reset();
         }, 'json');
     });
 
@@ -131,7 +132,7 @@ function MediaLibPlaylist(element)
             $(element).removeClass('nerve-highlight');
             if ($(element).prev().length)
                 $(element).prev().addClass('nerve-highlight');
-            that.query_songname.reset_timer();
+            that.query_songname.reset();
         }, 'json');
     });
 
@@ -174,20 +175,19 @@ function MediaLibSearch(element)
     }
     */
 
-    that.add_tracks = function (method)
+    that.add_media_items = function (operation, options)
     {
-        var postvars = { };
-        postvars['method'] = method;
-        postvars['playlist'] = $('#select-playlist').val();
-        postvars['media'] = [ ];
+        var postvars = options || { };
+        postvars['operation'] = operation;
+        postvars['media[]'] = [ ];
 
         $("input[name='media[]']:checked").each(function () {
-            postvars['media'].push($(this).val());
+            postvars['media[]'].push($(this).val());
         });
 
         $('#nerve-notice').hide();
         $('#nerve-error').hide();
-        $.post('/medialib/add_tracks', postvars, function (response) {
+        $.post('/medialib/add_media_items', postvars, function (response) {
             if (response.count === undefined || response.count <= 0) {
                 $('#nerve-error').html("No tracks were added").show();
             }
@@ -212,20 +212,41 @@ function MediaLibSearch(element)
 
 
     $(element).find('.pl_enqueue').click(function () {
-        that.add_tracks('enqueue');
+        that.add_media_items('enqueue', { 'playlist': $('#select-playlist').val() });
     });
 
     $(element).find('.pl_replace').click(function () {
         if (confirm("Are you sure you want to replace everything on playlist " + $('#select-playlist').val()))
-            that.add_tracks('replace');
+            that.add_media_items('replace', { 'playlist': $('#select-playlist').val() });
     });
 
     $(element).find('.pl_playnow').click(function () {
-        that.add_tracks('playnow');
+        that.add_media_items('playnow', { 'playlist': $('#select-playlist').val() });
     });
 
-    $(element).find('.pl_markwatched').click(function () {
-        that.add_tracks('markwatched');
+    $(element).find('.pl_addtags').click(function () {
+        var postvars = { };
+        postvars['tags'] = $('#medialib-add-tags').val();
+        postvars['media[]'] = [ ];
+
+        $("input[name='media[]']:checked").each(function () {
+            postvars['media[]'].push($(this).val());
+        });
+
+        $('#nerve-notice').hide();
+        $('#nerve-error').hide();
+        $.post('/medialib/modify_tags', postvars, function (response) {
+            if (response.count === undefined || response.count <= 0) {
+                $('#nerve-error').html("No tags modified").show();
+            }
+            else {
+                $('#nerve-notice').html(response.count + " track(s) had the following tags added: " + postvars['tags']).show();
+                $("input[name='media[]']:checked").each(function () {
+                    $(this).prop('checked', false);
+                });
+                $('#medialib-add-tags').val('');
+            }
+        }, 'json');
     });
 
     $(element).find('.remove-tag').click(function () {
@@ -248,7 +269,7 @@ function MediaLibSearch(element)
     */
 
     $(document).on('submit', '#medialib-search-form', function () {
-        $('#medialib-search-table').html("Searching...");
+        $('#medialib-search-table').html("<hr/>Searching...");
     });
 
     return that;

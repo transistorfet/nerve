@@ -12,35 +12,30 @@ class ConfigController (nerve.http.Controller):
     @nerve.public
     def index(self, request):
         nerve.users.require_permissions('admin')
-
-        data = { }
-        #self.load_default_data(data)
         # TODO can you for this path without refering directly to the module (ie. using what's in the request)
-        #self.load_html_view("nerve/base/views/config/settings.pyhtml", data)
+        self.load_template_view('nerve/base/views/config/settings.blk.pyhtml', { }, request)
+        self.template_add_to_section('jsfiles', '/assets/js/formview.js')
 
-        #data['formhtml'] = FormView(nerve.get_main().get_config_info()).get_output()
-
-        self.load_template_view('nerve/base/views/config/settings.blk.pyhtml', data, request)
-        self.template_add_to_section('jsfiles', '/assets/js/config.js')
-
+    """
     @nerve.public
     def test(self, request):
         obj = nerve.get_object("/")
         self.load_template_view(None, None, request)
-        self.template_add_to_section('jsfiles', '/assets/js/config.js')
-        self.template_add_to_section('content', FormView(nerve.objects.ObjectConfigType(), obj.get_config_data(), target='/config/save'))
+        self.template_add_to_section('jsfiles', '/assets/js/formview.js')
+        self.template_add_to_section('content', FormView(nerve.types.ObjectConfigType(), obj.get_config_data(), target='/config/save'))
         #self.template_add_to_section('content', FormView(obj.get_config_info(), obj.get_config_data()))
         #self.template_add_to_section('content', FormView(nerve.http.views.template.TemplateView.get_config_info(), self._view._sections))
 
     @nerve.public
     def test2(self, request):
         self.load_template_view('nerve/base/views/tabstest.blk.pyhtml', None, request)
-        self.template_add_to_section('jsfiles', '/assets/js/config.js')
+        self.template_add_to_section('jsfiles', '/assets/js/formview.js')
 
     @nerve.public
     def set_theme(self, request):
         name = request.arg('name')
         self.add_header('Set-Cookie', 'theme=' + name + '; Domain=' + request.get_host())
+    """
 
 
 
@@ -53,11 +48,11 @@ class ConfigController (nerve.http.Controller):
         if not path:
             raise nerve.ControllerError("You must provide a valid object name")
 
-        self.set_view(FormView(nerve.ConfigType.get_type('object'), { '__type__': request.arg('type') }))
+        self.set_view(FormView(nerve.types.ConfigType.get_type('object'), { '__type__': request.arg('type') }))
 
         self.load_template_view(None, None, request)
-        self.template_add_to_section('jsfiles', '/assets/js/config.js')
-        self.template_add_to_section('content', FormView(nerve.ConfigType.get_type('object'), None, '/config/create/' + path + '/new', submit="Create", submitback=True))
+        self.template_add_to_section('jsfiles', '/assets/js/formview.js')
+        self.template_add_to_section('content', FormView(nerve.types.ConfigType.get_type('object'), None, '/config/create/' + path + '/new', submitname="Create", submitback=True))
 
 
     @nerve.public
@@ -71,8 +66,6 @@ class ConfigController (nerve.http.Controller):
         if not path:
             raise nerve.ControllerError("You must provide a valid object name")
         (dirname, _, name) = path.rpartition('/')
-        #dirname = request.arg('__dir__')
-        #name = request.arg('__name__')
         typeinfo = request.arg('__type__')
 
         if not dirname or not nerve.has_object(dirname):
@@ -106,7 +99,7 @@ class ConfigController (nerve.http.Controller):
             raise nerve.ControllerError("Object not found: " + path)
 
         self.load_template_view(None, None, request)
-        self.template_add_to_section('jsfiles', '/assets/js/config.js')
+        self.template_add_to_section('jsfiles', '/assets/js/formview.js')
         self.template_add_to_section('content', FormView(obj.get_config_info(), obj.get_config_data(), '/config/save/' + path, submitback=True))
 
 
@@ -118,9 +111,7 @@ class ConfigController (nerve.http.Controller):
             raise nerve.ControllerError("You must select a type first")
 
         basename = request.arg('basename', default='')
-        #config_info = nerve.Module.get_class_config_info(request.arg('type'))
-        #self.set_view(FormView(config_info, config_info.get_defaults()))
-        self.set_view(FormView(nerve.ConfigType.get_type('object'), { '__type__': request.arg('type') }, basename=basename))
+        self.set_view(FormView(nerve.types.ConfigType.get_type('object'), { '__type__': request.arg('type') }, basename=basename))
 
 
     @nerve.public

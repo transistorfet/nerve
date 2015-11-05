@@ -64,6 +64,7 @@ class VLCHTTP (nerve.Device):
             self._send_command('volume', volume)
         return self.getvolume()
 
+    """
     def volup(self):
         if not self.status:
             return
@@ -79,6 +80,30 @@ class VLCHTTP (nerve.Device):
         if volume < 0:
             volume = 0
         self._send_command('volume', volume)
+    """
+    def volup(self):
+        self._send_command('key', 'vol-up')
+
+    def voldown(self):
+        self._send_command('key', 'vol-down')
+
+    def jump_extrashort(self):
+        self._send_command('key', 'jump+extrashort')
+
+    def back_extrashort(self):
+        self._send_command('key', 'jump-extrashort')
+
+    def jump_short(self):
+        self._send_command('key', 'jump+short')
+
+    def back_short(self):
+        self._send_command('key', 'jump-short')
+
+    def jump_medium(self):
+        self._send_command('key', 'jump+medium')
+
+    def back_medium(self):
+        self._send_command('key', 'jump-medium')
 
     def random(self):
         self._send_command('pl_random')

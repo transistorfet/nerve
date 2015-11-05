@@ -28,12 +28,8 @@ class MediaLibDevice (nerve.Device):
 
         self.current = 'default'
 
-    def force_database_update(self):
-        self.db.where('name', 'last_updated')
-        self.db.update('info', { 'value' : 0 })
-
     def rehash(self):
-        self.force_database_update()
+        nerve.medialib.run_updater()
 
     def get_playlist_list(self):
         plroot = nerve.configdir() + '/playlists'
@@ -99,6 +95,12 @@ class MediaLibDevice (nerve.Device):
 
         if media_type:
             self.db.where('media_type', media_type)
+
+        if offset:
+            self.db.offset(offset)
+
+        if limit:
+            self.db.limit(limit)
 
         result = list(self.db.get_assoc('media'))
         if order == 'random':

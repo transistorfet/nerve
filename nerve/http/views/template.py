@@ -9,9 +9,9 @@ class TemplateView (nerve.View):
     def __init__(self, filename=None, data=dict(), **config):
         super().__init__(**config)
         self._mimetype = 'text/html'
-        self._filename = filename if filename else 'nerve/http/views/template.pyhtml'
+        self._filename = filename if filename else 'nerve/http/views/template.tpl.pyhtml'
         self._data = data
-        self._sections = self.get_config_info().get_defaults()
+        self._sections = self._config.copy()  #self.get_config_info().get_defaults()
 
     @classmethod
     def get_config_info(cls):
@@ -21,12 +21,12 @@ class TemplateView (nerve.View):
         config_info.add_setting('separator', "Separator", datatype='textarea', default="<hr/>\n")
         config_info.add_setting('jsfiles', "JavaScript Files", default=list(), itemtype='str')
         config_info.add_setting('cssfiles', "CSS Files", default=list(), itemtype='str')
-        config_info.add_setting('header', "Header", default=list(), itemtype='textarea')
-        config_info.add_setting('subheader', "Sub-Header", default=list(), itemtype='textarea')
-        config_info.add_setting('sidebar', "Sidebar", default=list(), itemtype='textarea')
-        config_info.add_setting('content', "Content", default=list(), itemtype='textarea')
-        config_info.add_setting('footer', "Footer", default=list(), itemtype='textarea')
-        config_info.add_setting('subfooter', "Sub-Footer", default=list(), itemtype='textarea')
+        config_info.add_setting('header', "Header", default=list(), itemtype='view')
+        config_info.add_setting('subheader', "Sub-Header", default=list(), itemtype='view')
+        config_info.add_setting('sidebar', "Sidebar", default=list(), itemtype='view')
+        config_info.add_setting('content', "Content", default=list(), itemtype='view')
+        config_info.add_setting('footer', "Footer", default=list(), itemtype='view')
+        config_info.add_setting('subfooter', "Sub-Footer", default=list(), itemtype='view')
         return config_info
 
     def add_to_section(self, name, view):

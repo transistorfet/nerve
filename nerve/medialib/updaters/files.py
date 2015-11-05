@@ -18,11 +18,15 @@ from .. import MediaLibUpdater
 
 
 class MediaFilesUpdater (MediaLibUpdater):
-    def __init__(self, task):
-        self.task = task
+    def __init__(self):
+        super().__init__()
         self.db = nerve.Database('medialib.sqlite')
         #self.path = path        #nerve.get_config("medialib_dirs")
         self.paths = [ ]
+
+    def reset_check(self):
+        self.db.where('name', 'last_updated')
+        self.db.update('info', { 'value' : 0 })
 
     def check_update(self):
         row = self.db.get_single('info', 'name,value', self.db.inline_expr('name', 'last_updated'))
@@ -55,7 +59,7 @@ class MediaFilesUpdater (MediaLibUpdater):
                 if len(tuple(name for name in self.ignore if name in root)) > 0:
                     continue
 
-                if self.task.stopflag.is_set():
+                if self.stopflag.is_set():
                     return
                 nerve.log("Searching " + root)
                 for media in files:

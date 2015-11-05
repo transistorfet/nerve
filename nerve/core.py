@@ -262,11 +262,18 @@ class FileView (View):
         super().__init__()
         self.filename = os.path.join(base, filename) if base else filename
         (self._mimetype, self._encoding) = mimetypes.guess_type(self.filename)
+        if self._encoding == None:
+            self._encoding = 'utf-8'
 
     def render(self):
         with open(self.filename, 'rb') as f:
             contents = f.read()
         self.write_bytes(contents)
+
+
+@nerve.types.RegisterConfigType('view')
+class ViewConfigType (nerve.types.StrConfigType):
+    pass
 
 
 class Server (nerve.ObjectNode):

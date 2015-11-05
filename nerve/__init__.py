@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from nerve.logs import log
-from nerve.objects import public, is_public, ConfigType, StructConfigType, ObjectNode, Module
+#from nerve.types import ConfigType, StructConfigType, RegisterConfigType
+import nerve.types
+from nerve.objects import public, is_public, ObjectNode, Module
 from nerve.core import Request, Controller, View, Server, Model, Device, PyCodeQuery, SymbolicLink, NotFoundError, ControllerError, PlainTextView, JsonView, FileView
 from nerve.db import Database
 from nerve.tasks import Task

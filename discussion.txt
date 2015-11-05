@@ -492,3 +492,28 @@ possibly out of order (like a response, sending back data, is not always trigger
 there is something that isn't *exactly* a server, it's a server thread that handles a single connection.
 
 
+-----------------------------------
+
+2015/10/25:
+
+Ownership and Permissions of Objects
+
+- possible access checks
+    - read/access an object
+    - modify an object
+    - read a child of an object
+    - set a child of an object
+    - delete a child of an object
+
+
+owner, group? role??
+
+r readable
+w writeable (add/modify?)
+x queriable??
+
+
+- we want to make some nodes undeletable, but still allow you to add child nodes.  Making the parent uneditable doesn't work either
+  because we just want some nodes to be fixed (namely nodes that are automatically created, like event groups and mysensors nodes)
+
+

@@ -1,6 +1,7 @@
 
 
-button.nerve-button {
+button.nerve-button,
+button.nerve-input-submit {
     min-height: 1.75em;
     font-size: 1.25em;
 }
@@ -14,15 +15,6 @@ input.nerve-slider {
 
 .nerve-display {
     font-size: 1.25em;
-}
-
-.nerve-medialist .current {
-    border: 1px solid green;
-    height: 1.75em;
-}
-
-.nerve-medialist .current span {
-    font-weight: bold;
 }
 
 
@@ -58,15 +50,6 @@ sure which way I prefer.  The cells method is kinda nice though
 }
 */
 
-/*
-#main:after {
-    clear: both;
-    display: block;
-    content: '';
-}
-*/
-
-
 
 #block-editor {
     margin-right: 1em;
@@ -78,6 +61,8 @@ sure which way I prefer.  The cells method is kinda nice though
 }
 
 #block-editor-text {
+    font-family: monospace;
+
     width: 100%;
     height: 20em;
     margin-bottom: 0.5em;

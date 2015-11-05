@@ -1,0 +1,49 @@
+
+<div class="mysensors-list">
+
+    <% mysensors = nerve.get_object('/devices/mysensors') %>
+
+    <%
+    def get_sensor_type(sensortype):
+        for key in dir(nerve.mysensors.devices.SubTypePresentation):
+            if not key.startswith('_'):
+                typenumber = getattr(nerve.mysensors.devices.SubTypePresentation, key)
+                if typenumber == sensortype:
+                    return key
+                end
+            end
+        end
+        return '????'
+    end
+    %>
+
+    <table class="nerve-table">
+        <thead><tr>
+            <th>ID</th>
+            <th>Name/Type</th>
+            <th>Version</th>
+            <th>Reset</th>
+        </tr></thead>
+        <tbody>
+        <% for nodename in sorted(mysensors.keys_children(), key=lambda id: int(id)): %>
+            <% node = mysensors.get_child(nodename) %>
+            <tr>
+                <td><%= node.nodeid %></td>
+                <td><%= node.name %></td>
+                <td><%= node.version %></td>
+                <td><button class="nerve-button" data-query="mysensors/reset_node?id=<%= node.nodeid %>">Reset</button></td>
+            </tr>
+            <% for sensorname in sorted(node.keys_children(), key=lambda id: int(id)): %>
+                <% sensor = node.get_child(sensorname) %>
+                <tr>
+                    <td>&nbsp;&nbsp;<%= sensor.sensorid %></td>
+                    <td>&nbsp;&nbsp;<%= get_sensor_type(sensor.type) %></td>
+                    <td>&nbsp;&nbsp;<%= sensor.version %></td>
+                </tr>
+            <% end %>
+        <% end %>
+        </tbody>
+    </table>
+
+</div>
+

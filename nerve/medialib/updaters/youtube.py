@@ -12,12 +12,16 @@ from .. import MediaLibUpdater
 
 
 class YoutubePlaylistUpdater (MediaLibUpdater):
-    def __init__(self, task):
-        self.task = task
+    def __init__(self):
+        super().__init__()
         self.db = nerve.Database('medialib.sqlite')
         self.json = None
         #self.list_ids = path        #nerve.get_config("youtube_playlists")
         self.list_ids = [ ]
+
+    def reset_check(self):
+        self.db.where('name', 'youtube_last_updated')
+        self.db.update('info', { 'value' : 0 })
 
     def check_update(self):
         row = self.db.get_single('info', 'name,value', self.db.inline_expr('name', 'youtube_last_updated'))
@@ -39,7 +43,7 @@ class YoutubePlaylistUpdater (MediaLibUpdater):
             else:
                 playlist = [ ]
                 for video in json_playlist['video']:
-                    if self.task.stopflag.is_set():
+                    if self.stopflag.is_set():
                         return
                     data = self.hash_video(video)
                     playlist.append({ 'artist' : data['artist'], 'title' : data['title'], 'duration' : data['duration'], 'filename' : data['filename'] })

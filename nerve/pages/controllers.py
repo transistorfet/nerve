@@ -40,7 +40,7 @@ class PagesController (nerve.http.Controller):
             data = { }
             data['pagename'] = page
             self.set_view(PageView(page, data, **template))
-            self.template_add_to_section('jsfiles', '/pages/assets/js/pages.js')
+            #self.template_add_to_section('jsfiles', '/pages/assets/js/pages.js')
             self.template_add_to_section('cssfiles', '/pages/assets/css/pages.css')
 
         else:
@@ -67,11 +67,16 @@ class PagesController (nerve.http.Controller):
             raise nerve.NotFoundError("Page doesn't exist: " + data['pagename'])
 
         data['sections'] = PageView.get_config_info()
-        data['pagedata'] = self.model.get_page_data(data['pagename']) if data['pagename'] else ''
-        data['blocklist'] = self.model.list_blocks()
+        data['pagedata'] = self.model.get_page_data(data['pagename']) if data['pagename'] else None
 
-        self.load_template_view('nerve/pages/views/editor/editpage.blk.pyhtml', data, request)
+        data['sections'].add_setting('originalname', "", default=data['pagename'], datatype='hidden', weight=-11)
+        data['sections'].add_setting('pagename', "Page Name", default=data['pagename'], weight=-10)
+
+        #self.load_template_view('nerve/pages/views/editor/editpage.blk.pyhtml', data, request)
+        self.load_template_view(None, data, request)
         self.template_add_to_section('sidebar', self.make_html_view('nerve/pages/views/editor/sidebar.blk.pyhtml', data))
+        self.template_add_to_section('content', nerve.base.FormView(data['sections'], data['pagedata'], target='/pages/savepage', title="Edit Page", textbefore='<div id="page-editor">', textafter='</div>'))
+        self.template_add_to_section('jsfiles', '/assets/js/formview.js')
         self.template_add_to_section('jsfiles', '/pages/assets/js/pages.js')
         self.template_add_to_section('cssfiles', '/pages/assets/css/pages.css')
 
@@ -87,14 +92,7 @@ class PagesController (nerve.http.Controller):
         if not originalname and self.model.page_exists(pagename):
             raise nerve.ControllerError('A page by that name already exists: ' + pagename)
 
-        pagedata = { }
-        for (name, title, datatype, default) in PageView.get_config_info().get_items(None):
-            if datatype.is_type('scalar'):
-                pagedata[name] = datatype.validate(request.arg(name, default=""))
-            elif datatype.is_type('list'):
-                pagedata[name] = [ item.strip() for item in request.arg(name, default="").split('\n') if item ]
-
-        #pagedata = PageView.get_config_info().validate(request.args)
+        pagedata = PageView.get_config_info().validate(request.args)
 
         self.model.save_page_data(originalname, pagename, pagedata)
         self.load_json_view({ 'status' : 'success', 'message' : 'Page saved successfully' })

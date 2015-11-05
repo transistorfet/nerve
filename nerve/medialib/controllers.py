@@ -48,7 +48,7 @@ class MediaLibController (nerve.http.Controller):
         data['mode'] = request.arg('mode', default='album')
         data['order'] = request.arg('order', default='artist')
         data['offset'] = request.arg('offset', default=0)
-        data['limit'] = request.arg('limit', default=1000)
+        data['limit'] = request.arg('limit', default=0)
         data['search'] = request.arg('search', default='')
         data['tags'] = request.arg('tags', default='')
         data['recent'] = request.arg('recent', default=None)
@@ -118,30 +118,38 @@ class MediaLibController (nerve.http.Controller):
         self.load_json_view({ 'error' : "That playlist no longer exists" })
 
     @nerve.public
-    def add_tracks(self, request):
-        medialib = nerve.get_object('/devices/medialib')
+    def add_media_items(self, request):
+        operation = request.arg('operation')
+        if not operation:
+            raise nerve.ControllerError("'operation' field must be set")
+        if not request.arg('media[]'):
+            raise nerve.ControllerError("'media[]' field must be set")
+
         result = dict(count=0)
+        medialib = nerve.get_object('/devices/medialib')
+
         media = [ ]
-        if 'method' in request.args and 'playlist' in request.args and 'media[]' in request.args:
-            for argstr in request.args['media[]']:
-                query = urllib.parse.parse_qs(argstr)
-                media.extend(medialib.get_media_query(query))
-            if request.arg('method') == 'playnow':
-                player = nerve.get_object('/devices/player')
-                if len(media) > 0:
-                    player.play(media[0]['filename'])
-                    for media_item in media[1:]:
-                        player.enqueue(media_item['filename'])
-                result['count'] = len(media)
-            elif request.arg('method') == 'markwatched':
-                for media_item in media:
-                    medialib.add_tag(media_item['id'], 'watched')
-            else:
-                playlist = nerve.medialib.Playlist(request.arg('playlist'))
-                if request.arg('method') == 'replace':
-                    result['count'] = playlist.set_list(media)
-                elif request.arg('method') == 'enqueue':
-                    result['count'] = playlist.add_list(media)
+        for argstr in request.arg('media[]'):
+            query = urllib.parse.parse_qs(argstr)
+            media.extend(medialib.get_media_query(query))
+
+        if operation == 'playnow':
+            player = nerve.get_object('/devices/player')
+            if len(media) > 0:
+                player.play(media[0]['filename'])
+                for media_item in media[1:]:
+                    player.enqueue(media_item['filename'])
+            result['count'] = len(media)
+
+        elif operation in [ 'enqueue', 'replace' ]:
+            if not request.arg('playlist'):
+                raise nerve.ControllerError("'playlist' field must be set")
+            playlist = nerve.medialib.Playlist(request.arg('playlist'))
+            if operation == 'replace':
+                result['count'] = playlist.set_list(media)
+            elif operation == 'enqueue':
+                result['count'] = playlist.add_list(media)
+
         self.load_json_view(result)
 
     @nerve.public
@@ -170,6 +178,30 @@ class MediaLibController (nerve.http.Controller):
         self.load_json_view(result)
 
     @nerve.public
+    def modify_tags(self, request):
+        medialib = nerve.get_object('/devices/medialib')
+
+        if not request.arg('media[]'):
+            raise nerve.ControllerError("'media[]' field must be set")
+
+        if not request.arg('tags'):
+            raise nerve.ControllerError("'tags' field must be set")
+        tags = medialib.split_tags(request.arg('tags'))
+
+        media = [ ]
+        for argstr in request.arg('media[]'):
+            query = urllib.parse.parse_qs(argstr)
+            media.extend(medialib.get_media_query(query))
+
+        for media_item in media:
+            for tag in tags:
+                if tag[0] != '!':
+                    medialib.add_tag(media_item['id'], tag)
+                else:
+                    medialib.remove_tag(media_item['id'], tag[1:])
+        self.load_json_view({ 'count' : len(media) })
+
+    @nerve.public
     def add_tag(self, request):
         medialib = nerve.get_object('/devices/medialib')
         id = request.arg('id')
@@ -194,9 +226,16 @@ class MediaLibController (nerve.http.Controller):
         self.load_json_view({ 'status': 'success' })
 
     @nerve.public
-    def rehash_database(self, request):
+    def rehash(self, request):
         medialib = nerve.get_object('/devices/medialib')
-        medialib.force_database_update()
+        medialib.rehash()
+
+        accept = request.get_header('accept')
+        if 'application/json' in accept:
+            self.load_json_view({ 'status' : True })
+        elif 'text/html' in accept:
+            self.load_template_view(None, { }, request)
+            self.template_add_to_section('content', '<h4>Rehashing database...</h4>')
 
     def handle_error(self, error, traceback, request):
         if request.reqtype == 'POST' and type(error) is not nerve.users.UserPermissionsRequired:

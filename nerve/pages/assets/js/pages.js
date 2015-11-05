@@ -34,6 +34,7 @@ $(document).ready(function()
         $(parent).appendTo(last);
     });
 
+    /*
     $('#page-editor-save').click(function ()
     {
         $('#nerve-notice').hide();
@@ -60,6 +61,15 @@ $(document).ready(function()
     $('#page-editor-view').click(function ()
     {
         window.location = '/pages/' + $('#page-editor-name').val();
+    });
+    */
+
+    $('#page-editor .nerve-form-submit').click(function ()
+    {
+        var pagename = $('input[name="pagename"]').val();
+        $('input[name="originalname"]').val(pagename);
+        //window.location = '/pages/editpage/' + pagename;
+        window.history.replaceState({ }, "", '/pages/editpage/' + pagename);
     });
 
     $('.delete-block').click(function ()

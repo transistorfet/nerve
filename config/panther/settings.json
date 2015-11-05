@@ -241,6 +241,18 @@
         },
         "events": {
             "__children__": {
+                "serial": {
+                    "__children__": {
+                        "irrecv": {
+                            "__children__": {},
+                            "__type__": "events/PyCodeEvent",
+                            "code": "nerve.query('/events/ir/irrecv/' + args[0])",
+                            "repeat": 0.0,
+                            "trigger": ""
+                        }
+                    },
+                    "__type__": "objects/ObjectNode"
+                },
                 "ir": {
                     "__children__": {
                         "irrecv": {

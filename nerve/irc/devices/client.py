@@ -45,7 +45,7 @@ class IRCClient (nerve.Device):
         config_info.add_setting('server', "Server URI", default='irc.foonetic.net:6667')
 
         """
-        server_list = nerve.objects.StructConfigType()
+        server_list = nerve.types.StructConfigType()
         server_list.add_setting('hostname', "Hostname", default='')
         server_list.add_setting('port', "Port", default=6667)
         server_list.add_setting('password', "Password (optional)", default='')

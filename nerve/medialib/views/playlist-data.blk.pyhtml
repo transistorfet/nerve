@@ -1,5 +1,7 @@
 
     <% if playlist: %>
+    <span><%= len(playlist) %> items long</span>
+
     <table>
     <thead><tr>
 	<th></th>

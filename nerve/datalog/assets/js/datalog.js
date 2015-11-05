@@ -5,7 +5,8 @@ function NerveGraph(element)
 
     var graphData;
     var canvas = $(element).find('#graph')[0];
-    $(canvas).width($(window).width() - 20);
+    if ($(window).width() < $(canvas).width())
+        $(canvas).width($(window).width() - 20);
     var height = canvas.height;
     var width = canvas.width;
     var leftMargin = 50;
@@ -231,7 +232,7 @@ function NerveGraph(element)
     {
         graphobj.update_graph();
     });
-    this.update_timer.trigger_and_start_timer();
+    this.update_timer.trigger_and_reset();
 
     $('#select-datalog').change(graphobj.update_graph);
 

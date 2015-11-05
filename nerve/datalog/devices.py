@@ -38,7 +38,7 @@ class DatalogDevice (nerve.Device):
         config_info.add_setting('name', "Table Name", default='')
         config_info.add_setting('update_time', "Update Time", default=60.0)
 
-        datapoints_config = nerve.objects.StructConfigType()
+        datapoints_config = nerve.types.StructConfigType()
         datapoints_config.add_setting('name', "Column Name", default='')
         datapoints_config.add_setting('ref', "Target URI", default='')
         datapoints_config.add_setting('datatype', "Data Type", default='')

@@ -9,6 +9,8 @@ from .controllers.shell import ShellController
 
 from .devices.realtime import RealtimeDevice
 
+from .views.formview import FormView
+
 """
 from .servers.console import Console
 from .servers.tcpserver import TCPServer

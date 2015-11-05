@@ -10,7 +10,7 @@ from ..views.block import BlockView
 
 class PageView (nerve.http.TemplateView):
     def __init__(self, pagename=None, data=dict(), **config):
-        super().__init__('nerve/pages/views/template.pyhtml', data, **config)
+        super().__init__('nerve/pages/views/template.tpl.pyhtml', data, **config)
         self.pagename = pagename
         self.model = PagesModel()
 
@@ -39,9 +39,12 @@ class PageView (nerve.http.TemplateView):
                 if pagedata and name in pagedata:
                     itemlist += pagedata[name]
 
-                if datatype.is_type('list:textarea'):
+                if datatype.is_type('list:view'):
                     for blockname in itemlist:
-                        self.add_to_section(name, BlockView(blockname))
+                        if blockname.startswith('"'):
+                            self.add_to_section(name, nerve.http.PyHTML(filename=blockname.strip('"')))
+                        else:
+                            self.add_to_section(name, BlockView(blockname))
                 else:
                     for item in itemlist:
                         self.add_to_section(name, item)
