@@ -92,7 +92,7 @@
                         "__type__": "pages/views/page/PageView",
                         "theme": "dark"
                     },
-                    "__type__": "http/HTTPServer"
+                    "__type__": "http/servers/http/HTTPServer"
                 }
             }
         }

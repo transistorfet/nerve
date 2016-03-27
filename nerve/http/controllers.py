@@ -40,17 +40,26 @@ class Controller (nerve.Controller):
     def load_html_view(self, filename, data=None, request=None):
         self.set_view(nerve.http.PyHTML(request, data, filename))
 
-    def load_template_view(self, filename=None, data=None, request=None, template_data=dict()):
+    def find_template(self, request=None):
         template = self.get_setting('template')
-        if not template and request:
-            template = request.source.get_setting('template')
+
+        if not template:
+            if not request:
+                request = self.get_request()
+            if request and request.source:
+                template = request.source.get_setting('template')
+
         if not template:
             template = { '__type__': 'http/views/template/TemplateView' }
-        template = template.copy()
+
+        return template.copy()
+
+    def load_template_view(self, filename=None, data=None, request=None, template_data=dict()):
+        template = self.find_template(request)
 
         template_class = nerve.Module.get_class(template['__type__'])
         del template['__type__']
-        view = template_class(**template)
+        view = template_class(data=template_data, **template)
         if filename:
             view.add_to_section('content', nerve.http.PyHTML(request, data, filename))
         self.set_view(view)
@@ -60,9 +69,11 @@ class Controller (nerve.Controller):
 
     @nerve.public
     def assets(self, request):
-        filename = 'nerve' + request.url.path
+        if not nerve.files.validate(request.url.path):
+            raise Exception("invalid path: " + repr(filename))
+        filename = nerve.files.find_source('nerve/' + request.url.path.rstrip('/'))
 
-        if '/../' in filename or not os.path.isfile(filename):
+        if not os.path.isfile(filename):
             raise nerve.NotFoundError("Error file not found: " + filename)
 
         (_, _, extension) = filename.rpartition('.')
@@ -71,9 +82,17 @@ class Controller (nerve.Controller):
         else:
             self.load_file_view(filename)
 
+    def handle_error(self, error, traceback, request):
+        accept = request.get_header('accept', default='text/html')
+        if 'application/json' in accept and type(error) is not nerve.users.UserPermissionsRequired:
+            nerve.log(traceback, logtype='error')
+            self.load_json_view({ 'error' : repr(error) })
+        else:
+            super().handle_error(error, traceback, request)
+
 
 class SessionMixIn (object):
-    """Add cookie-based sessions to a Controller"""
+    """Add cookie-based sessions to a Controller object"""
     _sessions = { }
 
     def initialize(self, request):
@@ -81,15 +100,30 @@ class SessionMixIn (object):
         if 'SESSIONID' in self._cookie:
             self.sessionid = self._cookie['SESSIONID'].value
         else:
-            self.sessionid = hashlib.sha512(os.urandom(64)).hexdigest()
+            self.sessionid = nerve.users.random_token() #hashlib.sha512(os.urandom(64)).hexdigest()
             self.set_cookie('SESSIONID', self.sessionid, path='/')
 
         if self.sessionid not in SessionMixIn._sessions:
             SessionMixIn._sessions[self.sessionid] = { }
         self.session = SessionMixIn._sessions[self.sessionid]
+        # TODO automatically log user in?
+        if '__LOGIN_TOKEN__' in self.session:
+            nerve.users.login_token(self.session['__LOGIN_TOKEN__'])
 
     def finalize(self, request):
         SessionMixIn._sessions[self.sessionid] = self.session
         super().finalize(request)
+
+    def handle_error(self, error, traceback, request):
+        # TODO also check that the user isn't already logged in.  If so, display an error
+        if type(error) == nerve.users.UserPermissionsRequired:
+            # TODO can we make this a setting somehow??
+            self.redirect_to('/users/login')
+        else:
+            super().handle_error(error, traceback, request)
+
+
+class SessionController (SessionMixIn, Controller):
+    pass
 
 

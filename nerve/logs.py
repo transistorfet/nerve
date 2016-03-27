@@ -3,29 +3,36 @@
 
 import sys
 import time
-
-import colorama
-
-colorama.init()
+import nerve
 
 stdin = sys.stdin
-stdout = sys.stdout
+stdout = sys.stderr
 
 logbuffer = [ ]
 logbuffermax = 2000
 
 logto = stdout
+logtofile = False
 
-colours = {
-    'info': '',
-    'error': colorama.Style.BRIGHT + colorama.Fore.RED,
-    'warning': colorama.Style.BRIGHT + colorama.Fore.YELLOW,
-    'success': colorama.Fore.GREEN,
-    'query': colorama.Style.BRIGHT + colorama.Fore.BLUE,
-    'debug': colorama.Style.BRIGHT + colorama.Fore.BLACK
-}
+colours = { }
+colours_reset = ''
 
-colour_reset = colorama.Fore.RESET + colorama.Back.RESET + colorama.Style.RESET_ALL
+def init_colour():
+    global colours, colours_reset
+
+    import colorama
+
+    colorama.init()
+
+    colours_reset = colorama.Fore.RESET + colorama.Back.RESET + colorama.Style.RESET_ALL
+    colours = {
+        'info': '',
+        'error': colorama.Style.BRIGHT + colorama.Fore.RED,
+        'warning': colorama.Style.BRIGHT + colorama.Fore.YELLOW,
+        'success': colorama.Fore.GREEN,
+        'query': colorama.Style.BRIGHT + colorama.Fore.BLUE,
+        'debug': colorama.Style.BRIGHT + colorama.Fore.BLACK
+    }
 
 def redirect(dest):
     global logto
@@ -33,6 +40,11 @@ def redirect(dest):
 
 def buffer():
     return list(logbuffer)
+
+def log_to_file(enable):
+    global logtofile
+    nerve.files.createdir('logs')
+    logtofile = True if enable is True else False
 
 def log(text, logtype='info'):
     global logbuffer
@@ -44,8 +56,12 @@ def log(text, logtype='info'):
     if len(logbuffer) > logbuffermax:
         logbuffer = logbuffer[logbuffermax - len(logbuffer):]
 
+    if logtofile:
+        with open(nerve.files.path('logs/{0}.txt'.format(time.strftime("%Y-%m-%d"))), 'a') as f:
+            f.write(output)
+
     if logto:
         colour = colours[logtype] if logtype in colours else ''
-        logto.write(colour + output + colour_reset)
+        print(colour + output + colours_reset, end='', file=logto)
 
 

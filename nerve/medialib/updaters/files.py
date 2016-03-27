@@ -14,7 +14,7 @@ import threading
 #import mutagen
 import subprocess
 
-from .. import MediaLibUpdater
+from ..tasks import MediaLibUpdater
 
 
 class MediaFilesUpdater (MediaLibUpdater):
@@ -29,7 +29,7 @@ class MediaFilesUpdater (MediaLibUpdater):
         self.db.update('info', { 'value' : 0 })
 
     def check_update(self):
-        row = self.db.get_single('info', 'name,value', self.db.inline_expr('name', 'last_updated'))
+        row = self.db.get_first_row('info', 'name,value', self.db.inline_expr('name', 'last_updated'))
         if row is None or float(row[1]) + 86400 < time.time():
             self.run_update()
             return

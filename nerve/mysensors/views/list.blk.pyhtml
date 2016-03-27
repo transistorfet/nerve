@@ -15,6 +15,28 @@
         end
         return '????'
     end
+
+    def format_timestamp(timestamp):
+        if timestamp <= 0:
+            return '-'
+        end
+
+        (min, sec) = divmod(int(time.time() - timestamp), 60)
+        (hour, min) = divmod(min, 60)
+        (day, hour) = divmod(hour, 24)
+
+        if day > 7:
+            return time.strftime("%Y-%m-%d", time.localtime(timestamp))
+        elif day > 0:
+            return "{:d}".format(day) + ("s" if day > 1 else "")
+        elif hour > 1:
+            return "{:d} hours".format(hour)
+        elif min > 0:
+            return "{:d} minutes".format(min)
+        else:
+            return "{:d} seconds".format(sec)
+        end
+    end
     %>
 
     <table class="nerve-table">
@@ -22,7 +44,8 @@
             <th>ID</th>
             <th>Name/Type</th>
             <th>Version</th>
-            <th>Reset</th>
+            <th>Last Update</th>
+            <th>Last Value</th>
         </tr></thead>
         <tbody>
         <% for nodename in sorted(mysensors.keys_children(), key=lambda id: int(id)): %>
@@ -31,6 +54,7 @@
                 <td><%= node.nodeid %></td>
                 <td><%= node.name %></td>
                 <td><%= node.version %></td>
+                <td></td>
                 <td><button class="nerve-button" data-query="mysensors/reset_node?id=<%= node.nodeid %>">Reset</button></td>
             </tr>
             <% for sensorname in sorted(node.keys_children(), key=lambda id: int(id)): %>
@@ -39,6 +63,8 @@
                     <td>&nbsp;&nbsp;<%= sensor.sensorid %></td>
                     <td>&nbsp;&nbsp;<%= get_sensor_type(sensor.type) %></td>
                     <td>&nbsp;&nbsp;<%= sensor.version %></td>
+                    <td>&nbsp;&nbsp;<%= format_timestamp(sensor.last_recv) %></td>
+                    <td>&nbsp;&nbsp;<%= str(sensor.last_value) %></td>
                 </tr>
             <% end %>
         <% end %>

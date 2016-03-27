@@ -46,12 +46,6 @@ select {
     font: 14px sans-serif;
 }
 
-table,
-th,
-td {
-    border: 1px solid lightgrey;
-}
-
 #nerve-notice {
     border: 1px solid #333;
     background-color: #9f9;
@@ -62,9 +56,15 @@ td {
     background-color: #f99;
 }
 
+.nerve-table table,
+.nerve-table th,
+.nerve-table td {
+    border: 1px solid lightgrey;
+}
+
 .nerve-display {
     border: 1px solid #70B008;
-    background: #DFFFBF;
+    background-color: #DFFFBF;
 }
 
 .nerve-tabs {
@@ -85,11 +85,32 @@ td {
     border: 1px solid #70B008;
 }
 
+.nerve-dialog {
+    background-color: #FFFFFF;
+}
+
+
 .nerve-background {
-    background: white;
+    background-color: #FFFFFF;
 }
 
 .nerve-highlight {
-    background: #80C008;
+    background-color: #80C008;
+}
+
+.nerve-highlight-dim {
+    background-color: #DFFFBF;
+}
+
+.nerve-success {
+    background-color: #9f9;
+}
+
+.nerve-warning {
+    background-color: #ff9;
+}
+
+.nerve-error {
+    background-color: #f99;
 }
 

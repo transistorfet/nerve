@@ -107,7 +107,7 @@ class Xmms2 (nerve.Device):
         result.wait()
 
         if url.find('/') < 0:
-            url = nerve.configdir() + '/playlists/' + url + '.m3u'
+            url = nerve.files.find('playlists/' + url + '.m3u')
 
         with open(url, 'r') as f:
             for line in f.read().split('\n'):

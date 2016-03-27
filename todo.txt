@@ -1,18 +1,65 @@
 
-    * merge notify/multiple queries with the normal query system (ie. wildcard queries), possibly tie into querycontroller too?
-    * make special args (_a, _b??) get converted to positional arguments by nerve.query, when a query comes in (used by jquery calls to pass generic args)
-    * change queries to use @nerve.public
-    * fix query() to do something consistent with the arguments passed to it when for an HTTP request in particular.
+    * add a clone() method to objects, to clone the object, and use it for controllers, so that the server will have an instantiated
+      controller object for each controller, and it clones that object for each request.  
+
+    * wsgi needs a better way to handle userpermissionsrequired
+
+    * there's an issue accessing google's oauth and having it redirect to an internal ip.  This prevents it from working on phone
+    * could you have a redirect on jabberwocky.ca that just redirects the browser to a local address?
 
     * change /assets paths to /base/assets so it's more consistent.  This will require either a blank assets controller or http
       will have to accept more complex controller names
     * should the name of the 'controllers' dict in servers be called something different, like 'paths' or 'handlers' or something?
     * change server's 'controllers' to 'mappings' to allow multiple parts in the path name ("/things/stuff/config" -> "config controller")
+    * add a config setting to controllers to specify the path of the model/device they should access, rather than hard coding it
+
+    * add alarms, such that you can notify that something's gone wrong.  Like if a mysensors node hasn't sent any data and hasn't responded to
+      pings for more than 30 minutes, you raise an alarm so I can fix it in a timely manner
+
+    * change queries to use @nerve.public
+    * would it be better to have a @Singleton decorator instead of overloading __new__?
+
+    * make backups of settings file when saving, or possible add a revision control type system to it
+    * make sure when loading config with saved module data that it gets used
+    * make sure it creates a sane default settings file if the config dir doesn't have a file already
+    * add run and config instructions to the readme (so that somebody could actually run the thing)
+
+    * make projectm kill the process when the program quits
+    * move the save/load state feature to the common player object, and have it use the backend driver to actually get and restore the state
+
+    * add help system that uses docstrings
+
+  Frontend:
+
+    * change all uses of document to document.body??
+    * do something about notices and errors... the message should be visible without scrolling to the top... maybe insert it after the button
+    * should you change js names to camelcase?
+
+    * when adding an action via the dialog-open button, there is no way to add the red dot without reloading the page
+    * make it possible to add songs from one playlist to another playlist
+    * when you delete a block, it does not update the list of blocks
+    * is there a way to specify that a submit action (on forms?) should reload the page
+    * add an optional delete button to forms to delete the object you're editing? (would this only be for config objects)
+    * make use of nerve.join_path() in js and python
+
+    * make it so that if a block is renamed, it's references in page definitions is updated
+
+  Modules:
 
     * there needs to be a way to convert a normal module into a Module object if it contains 'get_config_data'...  Right now, only modules
       that have config data in the settings file get created as Module objects, and the rest are just regular modules
     * move module stuff to it's own file??
-    * make it easier to import modules from outside the nerve subdir 
+
+  ObjectFS:
+
+    * should you re-unify the config namespace, or make it accessible somehow through the filesystem (like /devices/rgb/config:baud)
+
+    * should it be allowed to have special arguments passed to nerve.query() so that an http request can have options specified?  It will conflict
+      with the kwargs, unfortunately.  Could there be a special way of refering to them?  They would have to be removed before encoding the query.
+    * make make_object automatically get the typeinfo, and/or make it a static module function instead of a class method
+    * should multiquery/notify use get_object/keys_queries+keys_children?  Should it selectively recurse or always recurse?  How should a subobject
+      be allowed to override that behaviour
+    * fix query() to do something consistent with the arguments passed to it when for an HTTP request in particular.
 
     * implement symbolic link style redirect.  It has to be really versitile...  Right now it doesn't work with remote references because
       it implements the getattr, so it has to be able to reference a real object.  It's possible to create a special redirect object though,
@@ -20,24 +67,12 @@
     * re-evaluate use of getattr for getting objects on ObjectNode and stuff... does it cause too many potential conflicts? or does
       it simplify objects such as Main where attributes are directly on the object but should also be accessible through the ObjectNode
       system
-
-    * make sure when loading config with saved module data that it gets used
     * you could have tasks be added to the ObjectFS... you could have tasks be started automatically (or some tasks at least), after
       everything initializes.  Then you could have the EventThreadPool and mediaupdater threads be essentially loose threads in the system,
       started by the system, and accessible through the config system, with config options for them?... Well EventThreadPool is still
       a static object created by the system rather than a configurable object... 
-    * for now I've made eventpool be simple attributes on Main, but maybe they should be added to objfs?
-    * would it be better to have a @Singleton decorator instead of overloading __new__?
 
-    * make projectm kill the process when the program quits
-    * move the save/load state feature to the common player object, and have it use the backend driver to actually get and restore the state
-
-    * allow logging to be output to a file
-
-    * views should be more consistent with using str and bytes
-    * you could add something to views themselves where you specify the support files (js/css), and a parent view will integrate those into
-      the final template-generated code
-    * should you overload print instead of redirecting stdout in pyhtml??  This wont work for code in other files that use print, since they have the global vars of their scope
+  Users:
 
     * integrate user permissions and stuff into everything
     * more directly integrate the user system.  especially with mud, there must be much better security and access controls.  This also could apply for an
@@ -45,40 +80,30 @@
     * make it possible for each user to customize their own views somehow (customized remote layouts)
     * make theme user selectable somehow
 
-    * there's an issue accessing google's oauth and having it redirect to an internal ip.  This prevents it from working on phone
-    * could you have a redirect on jabberwocky.ca that just redirects the browser to a local address?
+  Databases:
 
     * add db method to create or alter table (so that it updates existing databases automatically)
+    * add support for JOIN to db driver
+    * can you make it use a different SQL database?  At the very least, you could alter init() to take just the db name without the extension (which
+      could be used by a MySQL driver as a table name prefix or something)
     * add PUT and DELETE request types to the http server
     * should Model actually inherit from object, and Device would be an ObjectNode that's also a Model? (multiple inheritence)
 
-    * add mysensors info webpage things, means of more easily managing sensor network (like buttons to reset each device, when last msg received, etc)
-    * make mud using a special module
-    * add a system of notifications/messages that's global to the system but specific to a user (ie. can leave messages for individual users)
-    * add irc/chat sort of things?
+  Medialib:
 
     * should medialib be a model instead of a device?
     * add pagation to media search results (should be possible through offset/limit)
-    * add full row select for playlist and media search, so you can click anywhere to check the box
     * it should be possible to easily remove items from the current playlist (like delete current song/delete all by artist/delete previous song)
       The changes should take effect immediately.  Possibly could have a list of recently played songs to delete
     * you could have a playlog of recently played tracks, and then you can delete previously played items (so it should list it even if the song played for 2 sec)
     * add is-playing animated icon next to the song title (info to be sent with getsong())
 
-    * add 'refresh' to android app
+    * medialib file updater should check to make sure there isn't some accessing or missing filesystem condition before removing a media file entry
+      from the database
+    * there's a Thievery Corp file with a question mark that seems to be added and then removed each cycle.  Is it because the sql query has the
+      question mark?  Or is there an issue with the file or something
 
-    * make sure it creates a sane default settings file if the config dir doesn't have a file already
-    * add run and config instructions to the readme (so that somebody could actually run the thing)
-
-    * make it so that if a block is renamed, it's references in page definitions is updated
-    * would it be useful (or more complicated) to add a 'parent' or 'template' field to pages in the pages module, so that a parent
-      page can be specified other than '__default__'?
-
-    * perhaps you could make it so that servers can be individually stopped and started
-
-    * should you change as many private variables to _leading notation?  I've already done this for ObjectNode because self.config was conflicting
-      with path names used by controllers.  In light of the filter that prevents _leading queries to be issued, this might be effective at
-      enforcing attribute access permissions.  This rule could be enforced more strictly
+  Connections:
 
     * A connection could be either text/plain (line terminated), application/json (messages), or possibly text/html, which would be similar to
       text/plain but allow html tags in the stream.  Sort out how connections negotiate mimetype of messages, and how messages are structured
@@ -86,17 +111,29 @@
       keys, completion, and so on, just like console does, but for tcpserver connections, and other things (even the websocket shell)
     * add command/path completion to shell
 
+  Misc:
+
+    * you could add something to views themselves where you specify the support files (js/css), and a parent view will integrate those into
+      the final template-generated code
+    * should you overload print instead of redirecting stdout in pyhtml??  This wont work for code in other files that use print, since they have the global vars of their scope
+
+    * add type parameters (like object(Server) to give a list of only objects that inherit from Server, or objectref(/devices) to only list
+      object names (path/ref) in the dropdown
+
+    * what about making a database of objects, where the config dictionary is saved as json encoded text, along with the pathname where it belongs
+
+    * would it be useful (or more complicated) to add a 'parent' or 'template' field to pages in the pages module, so that a parent
+      page can be specified other than '__default__'?
+
+    * make mud using a special module
+    * add a system of notifications/messages that's global to the system but specific to a user (ie. can leave messages for individual users)
+    * add irc/chat sort of things?
+
     * add SSL support to HTTP server
-    * add support for running nerve using WSGI (PEP 3333), so that apache or something else can launch nerve to handle a web request.  It would
-      have to bypass the normal main loop, but that should be doable by not creating Main(), creating a different class like Main()
     * make more advanced widgets for various things (ideas?)
     * there could be a way to automatically minify js and css files on the fly
     * add support for multiline comments in pyhtml
-
-    * add module that can maximize a particular window (like firefox), and then have a means of programming mouse clicks on the screen and mapping
-      them to queries, so that a nerve button can cause that mouse click to happen, with the window focused and maximized.  You could also click an
-      area, and if the colour of that pixel is a certain one, then return true instead of false (eg. a play/pause status indicator that uses some kind
-      of html element to drive it).  The ease of programmability of this is the key to it being usable
+    * perhaps you could make it so that servers can be individually stopped and started
 
     * add voice commands or clapping commands (beepish?).  Only critical controls are needed, like play/pause, skip, volume up/down
 
@@ -106,14 +143,14 @@
 
 STRUCTURAL/REFACTORING:
 
-    * change module type references to include the '/modules/' part
-    * how should view files be referenced relative to?  Right now it's nerve/module/views/view.pyhtml but it should be easier to reference
-      the parent module (so the code doesn't have that hardcoded) and also how will this work with the possibility of a second module location
+    * should you change as many private variables to _leading notation?  I've already done this for ObjectNode because self.config was conflicting
+      with path names used by controllers.  In light of the filter that prevents _leading queries to be issued, this might be effective at
+      enforcing attribute access permissions.  This rule could be enforced more strictly
+
+    * change module type references to include the '/modules/' part (objfs name)
     * if you convert jquery files to send post requests as json, then it will preserve the numeric/string type distinction.  Without it,
       any method called through that mechanism must be cognizant and convert strings to numeric if needed.
 
-    * should devices, at least their source files, be renamed drivers?  Basically the class/definition is the driver and the instantiated
-      object itself is the device
     * make all threads use the same method of invocation, if possible??  Or at least clean them up a bit
 
     * perhaps PyHTML could be renamed PyHP, or the filename extension could be .pyhp so it's a bit shorter or something
@@ -141,6 +178,13 @@ OTHER APPLICATIONS:
 
 
 POSSIBLE FEATURES:
+
+    * add module that can maximize a particular window (like firefox), and then have a means of programming mouse clicks on the screen and mapping
+      them to queries, so that a nerve button can cause that mouse click to happen, with the window focused and maximized.  You could also click an
+      area, and if the colour of that pixel is a certain one, then return true instead of false (eg. a play/pause status indicator that uses some kind
+      of html element to drive it).  The ease of programmability of this is the key to it being usable
+
+
     * you could add an auto discovery feature where the phone sends a broadcast message to the default port number and all the
       servers respond.  It could be used for some normal operations even, and the server would just send a message back like
       it normally would, in response to the request.  It could also be for config though, to know what servers are around
@@ -157,8 +201,6 @@ POSSIBLE FEATURES:
       the computer mouse or touch, and then it waits for an IR code, which you can then press on the remote, and it will record
       what button produces what code for each button.  You can then refer to that table to send the code you want (somehow)
 
-    * make it so that you can basically save your spot watching a movie (or playlist), and then restore it, like switching contexts.  This
-      would be most handy when watching F1 stuff, but I want to switch to music for a bit, and then later continue watching F1
     * make a mysensors node for the fridge to monitor temperature
 
     * you could have some system to assign a mood or energy level to a song, possibly something automatic or something manually

@@ -16,7 +16,10 @@ class FileController (nerve.Controller):
         return config_info
 
     def do_request(self, request):
-        filename = os.path.join(self.get_setting('root'), request.get_slug())
+        filename = nerve.files.find_source(os.path.join(self.get_setting('root'), request.get_slug()))
+
+        if not nerve.files.validate(filename):
+            raise Exception("invalid path: " + repr(filename))
 
         if os.path.isdir(filename):
             filename = os.path.join(filename, "index.html")
@@ -29,17 +32,4 @@ class FileController (nerve.Controller):
             self.set_view(PyHTML(request, None, filename))
         else:
             self.load_file_view(filename) 
-
-        """
-        (_, _, extension) = filename.rpartition('.')
-
-        if extension == 'pyhtml':
-            self.set_mimetype('text/html')
-            engine = PyHTML(request, None, filename)
-            contents = engine.get_output()
-            self.write_text(contents)
-        else:
-            self.write_file(filename)
-        """
-
 

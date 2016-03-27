@@ -50,7 +50,7 @@ class ShellController (nerve.Controller, nerve.connect.ControllerMixIn):
         exec("command_func(args)")
 
     def print(self, *objects, sep='', end='\n'):
-        self._view.write_text(sep.join(str(obj) for obj in objects) + end)
+        self._view.write(sep.join(str(obj) for obj in objects) + end)
 
     def tab_complete(self, text, state):
         for name in dir(self):
@@ -161,6 +161,10 @@ class ShellController (nerve.Controller, nerve.connect.ControllerMixIn):
 
     def cmd_thread_count(self, args):
         self.print(str(nerve.users.thread_count()))
+
+    def cmd_thread_list(self, args):
+        for thread in nerve.Task.threads:
+            self.print('<{0}>'.format(thread.name))
 
     def cmd_su(self, args):
         if len(args) != 3:

@@ -8,7 +8,7 @@ import time
 import requests
 import json
 
-from .. import MediaLibUpdater
+from ..tasks import MediaLibUpdater
 
 
 class YoutubePlaylistUpdater (MediaLibUpdater):
@@ -24,7 +24,7 @@ class YoutubePlaylistUpdater (MediaLibUpdater):
         self.db.update('info', { 'value' : 0 })
 
     def check_update(self):
-        row = self.db.get_single('info', 'name,value', self.db.inline_expr('name', 'youtube_last_updated'))
+        row = self.db.get_first_row('info', 'name,value', self.db.inline_expr('name', 'youtube_last_updated'))
         if row is None or float(row[1]) + 86400 < time.time():
             self.run_update()
 

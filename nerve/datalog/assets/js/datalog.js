@@ -228,7 +228,7 @@ function NerveGraph(element)
 
 
     // update graph data periodically
-    this.update_timer = new NerveTimedEvent(60000, function ()
+    this.update_timer = new NerveTimedInterval(60000, function ()
     {
         graphobj.update_graph();
     });

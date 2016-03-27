@@ -30,7 +30,7 @@ class PlayerDevice (nerve.Device):
     def get_config_info(cls):
         config_info = super().get_config_info()
         config_info.add_setting('backend', "Player Backend", datatype='object', default={ '__type__': 'player/vlc/VLCHTTP' })
-        for option in os.listdir('nerve/player'):
+        for option in os.listdir(nerve.files.find_source('nerve/player')):
             if option != '__pycache__' and os.path.isdir('nerve/player/' + option):
                 config_info.add_option('backend', option, 'player/' + option)
         return config_info

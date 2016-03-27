@@ -12,53 +12,55 @@ function MediaLibPlaylist(element)
 
     that.remove_selected = function ()
     {
-        $('#nerve-error').hide();
-        $('#nerve-notice').hide();
         var postvars = { 'playlist' : $('#select-playlist').val(), 'urls' : [ ] };
         $('input[name="urls[]"]:checked').each(function () {
             postvars['urls'].push($(this).val());
         });
 
         $.post('/medialib/remove_urls', postvars, function (response) {
-            if (response.count === undefined || response.count <= 0)
-                $('#nerve-error').html("No tracks were removed").show();
-            else
-                $('#nerve-notice').html(response.count + " track(s) were removed from playlist " + postvars['playlist']).show();
+            Nerve.display_response(response);
             that.update();
         }, 'json');
     }
 
+    /*
     that.create_playlist = function ()
     {
-        $('#nerve-error').hide();
-        $('#nerve-notice').hide();
-
         var playlist = $('#pl_name').val();
         $.post('/medialib/create_playlist', { 'playlist' : playlist }, function (response) {
             $('#pl_name').val('');
             if (response.error)
-                $('#nerve-error').html(response.error).show();
+                Nerve.set_error(response.error);
             else if (response.notice) {
-                $('#nerve-notice').html(response.notice).show();
+                Nerve.set_notice(response.notice);
                 $('#select-playlist').append('<option value="'+playlist+'">'+playlist+'</option>');
                 $('#select-playlist').val(playlist);
                 that.update();
             }
         }, 'json');
     }
+    */
+
+    $('#medialib-create-playlist').on('nerve:dialog:success', null, function (event, result, response) {
+        $('#select-playlist').append('<option value="'+result.playlist+'" selected>'+result.playlist+'</option>');
+        that.update();
+    });
 
     that.delete_playlist = function ()
     {
         var playlist = $('#select-playlist').val();
-        if (confirm("Are you sure you want to delete the playlist: " + playlist)) {
-            $.post('/medialib/delete_playlist', { 'playlist' : playlist }, function (response) {
-                if (response.error)
-                    $('#nerve-error').html(response.error).show();
-                else if (response.notice) {
-                    $('#nerve-notice').html(response.notice).show();
-                    $('#select-playlist option[value="'+playlist+'"]').remove();
-                    that.update();
-                }
+        //new NerveDialog({ content: "Are you sure you want to delete the playlist: " + playlist }).open(function () {
+        if (playlist == 'default') {
+            new NerveDialog({ cancel: false }).confirm("You cannot delete the default playlist");
+        }
+        else {
+            new NerveDialog().confirm("Are you sure you want to delete the playlist: <b>" + playlist + "</b>", function (dialog) {
+                $.post('/medialib/delete_playlist', { 'playlist' : playlist }, function (response) {
+                    if (dialog.display_response(response)) {
+                        $('#select-playlist option[value="'+playlist+'"]').remove();
+                        that.update();
+                    }
+                });
             });
         }
     }
@@ -84,7 +86,7 @@ function MediaLibPlaylist(element)
     $('.pl_remove').click(that.remove_selected);
     $('.pl_sort').click(that.sort_playlist);
     $('.pl_shuffle').click(that.shuffle_playlist);
-    $('.pl_create').click(that.create_playlist);
+    //$('.pl_create').click(that.create_playlist);
     $('.pl_delete').click(that.delete_playlist);
     $('.pl_load').click(that.load_playlist);
 
@@ -92,7 +94,8 @@ function MediaLibPlaylist(element)
         $('html, body').animate({ scrollTop: $('.nerve-highlight').offset().top - 100 }, 500);
     });
 
-    $(document).on('click', '#medialib-playlist-contents td:last-child', function () {
+    $('#medialib-playlist-contents').on('click', 'td:last-child', function (event) {
+        event.stopPropagation();
         var element = this;
         $.post('/query/player/goto', { 'pos' : $(element).parent().parent().children().index($(element).parent()) }, function (response) {
             $('.medialib-list tr.nerve-highlight').removeClass('nerve-highlight');
@@ -100,14 +103,14 @@ function MediaLibPlaylist(element)
         }, 'json');
     });
 
-    that.query_songname = new NerveTimedEvent($('.medialib-query-songname').attr('data-time'), function ()
+    that.query_songname = new NerveTimedInterval($('.medialib-query-songname').attr('data-time'), function ()
     {
         var queries = [
             $('.medialib-query-songname').attr('data-query'),
             'player/get_position'
         ];
 
-        Nerve.send_query(queries, function (response) {
+        Nerve.query(queries, function (response) {
             $('.medialib-query-songname').html(response[0]);
             $('#medialib-playlist-contents tr').removeClass('nerve-highlight');
             $('#medialib-playlist-contents tr').eq(response[1]).addClass('nerve-highlight');
@@ -135,6 +138,7 @@ function MediaLibPlaylist(element)
             that.query_songname.reset();
         }, 'json');
     });
+
 
     return that;
 }
@@ -185,16 +189,13 @@ function MediaLibSearch(element)
             postvars['media[]'].push($(this).val());
         });
 
-        $('#nerve-notice').hide();
-        $('#nerve-error').hide();
         $.post('/medialib/add_media_items', postvars, function (response) {
-            if (response.count === undefined || response.count <= 0) {
-                $('#nerve-error').html("No tracks were added").show();
-            }
+            if (response.error)
+                Nerve.set_error(response.error);
             else {
-                $('#nerve-notice').html(response.count + " track(s) were added to playlist " + postvars['playlist']).show();
+                Nerve.set_notice(response.notice);
                 $("input[name='media[]']:checked").each(function () {
-                    $(this).prop('checked', false);
+                    $(this).prop('checked', false).change();
                 });
             }
         }, 'json');
@@ -202,8 +203,7 @@ function MediaLibSearch(element)
 
     /*
     $(element).find('#pl_search').click(function () {
-        $('#nerve-error').hide();
-        $('#nerve-notice').hide();
+        Nerve.clear_notices();
         that.search();
     });
     if (window.location.href.indexOf("?") > 0)
@@ -233,16 +233,13 @@ function MediaLibSearch(element)
             postvars['media[]'].push($(this).val());
         });
 
-        $('#nerve-notice').hide();
-        $('#nerve-error').hide();
         $.post('/medialib/modify_tags', postvars, function (response) {
-            if (response.count === undefined || response.count <= 0) {
-                $('#nerve-error').html("No tags modified").show();
-            }
-            else {
-                $('#nerve-notice').html(response.count + " track(s) had the following tags added: " + postvars['tags']).show();
+            if (response.error)
+                Nerve.set_error(response.error);
+            else if (response.notice) {
+                Nerve.set_notice(response.notice);
                 $("input[name='media[]']:checked").each(function () {
-                    $(this).prop('checked', false);
+                    $(this).prop('checked', false).change();
                 });
                 $('#medialib-add-tags').val('');
             }
@@ -283,6 +280,26 @@ $(document).ready(function ()
 
     $('.medialib-search').each(function () {
         new MediaLibSearch(this);
+    });
+
+
+    /*
+    $(document.body).on('click', '.medialib-entry', function () {
+        // TODO open a dialog to display the entry's metadata
+        new NerveDialog().open_url('/medialib/metadata', { file: '??' });
+    });
+    */
+
+    $('.medialib-list').on('click', 'tr', function (event) {
+        if (event.target.type !== 'checkbox')
+            $(this).find(':checkbox').trigger('click');
+    });
+
+    $('.medialib-list').on('change', 'td:first-child input', function () {
+        if ($(this).is(':checked'))
+            $(this).closest('tr').addClass('nerve-highlight-dim');
+        else
+            $(this).closest('tr').removeClass('nerve-highlight-dim');
     });
 });
 

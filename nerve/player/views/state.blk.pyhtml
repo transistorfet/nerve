@@ -1,0 +1,31 @@
+
+<div class="nerve-row">
+    <button data-query="player/save_state" class="nerve-button">Save State</button>
+</div>
+<div class="nerve-row">
+    <button id="player-states-load" class="nerve-button" style="flex: 0.15;">Load State</button>
+    <select id="player-states-list">
+        <% for i, state in reversed(list(enumerate(nerve.query('/devices/player/get_states')))): %>
+            <option value="<%= i %>"><%= time.strftime("%a, %d %b %Y %H:%M", time.localtime(state['time'])) %>:  <%= state['title'] %> (<%= int(state['position'] * 100) %>%)</option>
+        <% end %>
+    </select>
+    <button id="player-states-delete" class="nerve-button" style="flex: 0.15;">Delete</button>
+    <script>
+        $(document).ready(function () {
+            $('#player-states-load').click(function (e) {
+                $.post('/query/player/load_state', { 'i' : $('#player-states-list').val() }, function(response) {
+                    location.reload();
+                }, 'json');
+            });
+
+            $('#player-states-delete').click(function (e) {
+                if (confirm("Delete state " + $('#player-states-list :selected').html())) {
+                    $.post('/query/player/delete_state', { 'i' : $('#player-states-list').val() }, function(response) {
+                        window.location.reload();
+                    }, 'json');
+                }
+            });
+        });
+    </script>
+</div>
+ 

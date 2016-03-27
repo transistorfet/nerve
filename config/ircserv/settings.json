@@ -128,7 +128,7 @@
                 },
                 "http": {
                     "__children__": {},
-                    "__type__": "http/servers/HTTPServer",
+                    "__type__": "http/servers/http/HTTPServer",
                     "controllers": null,
                     "parent": "/servers/default_http",
                     "password": "",

@@ -9,6 +9,14 @@ import threading
 import traceback
 
 
+_eventpool = None
+
+def init():
+    global _eventpool
+    _eventpool = EventThreadPool()
+    _eventpool.start()
+
+
 class Event (nerve.ObjectNode):
     events = [ ]
 
@@ -32,10 +40,13 @@ class Event (nerve.ObjectNode):
         if trigger and (len(args) <= 0 or str(args[0]) != self.trigger):
             return False
 
+        """
         root = self.get_root()
         if not root:
             return False
         root.eventpool.schedule_now(self, *args, **kwargs)
+        """
+        _eventpool.schedule_now(self, *args, **kwargs)
         return True
 
     def __lt__(self, other):

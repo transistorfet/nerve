@@ -1,0 +1,18 @@
+
+    <h5>Edit User <%= username %></h5>
+    <form method="POST" action="/users/edit<%= '/{0}'.format(idnum) if idnum else '' %>">
+        <div class="nerve-form-item">
+            <label>Username</label>
+            <span><input type="text" name="username" value="" /></span>
+        </div>
+        <div class="nerve-form-item">
+            <label>Password</label>
+            <span><input type="password" name="password" value="" /></span>
+        </div>
+        <div class="nerve-form-item">
+            <label>Retype Password</label>
+            <span><input type="password" name="password_check" value="" /></span>
+        </div>
+    </form>
+
+

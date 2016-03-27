@@ -1,0 +1,48 @@
+
+    <div>
+        <div>
+            <label>Remote Controls</label>
+            <select id="irremote-remote-name">
+                <option value="">unassigned</option>
+                <% for name in remotelist: %>
+                <option value="<%= name %>"><%= name %></option>
+                <% end %>
+            </select>
+            <button class="nerve-dialog-open" data-target="#irremote-add-remote">+</button>
+            <button id="irremote-delete-remote">-</button>
+            <button id="irremote-view">View</button>
+        </div>
+        <div id="irremote-add-remote" class="nerve-dialog" data-action="/irremote/add_remote">
+            <h6>Add New Remote Control</h6>
+            <div class="nerve-form-item">
+                <label>New Name</label>
+                <span><input type="text" name="remote_name" value="" /></span>
+            </div>
+        </div>
+        <!--
+        <div class="nerve-dialog" id="irremote-remove-remote" data-modal="true">
+            <span>Remove the remote control <span>??</span> and all it's associated control codes?</span>
+        </div>
+        -->
+
+        <div id="irremote-remote-view" style="display: none;">
+            <hr/>
+            <h5>Remote Codes</h5>
+            <table class="irremote-codelist remote">
+            </table>
+            <button class="irremote-save">Save Changes</button>
+        </div>
+
+        <hr/>
+
+        <div id="irremote-recent-view">
+            <h5>Code History</h5>
+            <table class="irremote-codelist recent">
+            <%%include nerve/irremote/views/coderows.blk.pyhtml %>
+            </table>
+            <button class="irremote-save">Save Changes</button>
+            <button class="irremote-clear">Clear</button>
+            <button class="irremote-toggle-program<%= ' nerve-highlight' if program_mode else '' %>">Program Mode</button>
+        </div>
+    </div>
+

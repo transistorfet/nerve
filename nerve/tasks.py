@@ -9,6 +9,7 @@ import threading
 class Task (threading.Thread):
     delay = True
     threads = []
+    quit = False
 
     def __init__(self, name=None, target=None):
         threading.Thread.__init__(self, None, target, name)
@@ -38,6 +39,7 @@ class Task (threading.Thread):
     def stop_all(cls):
         if cls.delay:
             return
+        cls.quit = True
         for t in cls.threads:
             t.stop()
 

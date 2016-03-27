@@ -1,0 +1,40 @@
+
+    <h4>Users</h4>
+    <table class="nerve-table">
+        <thead>
+            <tr><th>User Name</th><th>UID</th><th>Groups</th><th>Last Login</th><th></th><th></th></tr>
+        </thead>
+        <tbody>
+        <% for user in users: %>
+            <tr>
+                <td><%= user['username'] %></td>
+                <td><%= user['uid'] %></td>
+                <td><%= user['groups'] %></td>
+                <td><%= time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(user['last_login'])) %></td>
+                <td style="width: 1%;"><button class="nerve-dialog-open" data-fetch="/users/dialog/edituser/<%= user['uid'] %>">Edit</button></td>
+                <td style="width: 1%;"><button class="nerve-dialog-open" data-fetch="/users/dialog/deleteuser/<%= user['uid'] %>">Delete</button></td>
+            </tr>
+        <% end %>
+        </tbody>
+    </table>
+    <button class="nerve-dialog-open" data-fetch="/users/dialog/edituser">Add User</button>
+
+    <h4>Groups</h4>
+    <table class="nerve-table">
+        <thead>
+            <tr><th>Group Name</th><th>GID</th><th>Weight</th><th></th><th></th></tr>
+        </thead>
+        <tbody>
+        <% for group in groups: %>
+            <tr>
+                <td><%= group['groupname'] %></td>
+                <td><%= group['gid'] %></td>
+                <td><%= group['weight'] %></td>
+                <td style="width: 1%;"><button class="nerve-dialog-open" data-fetch="/users/dialog/editgroup/<%= group['gid'] %>">Edit</button></td>
+                <td style="width: 1%;"><button class="nerve-dialog-open" data-fetch="/users/dialog/deletegroup/<%= group['gid'] %>">Delete</button></td>
+            </tr>
+        <% end %>
+        </tbody>
+    </table>
+    <button class="nerve-dialog-open" data-fetch="/users/dialog/editgroup">Add Group</button>
+

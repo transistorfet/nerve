@@ -11,7 +11,7 @@ class TemplateView (nerve.View):
         self._mimetype = 'text/html'
         self._filename = filename if filename else 'nerve/http/views/template.tpl.pyhtml'
         self._data = data
-        self._sections = self._config.copy()  #self.get_config_info().get_defaults()
+        self._sections = self._config.copy()
 
     @classmethod
     def get_config_info(cls):
@@ -19,6 +19,7 @@ class TemplateView (nerve.View):
         config_info.add_setting('title', "Page Title", default='')
         config_info.add_setting('theme', "Theme Name", default='default')
         config_info.add_setting('separator', "Separator", datatype='textarea', default="<hr/>\n")
+        config_info.add_setting('content_class', "Content Class", datatype='str', default="")
         config_info.add_setting('jsfiles', "JavaScript Files", default=list(), itemtype='str')
         config_info.add_setting('cssfiles', "CSS Files", default=list(), itemtype='str')
         config_info.add_setting('header', "Header", default=list(), itemtype='view')
@@ -43,7 +44,7 @@ class TemplateView (nerve.View):
                 self._data[section] = str(self._sections[section])
 
         contents = nerve.http.PyHTML(None, self._data, self._filename).get_output()
-        self.write_bytes(contents)
+        self.set_output(contents)
 
 
 

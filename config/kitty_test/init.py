@@ -135,7 +135,7 @@ config = {
 
 
 
-class SpecialEvent (nerve.Event):
+class SpecialEvent (nerve.events.Event):
     def __init__(self, **config):
         config['repeat'] = 1.0
         super().__init__(**config)

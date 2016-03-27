@@ -110,7 +110,8 @@ class DatalogDevice (nerve.Device):
         return super().keys_queries() + [ datapoint['name'] for datapoint in self.get_setting('datapoints') ]
 
 
-class DatalogReference (object):
+# TODO we had to make this inherit from ObjectNode because the nerve.query function uses obj.query to access data... not sure if this is good
+class DatalogReference (nerve.ObjectNode):
     def __init__(self, **datapoint):
         for attrib in datapoint:
             setattr(self, attrib, datapoint[attrib])
@@ -118,7 +119,7 @@ class DatalogReference (object):
     def __call__(self):
         return nerve.query(self.ref)
 
-    def get_data(self, start=None, length=86400):
+    def calc(self, start=None, length=86400, function='AVG'):
         length = self._get_time_value(length)
         if start == None:
             start = time.time() - length
@@ -126,10 +127,11 @@ class DatalogReference (object):
             start = self._get_time_value(start)
             if start < 0:
                 start = time.time() - start
-        self.db.select(self.name)
+        self.db.select("{0}({1}) AS {1}".format(function, self.name))
         self.db.where_gt('timestamp', start)
         self.db.where_lt('timestamp', start + length)
-        return [ data[0] for data in self.db.get(self.dbtable) if data[0] != '' ]
+        data = self.db.get_first_row(self.dbtable)
+        return data[0] if data else None
 
     @staticmethod
     def _get_time_value(value):
@@ -140,15 +142,11 @@ class DatalogReference (object):
             return int(value)
 
     def average(self, start=None, length=86400):
-        results = self.get_data(start, length)
-        return sum(results) / float(len(results))
+        return self.calc(start, length, 'AVG')
 
     def low(self, start=None, length=86400):
-        results = self.get_data(start, length)
-        return min(results)
+        return self.calc(start, length, 'MIN')
 
     def high(self, start=None, length=86400):
-        results = self.get_data(start, length)
-        return max(results)
-
+        return self.calc(start, length, 'MAX')
 

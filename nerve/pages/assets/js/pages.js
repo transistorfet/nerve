@@ -4,42 +4,28 @@ $(document).ready(function()
 
     $('#block-editor-save').click(function ()
     {
-        $('#nerve-notice').hide();
-        $('#nerve-notice').hide();
-
         var postvars = { };
         postvars['originalname'] = $('#block-original-name').val();
         postvars['blockname'] = $('#block-editor-name').val();
         postvars['blocktext'] = $('#block-editor-text').val();
         $.post('/pages/saveblock', postvars, function (response) {
-            if (response.status == "success") {
-                $('#nerve-notice').html(response.message).show();
+            if (Nerve.display_response(response)) {
                 $('#block-original-name').val(postvars['blockname']);
             }
-            else
-                $('#nerve-error').html(response.message).show();
         }, 'json');
     });
 
-
-    $('.page-blocks').delegate('input', 'change', function ()
+    $('#page-editor').on('nerve:form:success', null, function ()
     {
-        var parent = $(this).parent();
-        var last = $(parent).find('input').last().clone();
-
-        $(parent).find('input').each(function () {
-            if ($(this).val() == '')
-                $(parent).remove(this);
-        });
-        $(parent).appendTo(last);
+        var pagename = $('input[name="pagename"]').val();
+        $('input[name="originalname"]').val(pagename);
+        //window.location = '/pages/editpage/' + pagename;
+        window.history.replaceState({ }, "", '/pages/editpage/' + pagename);
     });
 
     /*
     $('#page-editor-save').click(function ()
     {
-        $('#nerve-notice').hide();
-        $('#nerve-notice').hide();
-
         var postvars = { };
         postvars['originalname'] = $('#page-original-name').val();
         postvars['pagename'] = $('#page-editor-name').val();
@@ -49,12 +35,12 @@ $(document).ready(function()
         });
 
         $.post('/pages/savepage', postvars, function (response) {
-            if (response.status == "success") {
-                $('#nerve-notice').html(response.message).show();
+            if (response.notice) {
+                Nerve.set_notice(response.notice);
                 $('#page-original-name').val(postvars['pagename']);
             }
-            else
-                $('#nerve-error').html(response.message).show();
+            else if (response.error)
+                Nerve.set_error(response.error);
         }, 'json');
     });
 
@@ -64,6 +50,7 @@ $(document).ready(function()
     });
     */
 
+    /*
     $('#page-editor .nerve-form-submit').click(function ()
     {
         var pagename = $('input[name="pagename"]').val();
@@ -71,41 +58,31 @@ $(document).ready(function()
         //window.location = '/pages/editpage/' + pagename;
         window.history.replaceState({ }, "", '/pages/editpage/' + pagename);
     });
+    */
+
 
     $('.delete-block').click(function ()
     {
-        $('#nerve-notice').hide();
-        $('#nerve-notice').hide();
-
-        var blockname = $(this).attr('data-target');
+        var blockname = $(this).attr('data-name');
 
         if (confirm("Are you sure you want to delete block " + blockname)) {
             $.post('/pages/deleteblock', { 'name': blockname }, function (response) {
-                if (response.status == "success") {
+                if (Nerve.display_response(response)) {
                     $('.block-item[data-name="'+blockname+'"]').remove();
-                    $('#nerve-notice').html(response.message).show();
                 }
-                else
-                    $('#nerve-error').html(response.message).show();
             }, 'json');
         }
     });
 
     $('.delete-page').click(function ()
     {
-        $('#nerve-notice').hide();
-        $('#nerve-notice').hide();
-
-        var pagename = $(this).attr('data-target');
+        var pagename = $(this).attr('data-name');
 
         if (confirm("Are you sure you want to delete page " + pagename)) {
             $.post('/pages/deletepage', { 'name': pagename }, function (response) {
-                if (response.status == "success") {
+                if (Nerve.display_response(response)) {
                     $('.page-item[data-name="'+pagename+'"]').remove();
-                    $('#nerve-notice').html(response.message).show();
                 }
-                else
-                    $('#nerve-error').html(response.message).show();
             }, 'json');
         }
     });

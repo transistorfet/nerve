@@ -1,12 +1,14 @@
 
 #nerve-notice {
     padding: 5px;
-    margin-bottom: 20px;
+    margin-top: 5px;
+    margin-bottom: 5px;
 }
 
 #nerve-error {
     padding: 5px;
-    margin-bottom: 20px;
+    margin-top: 5px;
+    margin-bottom: 5px;
 }
 
 .nerve-row {
@@ -39,11 +41,21 @@
     display: table;
     width: 100%;
     border-collapse: collapse;
+    margin-bottom: 4px;
+}
+
+.nerve-table td {
+    padding-left: 2px;
+    padding-right: 2px;
 }
 
 .nerve-display {
     padding: 5px;
     margin-bottom: 5px;
+}
+
+.nerve-break-word {
+    word-wrap: break-word;
 }
 
 .nerve-hidden {
@@ -264,7 +276,6 @@ label.nerve-form-tree .alt-label {
     left: 0px;
     right: 0px;
     padding: 4px;
-    border-bottom: 1px solid black;
     z-index: 1000;
 }
 
@@ -288,4 +299,39 @@ label.nerve-form-tree .alt-label {
     font-size: 1.25em;
 }
 
+
+/*** Nerve Dialog ***/
+
+.nerve-dialog {
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    /* background: rgba(0,0,0,0.2); */
+    /*background-color: #444;*/
+
+    border: 1px solid black;
+    border-radius: 14px;
+    margin: 10px;
+    padding: 0.5em 1.0em 0.5em 1.0em;
+    z-index: 1000;
+
+    overflow: auto;
+}
+
+.nerve-dialog .nerve-dialog-buttons {
+    text-align: right;
+    margin-top: 0.25em;
+}
+
+.nerve-modal-underlay {
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    opacity: 0.5;
+    filter: alpha(opacity=50);
+}
 

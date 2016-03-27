@@ -18,14 +18,28 @@ class ConfigType (object):
         else:
             datatype = None
 
-        for name in reversed(typeinfo.split(':')):
+        for typeinfo in reversed(typeinfo.split(':')):
+            (name, args) = cls.parse_type(typeinfo)
             if name not in cls._datatypes:
                 raise Exception("Unregistered subtype '" + name + "' in datatype " + typeinfo)
-            if not datatype:
-                datatype = cls._datatypes[name]
+            if datatype:
+                datatype = type(cls._datatypes[name])(datatype, *args)
+            elif args:
+                datatype = type(cls._datatypes[name])(*args)
             else:
-                datatype = type(cls._datatypes[name])(datatype)
+                datatype = cls._datatypes[name]
         return datatype
+
+    @classmethod
+    def parse_type(cls, typeinfo):
+        (name, _, args) = typeinfo.partition('(')
+        if not args:
+            return (name, ())
+        args = args.strip()
+        (last, args) = (args[-1], args[:-1])
+        if last != ')' or '(' in args or ')' in args:
+            raise Exception("parse error in type description " + repr(typeinfo))
+        return (name, [ arg.strip() for arg in args.split(',') ])
 
     @classmethod
     def register_type(cls, name, obj):
@@ -184,9 +198,10 @@ class DictConfigType (ContainerConfigType):
 
 @RegisterConfigType('object-type')
 class ObjectTypeConfigType (StrConfigType):
-    def __init__(self):
+    def __init__(self, superclass=None):
         super().__init__()
         self.options = [ ]
+        self.superclass = superclass
 
     def validate(self, data):
         # TODO check to make sure the object of that name exsists
@@ -194,13 +209,20 @@ class ObjectTypeConfigType (StrConfigType):
 
     def get_options(self):
         self.options = [ ("(select object type)", '') ]
+        superclass = nerve.Module.get_class(self.superclass) if self.superclass else None
+        print(superclass)
         for typename in nerve.Module.get_types():
-            self.options.append( (typename, typename) )
+            if not superclass or issubclass(nerve.Module.get_class(typename), superclass):
+                self.options.append( (typename, typename) )
         return self.options
 
 
 @RegisterConfigType('object')
 class ObjectConfigType (ComplexConfigType):
+    def __init__(self, superclass=None):
+        super().__init__()
+        self.superclass = superclass
+
     def validate(self, data):
         if type(data) != dict:
             raise ValueError("expected type 'dict', received type '" + type(data).__name__ + "'")
@@ -232,7 +254,7 @@ class ObjectConfigType (ComplexConfigType):
         else:
             raise ValueError("Invalid datatype in get_items(): " + type(data).__name__)
 
-        yield ('__type__', 'Type', ConfigType.get_type('object-type'), typename)
+        yield ('__type__', 'Type', ConfigType.get_type('object-type' + ('({0})'.format(self.superclass) if self.superclass else '')), typename)
         for tup in items:
             yield tup
         # TODO might the key here get mixed up with a setting of the same name?
@@ -332,7 +354,7 @@ class UserIDConfigType (IntConfigType):
         return int(data)
 
     def get_options(self):
-        return nerve.users.get_user_list()
+        return [ (user['username'], user['uid']) for user in nerve.users.get_user_list() ]
 
 
 @RegisterConfigType('group-id')
@@ -346,7 +368,7 @@ class GroupIDConfigType (IntConfigType):
         return int(data)
 
     def get_options(self):
-        return nerve.users.get_group_list()
+        return [ (group['groupname'], group['gid']) for group in nerve.users.get_group_list() ]
 
 
 @RegisterConfigType('access')

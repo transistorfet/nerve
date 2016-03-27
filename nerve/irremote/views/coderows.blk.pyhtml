@@ -1,0 +1,19 @@
+
+        <% for (code, remote_name, button_name) in codelist: %>
+            <tr>
+                <td><%= code %><input type="hidden" name="code[]" value="<%= code %>" /></td>
+                <td><select name="remote_name[]">
+                    <option value="">unassigned</option>
+                    <% for name in remotelist: %>
+                    <option value="<%= name %>" <%= ' selected' if name == remote_name else '' %>><%= name %></option>
+                    <% end %>
+                </select></td>
+                <td><input type="text" name="button_name[]" value="<%= button_name %>" /></td>
+                <td><button class="irremote-send" data-code="<%= code %>">Send</button></td>
+                <!-- <td><button class="irremote-edit" data-code="<%= code %>">Edit Action</button></td> -->
+                <td><button class="nerve-dialog-open modal" data-fetch="/irremote/edit_event/<%= code %>">Edit Action</button></td>
+                <td><%= '<span style="color: #900;">&bull;</span>' if nerve.has_object('/devices/irremote/' + code) else '' %></td>
+                <td class="irremote-delete-row">&#10006;</td>
+            </tr>
+        <% end %>
+

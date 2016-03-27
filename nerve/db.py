@@ -12,18 +12,9 @@ class Database (object):
 
     def __init__(self, filename):
         if filename not in Database.databases:
-            Database.databases[filename] = apsw.Connection(os.path.join(nerve.configdir(), filename))
+            Database.databases[filename] = apsw.Connection(nerve.files.find(filename, create=True))
         self.dbcon = Database.databases[filename]
         self.reset_cache()
-
-    def reset_cache(self):
-        self.cache_where = ""
-        self.cache_group = ""
-        self.cache_order = ""
-        self.cache_offset = ""
-        self.cache_limit = ""
-        self.cache_select = "*"
-        self.cache_distinct = ""
 
     def query(self, query, bindings=None):
         dbcursor = self.dbcon.cursor()
@@ -33,6 +24,10 @@ class Database (object):
         except apsw.ExecutionCompleteError:
             self.columns = [ ]
         return result
+
+    def get_columns(self):
+        #return self.dbcursor.getdescription()
+        return self.columns
 
     def table_exists(self, name):
         for row in self.query("SELECT name FROM sqlite_master WHERE type IN ('table','view') AND name = '" + name + "' UNION ALL SELECT name FROM sqlite_temp_master WHERE type IN ('table','view') AND name = '" + name + "'"):
@@ -58,6 +53,15 @@ class Database (object):
 
     def inline_expr(self, name, val, compare='='):
         return "%s %s '%s' " % (name, compare, self.escape(val))
+
+    def reset_cache(self):
+        self.cache_where = ""
+        self.cache_group = ""
+        self.cache_order = ""
+        self.cache_offset = ""
+        self.cache_limit = ""
+        self.cache_select = "*"
+        self.cache_distinct = ""
 
     def where(self, where, val, compare='=', cond='AND'):
         where_sql = self.inline_expr(where, val, compare)
@@ -117,7 +121,7 @@ class Database (object):
     def select(self, fields):
         self.cache_select = fields
 
-    def distinct(self, enabled):
+    def distinct(self, enabled=True):
         if enabled is True:
             self.cache_distinct = 'DISTINCT'
         else:
@@ -171,16 +175,25 @@ class Database (object):
         self.reset_cache()
         return rows
 
-    def get_single(self, table, select=None, where=None):
+    def get_first_row(self, table, select=None, where=None):
         result = list(self.get(table, select, where))
         if len(result) > 0:
             return result[0]
         else:
             return None
 
-    def get_columns(self):
-        #return self.dbcursor.getdescription()
-        return self.columns
+    def get_first_row_assoc(self, table, select=None, where=None):
+        result = list(self.get_assoc(table, select, where))
+        if len(result) > 0:
+            return result[0]
+        else:
+            return None
+
+    def get_count(self, table, select=None, where=None):
+        count = 0
+        for row in self.get(table, select, where):
+            count += 1
+        return count
 
     def insert(self, table, data, replace=False):
         columns = data.keys()

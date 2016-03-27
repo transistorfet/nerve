@@ -11,38 +11,36 @@ import random
 class Playlist (object):
     def __init__(self, name):
         self.name = name
-        plroot = nerve.configdir() + '/playlists'
-        if not os.path.isdir(plroot):
-            os.mkdir(plroot)
-        self.filename = plroot + '/' + name + '.m3u'
-        #if not os.path.isfile(self.filename):
-        #    raise Exception(self.filename + " playlist not found")
-        if not os.path.isfile(self.filename):
-            with open(self.filename, 'w') as f:
-                pass
         self.media_list = [ ]
+        self.filename = nerve.files.find('playlists/' + name + '.m3u', create=True)
 
     @staticmethod
-    def create(self, name):
-        plroot = nerve.configdir() + '/playlists'
-        filename = plroot + '/' + name + '.m3u'
-        if not os.path.isfile(filename):
-            with open(filename, 'w') as f:
-                pass
+    def listnames():
+        dirname = nerve.files.find('playlists')
+        if not os.path.isdir(dirname):
+            raise Exception(dirname + " is not a directory")
+        files = os.listdir(dirname)
+        return [ name[:-4] for name in files if name.endswith(".m3u") ]
+
+    @staticmethod
+    def create(name):
+        nerve.files.createfile('playlists/' + name + '.m3u')
 
     @staticmethod
     def delete(name):
-        plroot = nerve.configdir() + '/playlists'
-        filename = plroot + '/' + name + '.m3u'
-        if os.path.isdir(plroot) and os.path.isfile(filename):
-            os.remove(filename)
+        try:
+            filename = nerve.files.find('playlists/' + name + '.m3u')
+            if os.path.isfile(filename):
+                os.remove(filename)
+        except OSError:
+            pass
 
     def load(self):
         self.media_list = [ ]
         artist = ""
         title = ""
         duration = 0
-        with open(self.filename, 'r') as f:
+        with open(self.filename, 'rt') as f:
             for line in f.read().split('\n'):
                 line = line.strip()
                 if line and line.startswith('#'):
@@ -59,7 +57,7 @@ class Playlist (object):
                     self.media_list.append(media)
 
     def save(self):
-        with open(self.filename, 'w') as f:
+        with open(self.filename, 'wt') as f:
             f.write("#EXTM3U\n")
             for media in self.media_list:
                 f.write("#EXTINF:%d, %s - %s\n" % (float(media['duration']), media['artist'], media['title']))

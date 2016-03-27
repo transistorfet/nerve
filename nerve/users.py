@@ -3,7 +3,9 @@
 
 import nerve
 
+import os
 import time
+import base64
 import hashlib
 import threading
 import traceback
@@ -144,7 +146,7 @@ def thread_count():
     return len(_user_threads)
 
 
-def require_permissions(role):
+def require_group(role):
     uid = thread_owner_id()
     if uid < 0:
         raise UserPermissionsRequired()
@@ -155,6 +157,7 @@ def require_permissions(role):
 
 
 def require_access(require, owner, group, access):
+    # TODO remove later
     #print(traceback.print_stack())
     #print(thread_owner())
     require = 0o1 if require == 'r' else 0o2 if require == 'w' else 0o4 if require == 'w' else require
@@ -168,16 +171,20 @@ def require_access(require, owner, group, access):
 
 
 def get_user_list():
-    _user_db.select('username,uid')
-    return list(_user_db.get('users'))
+    _user_db.select('username,uid,groups,last_login')
+    _user_db.order_by('username ASC')
+    return list(_user_db.get_assoc('users'))
 
 
 def get_group_list():
-    _user_db.select('groupname,gid')
-    return list(_user_db.get('groups'))
+    _user_db.select('groupname,gid,weight')
+    _user_db.order_by('groupname ASC')
+    return list(_user_db.get_assoc('groups'))
 
 
 def hash_password(password):
-    return hashlib.sha256(bytes(password, 'utf-8')).hexdigest()
+    return hashlib.sha512(bytes(password, 'utf-8')).hexdigest()
 
+def random_token():
+    return hashlib.sha512(os.urandom(64)).hexdigest()
 

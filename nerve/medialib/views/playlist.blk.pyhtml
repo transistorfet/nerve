@@ -1,8 +1,9 @@
 
 <div class="nerve-floatingbar-top nerve-background">
     <div class="nerve-form-item-row">
+        <button class="nerve-dialog-open" data-target="#medialib-create-playlist">+</button>
         <button type="submit" class="pl_delete">-</button>
-        <select id="select-playlist">
+        <select id="select-playlist" style="width: 14em;">
             <% for name in list_of_playlists: %>
                 <option value="<%= name %>"><%= name %></option>
             <% end %>
@@ -24,11 +25,10 @@
     </div>
 </div>
 
-<div class="nerve-form-list">
-    <h4>Create Playlist</h4>
+<div id="medialib-create-playlist" class="nerve-dialog" data-action="/medialib/create_playlist">
     <div>
-        <input type="text" id="pl_name" />
-        <button type="submit" class="pl_create">Create</button>
+        <h5>Create Playlist</h5>
+        <input type="text" name="playlist" />
     </div>
 </div>
 

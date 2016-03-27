@@ -12,6 +12,7 @@
         <a href="/medialib/search?mode=album&order=random">Random</a>
         <a href="/medialib/search_youtube">YouTube</a>
         <a href="/medialib/search?mode=filename&order=last_modified&recent=52&media_type=video&tags=!watched">Videos</a>
+        <a href="/medialib/search?mode=filename&order=filename&recent=156&media_type=video&tags=!watched">To Watch</a>
     </div>
 
     <div class="medialib-links">
@@ -36,7 +37,7 @@
         </select>
 
         <input type="text" name="recent" placeholder="(weeks back)" value="<%= recent if recent else '' %>">
-        <input type="text" name="tags" placeholder="(tags)" value="<%= tags if tags else '' %>">
+        <input type="text" name="tags" placeholder="(tags)" value="<%= tags if tags else '' %>" list="tag-suggestions">
 
         <br />
 
@@ -59,7 +60,31 @@
         <% if media_list: %>
 
         <hr/>
-        <span><%= len(media_list) %> results found</span>
+
+        <div class="nerve-floatingbar-top nerve-background">
+            <select id="select-playlist">
+            <% for name in list_of_playlists: %>
+                <option value="<%= name %>"><%= name %></option>
+            <% end %>
+            </select>
+
+            <button type="submit" class="pl_replace" value="1">Replace</button>
+            <button type="submit" class="pl_enqueue" value="1">Enqueue</button>
+            <button type="submit" class="pl_playnow" value="1">Play Now</button>
+            <button type="submit" class="pl_addtags" value="1">Add Tags</button>
+            <input type="text" id="medialib-add-tags" list="tag-suggestions" />
+            <datalist id="tag-suggestions">
+                <option value="star" />
+                <!-- <option value="⭐" /> -->
+                <!-- <option value="&#x2764" /> -->
+                <option value="❤" />
+                <option value="watched" />
+                <option value="!watched" />
+            </datalist>
+            <a href="#top">Top</a>
+        </div>
+
+        <div><%= len(media_list) %> results found</div>
 
         <div id="medialib-search-results" class="medialib-list">
             <%
@@ -67,22 +92,29 @@
             has_album = True if 'album' in media_list[0] else False
             has_genre = True if 'genre' in media_list[0] else False
             has_title = True if 'title' in media_list[0] else False
+            has_duration = True if 'duration' in media_list[0] else False
             has_filename = True if 'filename' in media_list[0] else False
             has_track_num = True if 'track_num' in media_list[0] else False
             has_tags = True if 'tags' in media_list[0] else False
+
+            def format_duration(duration):
+                min, sec = divmod(int(duration), 60)
+                hour, min = divmod(min, 60)
+                return "{}{:02d}:{:02d}".format("{}:".format(hour) if hour > 0 else '', min, sec)
+            end
             %>
 
-            <table>
+            <table class="nerve-table">
             <thead><tr>
                 <th></th>
-                <% if has_filename: %>
-                <th>Filename</th>
-                <% end %>
                 <% if has_artist: %>
                 <th>Artist</th>
                 <% end %>
                 <% if has_title: %>
                     <th>Title</th>
+                <% end %>
+                <% if has_duration: %>
+                    <th></th>
                 <% end %>
                 <% if has_album: %>
                     <th>Album</th>
@@ -92,6 +124,9 @@
                 <% end %>
                 <% if has_genre: %>
                     <th>Genre</th>
+                <% end %>
+                <% if has_filename: %>
+                <th>Filename</th>
                 <% end %>
                 <% if has_tags: %>
                     <th>Tags</th>
@@ -110,14 +145,14 @@
                         end
                         %>
                         <td><input type="checkbox" name="media[]" value="<%= dataval %>" /></td>
-                        <% if has_filename: %>
-                            <td><%= media['filename'] %></td>
-                        <% end %>
                         <% if has_artist: %>
                             <td><a href="<%= py.PATH %>?mode=title&order=artist&search=<%= urlencode(media['artist']) %>"><%= media['artist'] %></a></td>
                         <% end %>
                         <% if has_title: %>
                             <td><%= media['title'] %></td>
+                        <% end %>
+                        <% if has_duration: %>
+                            <td><%= format_duration(media['duration']) %></td>
                         <% end %>
                         <% if has_album: %>
                             <td><%= media['album'] %></td>
@@ -128,10 +163,13 @@
                         <% if has_genre: %>
                             <td><%= media['genre'] %></td>
                         <% end %>
+                        <% if has_filename: %>
+                            <td><%= media['filename'] %></td>
+                        <% end %>
                         <% if has_tags: %>
                             <td><div class="tags">
                             <!-- <%= media['tags'] %> -->
-                            <% for tag in sorted(medialib.split_tags(media['tags'])): %>
+                            <% for tag in sorted(nerve.medialib.MediaLibDevice.split_tags(media['tags'])): %>
                                 <span class="tag"><%= tag if ' ' not in tag else '"' + tag + '"' %></span><span class="remove-tag" data-id="<%= media['id'] %>">&#x274E;</span>
                             <% end %>
                             </div></td>
@@ -147,19 +185,5 @@
         <% end %>
     </div>
 
-    <div class="nerve-fixedbar-bottom nerve-background">
-        <select id="select-playlist">
-        <% for name in list_of_playlists: %>
-            <option value="<%= name %>"><%= name %></option>
-        <% end %>
-        </select>
-
-        <button type="submit" class="pl_replace" value="1">Replace</button>
-        <button type="submit" class="pl_enqueue" value="1">Enqueue</button>
-        <button type="submit" class="pl_playnow" value="1">Play Now</button>
-        <button type="submit" class="pl_addtags" value="1">Add Tags</button>
-        <input type="text" id="medialib-add-tags" />
-        <a href="#top">Top</a>
-    </div>
 </div>
 

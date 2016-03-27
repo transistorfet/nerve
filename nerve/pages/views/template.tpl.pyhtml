@@ -38,7 +38,7 @@
     </div>
     <% end %>
 
-    <div id="content">
+    <div id="content" class="<%= py.DATA('content_class') %>">
         <div id="nerve-notice" style="display: none;"></div>
         <div id="nerve-error" style="display: none;"></div>
 

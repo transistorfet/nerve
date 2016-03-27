@@ -6,7 +6,7 @@
         <tr>
             <td><a href="/pages/<%= page %>"><%= page %></a></td>
             <td><a href="/pages/editpage/<%= page %>"><button>Edit</button></a></td>
-            <td><button class="delete-page" data-target="<%= page %>">Delete</button></td>
+            <td><button class="delete-page" data-name="<%= page %>">Delete</button></td>
         </tr>
     <% end %>
     </table>

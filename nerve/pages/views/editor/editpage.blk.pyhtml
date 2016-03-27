@@ -1,7 +1,5 @@
 
     <h4>Edit Page</h4>
 
-    <div id="page-editor">
-        <%= nerve.base.FormView(sections, pagedata, target='/pages/savepage') %>
-    </div>
+    <%= nerve.base.FormView(sections, pagedata, formid="page-editor", action='/pages/savepage') %>
 

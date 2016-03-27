@@ -3,6 +3,6 @@
 
 from .views.pyhtml import PyHTML
 from .views.template import TemplateView
-from .servers import HTTPServer
-from .controllers import Controller, SessionMixIn
+from .servers.http import HTTPServer
+from .controllers import Controller, SessionMixIn, SessionController
 

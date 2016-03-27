@@ -1,14 +1,14 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+from nerve import files
 from nerve.logs import log
-#from nerve.types import ConfigType, StructConfigType, RegisterConfigType
-import nerve.types
-from nerve.objects import public, is_public, ObjectNode, Module
-from nerve.core import Request, Controller, View, Server, Model, Device, PyCodeQuery, SymbolicLink, NotFoundError, ControllerError, PlainTextView, JsonView, FileView
+from nerve import types
+from nerve.objects import public, is_public, join_path, ObjectNode, Module
+from nerve.core import Request, Controller, View, Server, Model, Device, PyCodeQuery, SymbolicLink, NotFoundError, ControllerError, TextView, PlainTextView, JsonView, FileView, HTMLView
 from nerve.db import Database
 from nerve.tasks import Task
-from nerve.events import Event, PyCodeEvent
-import nerve.users
-from nerve.main import Main, loop, quit, get_main, save_config, configdir, set_object, get_object, del_object, has_object, query, notify, load_file, save_file
+from nerve import events
+from nerve import users
+from nerve.main import Main, loop, root, quit, get_main, save_config, set_object, get_object, del_object, has_object, query
 

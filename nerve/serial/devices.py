@@ -98,13 +98,7 @@ class NerveSerialQuery (object):
         self.result = None
 
     def __call__(self, *args, **kwargs):
-        args = list(args)
         query_string = self.ref
-        for arg in [ 'a', 'b', 'c', 'd', 'e', 'f' ]:
-            if arg in kwargs:
-                args.append(kwargs[arg])
-            else:
-                break
         if len(args) > 0:
             query_string += ' ' + ' '.join(args)
 
@@ -156,14 +150,14 @@ class NerveSerialDevice (SerialDevice):
 
         if not args:
             return
-        #notify_ref = self.get_setting('notify').rstrip('/') + '/' + ref + '/*'
-        #nerve.notify(notify_ref, args)
-        #self.notify('event_recv/*', args)
+        notify_ref = self.get_setting('notify').rstrip('/') + '/' + ref + '/*'
+        nerve.query(notify_ref, args)
+        #self.query('event_recv/*', args)
 
-        print("Received unmatched serial return: " + ref + " " + str(args))
-        nerve.query("/events/ir/irrecv/" + args)
+        #print("Received unmatched serial return: " + ref + " " + str(args))
+        #nerve.query("/events/ir/irrecv/" + args)
 
-        #nerve.notify("/events/ir/irrecv")
+        #nerve.query("/events/ir/irrecv/*")
         # this would then call all the events in the irrecv 'directory'
         # or would this just be a query...
 

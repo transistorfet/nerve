@@ -23,7 +23,10 @@ class BlockView (nerve.View):
             self._view.finalize()
 
     def get_output(self):
-        self.finalize()
         return self._view.get_output()
+
+    def __str__(self):
+        self.finalize()
+        return str(self._view)
 
 

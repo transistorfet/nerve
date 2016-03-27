@@ -517,3 +517,15 @@ x queriable??
   because we just want some nodes to be fixed (namely nodes that are automatically created, like event groups and mysensors nodes)
 
 
+
+-------------------------------------------------
+
+2015/11/09:
+
+player/load_playlist?$1=Nine+Inch+Nails
+
+$1, $2, etc
+
+or, which will be parsed exactly the same
+player/load_playlist?%241=Nine+Inch+Nails
+

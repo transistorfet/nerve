@@ -11,7 +11,7 @@ class ConfigController (nerve.http.Controller):
 
     @nerve.public
     def index(self, request):
-        nerve.users.require_permissions('admin')
+        nerve.users.require_group('admin')
         # TODO can you for this path without refering directly to the module (ie. using what's in the request)
         self.load_template_view('nerve/base/views/config/settings.blk.pyhtml', { }, request)
         self.template_add_to_section('jsfiles', '/assets/js/formview.js')
@@ -22,7 +22,7 @@ class ConfigController (nerve.http.Controller):
         obj = nerve.get_object("/")
         self.load_template_view(None, None, request)
         self.template_add_to_section('jsfiles', '/assets/js/formview.js')
-        self.template_add_to_section('content', FormView(nerve.types.ObjectConfigType(), obj.get_config_data(), target='/config/save'))
+        self.template_add_to_section('content', FormView(nerve.types.ObjectConfigType(), obj.get_config_data(), action='/config/save'))
         #self.template_add_to_section('content', FormView(obj.get_config_info(), obj.get_config_data()))
         #self.template_add_to_section('content', FormView(nerve.http.views.template.TemplateView.get_config_info(), self._view._sections))
 
@@ -42,22 +42,27 @@ class ConfigController (nerve.http.Controller):
 
     @nerve.public
     def add(self, request):
-        nerve.users.require_permissions('admin')
+        nerve.users.require_group('admin')
 
         path = request.get_slug()
         if not path:
             raise nerve.ControllerError("You must provide a valid object name")
 
-        self.set_view(FormView(nerve.types.ConfigType.get_type('object'), { '__type__': request.arg('type') }))
+        #self.set_view(FormView(nerve.types.ConfigType.get_type('object'), { '__type__': request.arg('type') }))
 
-        self.load_template_view(None, None, request)
-        self.template_add_to_section('jsfiles', '/assets/js/formview.js')
-        self.template_add_to_section('content', FormView(nerve.types.ConfigType.get_type('object'), None, '/config/create/' + path + '/new', submitname="Create", submitback=True))
+        form = FormView(nerve.types.ConfigType.get_type('object'), None, '/config/create/' + path + '/new', submitname="Create", submitback=True)
+
+        if request.arg('dialog'):
+            self.set_view(form)
+        else:
+            self.load_template_view(None, None, request)
+            self.template_add_to_section('jsfiles', '/assets/js/formview.js')
+            self.template_add_to_section('content', form)
 
 
     @nerve.public
     def create(self, request):
-        nerve.users.require_permissions('admin')
+        nerve.users.require_group('admin')
 
         if request.reqtype != "POST":
             raise nerve.ControllerError("Unexpected request type: " + request.reqtype)
@@ -83,12 +88,12 @@ class ConfigController (nerve.http.Controller):
         obj = nerve.Module.make_object(typeinfo, config)
         nerve.set_object(dirname + '/' + name, obj)
         nerve.save_config()
-        self.load_json_view({ 'status' : 'success' })
+        self.load_json_view({ 'notice': "Object created" })
 
 
     @nerve.public
     def edit(self, request):
-        nerve.users.require_permissions('admin')
+        nerve.users.require_group('admin')
 
         path = request.get_slug()
         if not path:
@@ -98,9 +103,14 @@ class ConfigController (nerve.http.Controller):
         if not obj:
             raise nerve.ControllerError("Object not found: " + path)
 
-        self.load_template_view(None, None, request)
-        self.template_add_to_section('jsfiles', '/assets/js/formview.js')
-        self.template_add_to_section('content', FormView(obj.get_config_info(), obj.get_config_data(), '/config/save/' + path, submitback=True))
+        form = FormView(obj.get_config_info(), obj.get_config_data(), '/config/save/' + path, submitback=True)
+
+        if request.arg('dialog'):
+            self.set_view(form)
+        else:
+            self.load_template_view(None, None, request)
+            self.template_add_to_section('jsfiles', '/assets/js/formview.js')
+            self.template_add_to_section('content', form)
 
 
     @nerve.public
@@ -116,7 +126,7 @@ class ConfigController (nerve.http.Controller):
 
     @nerve.public
     def save(self, request):
-        nerve.users.require_permissions('admin')
+        nerve.users.require_group('admin')
 
         if request.reqtype != "POST":
             raise nerve.ControllerError("Unexpected request type: " + request.reqtype)
@@ -133,12 +143,12 @@ class ConfigController (nerve.http.Controller):
         obj.update_config_data(config)
 
         nerve.save_config()
-        self.load_json_view({ 'status' : 'success' })
+        self.load_json_view({ 'notice': "Saved successfully" })
 
 
     @nerve.public
     def rename(self, request):
-        nerve.users.require_permissions('admin')
+        nerve.users.require_group('admin')
 
         if request.reqtype != "POST":
             raise nerve.ControllerError("Unexpected request type: " + request.reqtype)
@@ -160,12 +170,12 @@ class ConfigController (nerve.http.Controller):
         nerve.set_object(newname, obj)
 
         nerve.save_config()
-        self.load_json_view({ 'status' : 'success' })
+        self.load_json_view({ 'notice': "Object renamed" })
 
 
     @nerve.public
     def delete(self, request):
-        nerve.users.require_permissions('admin')
+        nerve.users.require_group('admin')
 
         if request.reqtype != "POST":
             raise nerve.ControllerError("Unexpected request type: " + request.reqtype)
@@ -179,14 +189,7 @@ class ConfigController (nerve.http.Controller):
             raise nerve.ControllerError("Unable to delete object.")
 
         nerve.save_config()
-        self.load_json_view({ 'status' : 'success' })
+        self.load_json_view({ 'notice': "Object deleted" })
 
-
-    def handle_error(self, error, traceback, request):
-        if request.reqtype == 'POST' and type(error) is not nerve.users.UserPermissionsRequired:
-            nerve.log(traceback, logtype='error')
-            self.load_json_view({ 'status' : 'error', 'message' : repr(error) })
-        else:
-            super().handle_error(error, traceback, request)
 
 

@@ -29,7 +29,7 @@ class VLCHTTP (nerve.Device):
         self.server = 'localhost:8081'
         self.auth = ('', 'test')
 
-        content = nerve.load_file('player-states.json')
+        content = nerve.files.load('player-states.json')
         self.saved_states = json.loads(content) if content else [ ]
 
         self.thread = nerve.Task('VLCTask', self.run)
@@ -127,7 +127,7 @@ class VLCHTTP (nerve.Device):
         self._send_command('pl_empty')
         if url.find('/') < 0:
             self.playlist_name = url
-            url = nerve.configdir() + '/playlists/' + url + '.m3u'
+            url = nerve.files.find('playlists/' + url + '.m3u')
         else:
             self.playlist_name = None
         self._send_command_and_uri('in_play', urllib.parse.quote(url))
@@ -191,7 +191,7 @@ class VLCHTTP (nerve.Device):
             'title' : meta['filename'],
             'uri' : uri
         })
-        nerve.save_file('player-states.json', json.dumps(self.saved_states, sort_keys=True, indent=4, separators=(',', ': ')))
+        nerve.files.save('player-states.json', json.dumps(self.saved_states, sort_keys=True, indent=4, separators=(',', ': ')))
 
     def load_state(self, i):
         state = self.saved_states[int(i)]
@@ -202,7 +202,7 @@ class VLCHTTP (nerve.Device):
 
     def delete_state(self, i):
         del self.saved_states[int(i)]
-        nerve.save_file('player-states.json', json.dumps(self.saved_states, sort_keys=True, indent=4, separators=(',', ': ')))
+        nerve.files.save('player-states.json', json.dumps(self.saved_states, sort_keys=True, indent=4, separators=(',', ': ')))
 
     def get_states(self):
         return self.saved_states

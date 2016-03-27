@@ -12,13 +12,15 @@ import oauth2client.client
 class AggregatorController (nerve.http.SessionMixIn, nerve.http.Controller):
     @nerve.public
     def youtube_authorize(self, request):
-        redirect_uri = request.make_url('youtube_authorize')
-        client_id = '131741203927-9hkaaiouh50ehcqtavp0149oj829cdag.apps.googleusercontent.com'
-        client_secret = 'fSQGuD8jia8FA6yLbB3G7uVw'
-
         #redirect_uri = 'http://jabberwocky.ca/redirect.php?url=' + urllib.parse.quote(request.make_url('youtube_authorize'))
         #client_id = '131741203927-7kee2e858ug0unbidngtl0eetokckqbt.apps.googleusercontent.com'
         #client_secret = 'ye801tEJfi1i7NS5c17i_4_9'
+
+        client_id = '131741203927-9hkaaiouh50ehcqtavp0149oj829cdag.apps.googleusercontent.com'
+        client_secret = 'fSQGuD8jia8FA6yLbB3G7uVw'
+
+        redirect_uri = request.make_url('youtube_authorize')
+        #redirect_uri = 'http://jabberwocky.ca/~trans/youtube_authorize.php'
 
         flow = oauth2client.client.OAuth2WebServerFlow(client_id, client_secret, scope='https://www.googleapis.com/auth/youtube.readonly', redirect_uri=redirect_uri)
         if 'code' not in request.args:

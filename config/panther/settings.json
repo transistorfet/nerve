@@ -90,6 +90,10 @@
                         }
                     }
                 },
+                "irremote": {
+                    "__children__": {},
+                    "__type__": "irremote/devices/IRRemoteDevice"
+                },
                 "medialib": {
                     "__children__": {},
                     "__type__": "medialib/devices/MediaLibDevice"
@@ -244,11 +248,15 @@
                 "serial": {
                     "__children__": {
                         "irrecv": {
-                            "__children__": {},
-                            "__type__": "events/PyCodeEvent",
-                            "code": "nerve.query('/events/ir/irrecv/' + args[0])",
-                            "repeat": 0.0,
-                            "trigger": ""
+                            "__children__": {
+                                "irremote_dispatch": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/devices/irremote/on_receive_code', *args)",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                }
+                            }
                         }
                     },
                     "__type__": "objects/ObjectNode"
@@ -519,6 +527,9 @@
                         "datalog": {
                             "__type__": "datalog/controllers/DatalogController"
                         },
+                        "irremote": {
+                            "__type__": "irremote/controllers/IRRemoteController"
+                        },
                         "medialib": {
                             "__type__": "medialib/controllers/MediaLibController"
                         },
@@ -532,7 +543,7 @@
                             "__type__": "base/controllers/shell/ShellController"
                         }
                     },
-                    "__type__": "http/HTTPServer",
+                    "__type__": "http/servers/http/HTTPServer",
                     "template": {
                         "__type__": "pages/views/page/PageView",
                         "theme": "dark"

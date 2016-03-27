@@ -5,6 +5,7 @@ import nerve
 
 import types
 import traceback
+import importlib
 
 
 def public(funcobj):
@@ -26,6 +27,12 @@ def access(access):
             funcobj(*args, **kwargs)
         return access_caller
     return access_wrapper
+
+
+def join_path(base, path):
+    if not base or path[0] == '/' or '://' in path:
+        return path
+    return base.rstrip('/') + '/' + path
 
 
 class ObjectNode (object):
@@ -159,7 +166,7 @@ class ObjectNode (object):
 
     def set_object(self, name, obj, **config):
         (path, _, leaf) = name.rpartition('/')
-        root = self.get_object(path)
+        root = self.get_object(path) if path else self
 
         if not root or not leaf:
             nerve.log("set_object(): invalid path given, " + name, logtype='error')
@@ -181,6 +188,7 @@ class ObjectNode (object):
             return None
         return root.del_child(leaf)
 
+    """
     def notify(self, querystring, *args, **kwargs):
         if not querystring.endswith('/*'):
             raise Exception("Invalid notify query: " + querystring)
@@ -191,6 +199,25 @@ class ObjectNode (object):
             if callable(obj):
                 results.append(obj(*args, **kwargs))
         return results
+    """
+
+    def query(self, querystring, *args, **kwargs):
+        (name, slash, remain) = querystring.partition('/')
+
+        if name != '*':
+            obj = self.get_object(name)
+            if slash:
+                return obj.query(remain, *args, **kwargs)
+            elif callable(obj):
+                return obj(*args, **kwargs)
+            else:
+                return obj
+        else:
+            results = [ ]
+            for key in self.keys_queries() + self.keys_children():
+                path = key + ( '/' + remain if remain else '' )
+                results.append(self.query(path, *args, **kwargs))
+            return results
 
 
 class _ModuleSingleton (type):
@@ -339,16 +366,27 @@ class Module (ObjectNode, metaclass=_ModuleSingleton):
             currentname = '.'.join((namespace, modulename))
             try:
                 exec("import " + currentname, globals(), globals())
-            except ImportError:
+                #module = importlib.import_module(currentname)
+                #print(module)
+
+            except ImportError as e:
+                if e.name == currentname:
+                    continue
+                else:
+                    nerve.log(traceback.format_exc(), logtype='error')
+                    break
+
+            except:
                 nerve.log(traceback.format_exc(), logtype='error')
-                continue
+                break
+
             else:
                 module = eval(currentname)
-
                 if hasattr(module, 'init'):
                     init = getattr(module, 'init')
                     init()
                 return module
+        nerve.log("unable to load module " + modulename, logtype='error')
         return None
 
     @staticmethod

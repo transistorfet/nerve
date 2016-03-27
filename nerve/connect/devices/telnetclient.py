@@ -74,7 +74,7 @@ class TelnetClient (nerve.Device, nerve.connect.Connection):
         self.linebuffer.append(msg.text.rstrip())
         if len(self.linebuffer) > 100:
             self.linebuffer = self.linebuffer[len(self.linebuffer) - 100:]
-        self.notify('event_message/*', msg)
+        self.query('event_message/*', msg)
 
     @nerve.public
     def connected(self):

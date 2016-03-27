@@ -1,5 +1,6 @@
 
 
+/*
 button.nerve-button,
 button.nerve-input-submit {
     min-height: 1.75em;
@@ -16,6 +17,7 @@ input.nerve-slider {
 .nerve-display {
     font-size: 1.25em;
 }
+*/
 
 
 #main {
@@ -45,7 +47,7 @@ sure which way I prefer.  The cells method is kinda nice though
 }
 
 #sidebar {
-    width: 10em;
+    width: 6em;
     float: left;
 }
 */

@@ -43,11 +43,4 @@ class DatalogController (nerve.http.Controller):
         data = nerve.query(ref, start_time=start_time, length=length)
         self.load_json_view(data)
 
-    def handle_error(self, error, traceback, request):
-        if request.reqtype == 'POST' and type(error) is not nerve.users.UserPermissionsRequired:
-            nerve.log(traceback, logtype='error')
-            self.load_json_view({ 'status' : 'error', 'message' : repr(error) })
-        else:
-            super().handle_error(error, traceback, request)
-
 

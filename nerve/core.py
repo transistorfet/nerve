@@ -25,22 +25,29 @@ class Request (object):
         self.source = source
         self.user = user
         self.reqtype = reqtype      # could be GET, POST, QUERY, CONNECT?
-        if type(urlstring) == str:
-            (self.url, self.args) = self.parse_query(urlstring, args)
-        else:
-            (self.url, self.args) = (urlstring, args)
+        self.url = urllib.parse.urlparse(urlstring) if type(urlstring) == str else urlstring
+        self.args = self.parse_query_args(self.url, args)
         self.headers = [ (key.lower(), item) for (key, item) in headers.items() ]
 
         self.segments = self.url.path.lstrip('/').split('/')
         self.current_segment = 0
 
     @staticmethod
-    def parse_query(urlstring, kwargs=None):
+    def parse_query_args(url, kwargs=None):
         if not kwargs:
             kwargs = dict()
-        url = urllib.parse.urlparse(urlstring)
         kwargs.update(delistify(urllib.parse.parse_qs(url.query, keep_blank_values=True)))
-        return (url, kwargs)
+        return kwargs
+
+    @staticmethod
+    def parse_positional_args(args, kwargs):
+        args = list(args)
+        for i in sorted( int(key[1:]) for key in kwargs.keys() if key.startswith('$') ):
+            if i != len(args):
+                raise ValueError("incorrectly numbered positional argument: $" + str(i))
+            args.append(kwargs['$' + str(i)])
+            del kwargs['$' + str(i)]
+        return args
 
     def arg(self, name, default=None):
         if name in self.args:
@@ -106,12 +113,14 @@ class Controller (nerve.ObjectNode):
         self._redirect = None
         self._error = None
         self._view = None
+        self._request = None
 
     def initialize(self, request):
         self._headers = [ ]
         self._redirect = None
         self._error = None
         self._view = None
+        self._request = request
 
     def finalize(self, request):
         pass
@@ -156,6 +165,9 @@ class Controller (nerve.ObjectNode):
     def get_error(self):
         return self._error
 
+    def get_request(self):
+        return self._request
+
     def handle_request(self, request):
         self.initialize(request)
         try:
@@ -184,8 +196,8 @@ class Controller (nerve.ObjectNode):
         #if 'text/html' in request.headers['accept']:
         #   render some html
         #else:
-        #   self.write_text(traceback)
-        self._view.write_text(traceback)
+        #   self.write(traceback)
+        self._view.write(traceback)
 
     def do_request(self, request):
         name = request.next_segment()
@@ -209,21 +221,26 @@ class View (nerve.ObjectNode):
         super().__init__(**config)
         self._mimetype = None
         self._encoding = 'utf-8'
-        self._output = io.BytesIO()
         self._finalized = False
-
-    def write_bytes(self, data):
-        self._output.write(data)
-
-    def write_text(self, data):
-        self._output.write(data.encode('utf-8'))
+        self._output = None
 
     def get_mimetype(self):
         return (self._mimetype, self._encoding)
 
+    def set_output(self, output):
+        self._output = output
+
     def get_output(self):
         self.finalize()
-        return self._output.getvalue()
+        if self._output:
+            return self._output
+        return b''
+
+    def __str__(self):
+        self.finalize()
+        if self._output:
+            return self._output.decode(self._encoding)
+        return "<no output>"
 
     def finalize(self):
         if not self._finalized:
@@ -233,15 +250,54 @@ class View (nerve.ObjectNode):
     def render(self):
         pass
 
+
+class TextView (View):
+    def __init__(self, **config):
+        super().__init__(**config)
+        self._output = io.StringIO()
+
+    def write_bytes(self, data):
+        self._output.write(data.decode(self._encoding))
+
+    def write(self, text):
+        self._output.write(text)
+
+    def print(self, *args, **kwargs):
+        kwargs['file'] = self._output
+        print(*args, **kwargs)
+
+    def get_output(self):
+        self.finalize()
+        return bytes(self._output.getvalue(), self._encoding)
+
     def __str__(self):
-        return self.get_output().decode(self._encoding)
+        self.finalize()
+        return self._output.getvalue()
 
 
-class PlainTextView (View):
-    def __init__(self, text):
+class PlainTextView (TextView):
+    def __init__(self, text=None):
         super().__init__()
         self._mimetype = 'text/plain'
-        self.write_text(text)
+        if text != None:
+            self.write(text)
+
+
+class HTMLView (TextView):
+    def __init__(self, **config):
+        super().__init__(**config)
+        self._mimetype = 'text/html'
+        self._indent = 0
+
+    def write(self, text, tab=0):
+        if tab < 0:
+            self._indent += tab
+        super().write(('    ' * self._indent) + text)
+        if tab > 0:
+            self._indent += tab
+
+    def writeln(self, text, tab=0):
+        self.write(text + '\n', tab)
 
 
 class JsonView (View):
@@ -254,21 +310,21 @@ class JsonView (View):
         def json_default(obj):
             return str(obj)
         text = json.dumps(self._data, sort_keys=True, indent=4, separators=(',', ': '), default=json_default)
-        self.write_text(text)
+        self.set_output(bytes(text, self._encoding))
 
 
 class FileView (View):
     def __init__(self, filename, base=None):
         super().__init__()
         self.filename = os.path.join(base, filename) if base else filename
+
+    def render(self):
         (self._mimetype, self._encoding) = mimetypes.guess_type(self.filename)
         if self._encoding == None:
             self._encoding = 'utf-8'
-
-    def render(self):
         with open(self.filename, 'rb') as f:
             contents = f.read()
-        self.write_bytes(contents)
+            self.set_output(contents)
 
 
 @nerve.types.RegisterConfigType('view')
@@ -293,8 +349,25 @@ class Server (nerve.ObjectNode):
             for option in servers.keys():
                 config_info.add_option('parent', option, '/servers/' + option)
         """
-        config_info.add_setting('controllers', "Controllers", default=dict(), itemtype='object', weight=1)
+        config_info.add_setting('controllers', "Controllers", default=dict(), itemtype='object(core/Controller)', weight=1)
+        #config_info.add_setting('template', "Default Template", datatype='object', weight=1, default=dict(__type__='http/views/template/TemplateView'))
+        config_info.add_setting('template', "Default Template", datatype='object', weight=1, default=dict())
         return config_info
+
+    def get_setting(self, name, typename=None):
+        setting = super().get_setting(name, typename)
+        if setting:
+            return setting
+        if name == 'parent':
+            return None
+        parentname = self.get_setting('parent')
+        if not parentname:
+            return None
+        try:
+            parent = nerve.get_object(parentname)
+        except AttributeError:
+            return None
+        return parent.get_setting(name, typename)
 
     def start_server(self):
         raise NotImplementedError
@@ -304,15 +377,20 @@ class Server (nerve.ObjectNode):
 
     def make_controller(self, request):
         controllers = self.get_setting('controllers')
+        """
         if not controllers:
             parentname = self.get_setting('parent')
             if parentname:
                 parent = nerve.get_object(parentname)
                 controllers = parent.get_setting('controllers')
+        """
 
         if not controllers:
             return None
+        return self.make_controller_static(request, controllers)
 
+    @staticmethod
+    def make_controller_static(request, controllers):
         basename = request.next_segment()
         if basename in controllers:
             controller = controllers[basename]

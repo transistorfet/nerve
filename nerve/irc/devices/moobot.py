@@ -76,15 +76,15 @@ class MooBot (IRCClient):
         args[0] = args[0].lower()
         if args[0] == "login":
             if self.login(User.crypt(args[1])):
-                self.notify("You are now logged in as %s" % (self.nick,))
+                self.print("You are now logged in as %s" % (self.nick,))
             else:
-                self.notify("Invalid password for %s" % (self.nick,))
+                self.print("Invalid password for %s" % (self.nick,))
         elif args[0] == 'register':
             if len(args) != 2:
-                self.notify("Usage: register <password>")
+                self.print("Usage: register <password>")
                 return
             if self.nick in User.db:
-                self.notify("This nick is already registered.  Please use the login command to authenticate.")
+                self.print("This nick is already registered.  Please use the login command to authenticate.")
                 return
             user = User(self.nick, User.crypt(args[1]))
             user.thing = thing.user.clone()
@@ -95,6 +95,6 @@ class MooBot (IRCClient):
             #self.attach(task)
             task.queue("")
         else:
-            self.notify("You must login first.")
+            self.print("You must login first.")
 
   

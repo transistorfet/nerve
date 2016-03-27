@@ -46,11 +46,11 @@ class NerveBot (IRCClient):
 
     def on_privmsg(self, msg):
         self._buffer_line(msg.text.rstrip())
-        self.notify('event_privmsg/*', msg)
+        self.query('event_privmsg/*', msg)
 
     def on_notice(self, msg):
         self._buffer_line(msg.text.rstrip())
-        self.notify('event_notice/*', msg)
+        self.query('event_notice/*', msg)
 
     def _buffer_line(self, line):
         self.linebuffer.append(line)

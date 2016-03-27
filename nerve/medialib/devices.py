@@ -8,6 +8,7 @@ import time
 import shlex
 import random
 
+from . import tasks
 from .playlists import Playlist
 
 
@@ -21,26 +22,15 @@ from .playlists import Playlist
 class MediaLibDevice (nerve.Device):
     def __init__(self, **config):
         super().__init__(**config)
-        self.playlists = 'playlists'
         self.db = nerve.Database('medialib.sqlite')
         self.db.create_table('media', "id INTEGER PRIMARY KEY, filename TEXT, rootlen INTEGER, artist TEXT, album TEXT, title TEXT, track_num NUMERIC, genre TEXT, tags TEXT, duration NUMERIC, media_type TEXT, mimetype TEXT, file_hash TEXT, file_size INTEGER, last_modified NUMERIC")
         self.db.create_table('info', "name TEXT PRIMARY KEY, value TEXT")
 
         self.current = 'default'
+        tasks.start_updater([ 'medialib/updaters/files/MediaFilesUpdater', 'medialib/updaters/youtube/YoutubePlaylistUpdater' ])
 
     def rehash(self):
-        nerve.medialib.run_updater()
-
-    def get_playlist_list(self):
-        plroot = nerve.configdir() + '/playlists'
-        if not os.path.isdir(plroot):
-            os.mkdir(plroot)
-        files = os.listdir(plroot)
-        playlist_list = [ name[:-4] for name in files if name.endswith(".m3u") ]
-        if 'default' in playlist_list:
-            playlist_list.remove('default')
-        playlist_list.insert(0, 'default')
-        return playlist_list
+        tasks.run_updater()
 
     def get_media_list(self, mode, order, offset, limit, search=None, recent=None, media_type=None, tags=None):
         if mode == 'artist':
@@ -55,9 +45,9 @@ class MediaLibDevice (nerve.Device):
             self.db.select('artist,album,genre')
             self.db.group_by('artist,album')
         elif mode == 'title' or mode == 'tags':
-            self.db.select('artist,album,title,track_num,tags,id')
+            self.db.select('artist,album,title,track_num,duration,tags,id')
         elif mode == 'filename':
-            self.db.select('SUBSTR(filename, rootlen) AS filename,artist,album,title,track_num,tags,id')
+            self.db.select('SUBSTR(filename, rootlen) AS filename,artist,album,title,track_num,duration,tags,id')
         else:
             return [ ]
 
@@ -131,27 +121,6 @@ class MediaLibDevice (nerve.Device):
         result = list(self.db.get_assoc('media'))
         return result
 
-    def get_playlist(self, name=None):
-        if name is None:
-            name = self.current
-        playlist = Playlist(name)
-        media_list = playlist.get_list()
-        return media_list
-
-    def sort_playlist(self, name=None):
-        if name is None:
-            name = self.current
-        playlist = Playlist(name)
-        playlist.sort()
-        return playlist.get_size()
-
-    def shuffle_playlist(self, name=None):
-        if name is None:
-            name = self.current
-        playlist = Playlist(name)
-        playlist.shuffle()
-        return playlist.get_size()
-
     def get_media_info(self, media_list):
         info = [ ]
         for filename in media_list:
@@ -218,5 +187,33 @@ class MediaLibDevice (nerve.Device):
             else:
                 tagstring += tag + ' '
         return tagstring.rstrip()
+
+    def get_playlist_list(self):
+        playlist_list = Playlist.listnames()
+        if 'default' in playlist_list:
+            playlist_list.remove('default')
+        playlist_list.insert(0, 'default')
+        return playlist_list
+
+    def get_playlist(self, name=None):
+        if name is None:
+            name = self.current
+        playlist = Playlist(name)
+        media_list = playlist.get_list()
+        return media_list
+
+    def sort_playlist(self, name=None):
+        if name is None:
+            name = self.current
+        playlist = Playlist(name)
+        playlist.sort()
+        return playlist.get_size()
+
+    def shuffle_playlist(self, name=None):
+        if name is None:
+            name = self.current
+        playlist = Playlist(name)
+        playlist.shuffle()
+        return playlist.get_size()
 
 

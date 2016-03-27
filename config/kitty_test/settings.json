@@ -46,7 +46,15 @@
                     },
                     "__type__": "objects/ObjectNode"
                 },
+                "irremote": {
+                    "__children__": {},
+                    "__type__": "irremote/devices/IRRemoteDevice"
+                },
                 "medialib": {
+                    "__type__": "core/SymbolicLink",
+                    "target": "http://panther:8888/query/medialib"
+                },
+                "medialibold": {
                     "__children__": {},
                     "__type__": "medialib/devices/MediaLibDevice",
                     "medialib_dirs": [
@@ -84,7 +92,7 @@
                 "test": {
                     "__children__": {},
                     "__type__": "core/SymbolicLink",
-                    "target": "devices/datalogs"
+                    "target": "http://192.168.1.102:8889/query/deskclock"
                 },
                 "thing": {
                     "__children__": {
@@ -129,12 +137,23 @@
             "__children__": {
                 "serial": {
                     "__children__": {
-                        "ir": {
-                            "__children__": {},
-                            "__type__": "events/PyCodeEvent",
-                            "code": "nerve.query('/events/ir/irrecv/' + args[0])",
-                            "repeat": 0.0,
-                            "trigger": ""
+                        "irrecv": {
+                            "__children__": {
+                                "event_dispatch": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/events/ir/irrecv/' + args[0])",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                },
+                                "irremote_dispatch": {
+                                    "__children__": {},
+                                    "__type__": "events/PyCodeEvent",
+                                    "code": "nerve.query('/devices/irremote/on_receive_code', *args)",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                }
+                            }
                         }
                     },
                     "__type__": "objects/ObjectNode"
@@ -236,6 +255,13 @@
                         "datalog": {
                             "__type__": "datalog/DatalogController"
                         },
+                        "home": {
+                            "__type__": "base/controllers/redirect/RedirectController",
+                            "redirect": "/pages/remote"
+                        },
+                        "irremote": {
+                            "__type__": "irremote/controllers/IRRemoteController"
+                        },
                         "medialib": {
                             "__type__": "medialib/MediaLibController"
                         },
@@ -266,7 +292,7 @@
                 },
                 "http": {
                     "__children__": {},
-                    "__type__": "http/servers/HTTPServer",
+                    "__type__": "http/servers/http/HTTPServer",
                     "allow_guest": true,
                     "controllers": null,
                     "parent": "/servers/default",

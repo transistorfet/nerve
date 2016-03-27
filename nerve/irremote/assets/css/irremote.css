@@ -1,0 +1,22 @@
+
+/*
+.irremote-recent-codelist tr {
+    background-color: #900;
+    transition: background-color 2s;
+}
+*/
+
+.irremote-codelist {
+    margin-bottom: 6px;
+}
+
+.irremote-codelist,
+.irremote-codelist td {
+    padding: 2px;
+    border: 0px solid black;
+}
+
+.irremote-delete-row {
+    cursor: pointer;
+}
+

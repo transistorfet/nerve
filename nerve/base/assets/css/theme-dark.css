@@ -4,14 +4,14 @@ html {
     -webkit-text-size-adjust: 100%;
     -moz-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
-
-    background-color: #2E2E2E;
-    color: #CCC;
 }
 
 body {
     margin: 4px;
     margin-bottom: 10em;
+
+    background-color: #2E2E2E;
+    color: #CCC;
 }
 
 h5,
@@ -49,10 +49,8 @@ select {
     font-size: 14px;
 }
 
-table,
-th,
-td {
-    border: 1px solid #111;
+canvas {
+    background: #505050;
 }
 
 #nerve-notice {
@@ -65,9 +63,17 @@ td {
     background-color: #900;
 }
 
+.nerve-table table,
+.nerve-table th,
+.nerve-table td {
+    border: 1px solid #595959;
+    /* border: 1px solid #24618e; */
+    /* background-color: #505050; */
+}
+
 .nerve-display {
     border: 1px solid #3A8ECD;
-    background: #505050;
+    background-color: #505050;
 }
 
 .nerve-tabs {
@@ -89,22 +95,44 @@ td {
 }
 
 .nerve-form-tree li > label {
-    background: #3A8ECD;
+    background-color: #3A8ECD;
     border: 1px solid #222;
     color: #fff;
 }
 
 .nerve-form-tree .alt-label {
-    background: #505050;
+    background-color: #505050;
     border: 1px solid #222;
     color: #CCC;
 }
+
+.nerve-dialog {
+    background-color: #2E2E2E;
+    border-color: #3A8ECD;
+}
+
 
 .nerve-background {
     background-color: #2E2E2E;
 }
 
 .nerve-highlight {
-    background: #3A8ECD;
+    background-color: #3A8ECD;
+}
+
+.nerve-highlight-dim {
+    background-color: #505050;
+}
+
+.nerve-success {
+    background-color: #090;
+}
+
+.nerve-warning {
+    background-color: #990;
+}
+
+.nerve-error {
+    background-color: #900;
 }
 

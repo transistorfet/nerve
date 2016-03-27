@@ -14,6 +14,6 @@ class PyCodeController (nerve.Controller):
         self.load_plaintext_view('')
         if 'requests[]' in request.args:
             for querystr in request.args['requests[]']:
-                self._view.write_text(repr(eval(querystr, self.globals)) + '\n')
+                self._view.write(repr(eval(querystr, self.globals)) + '\n')
 
 

@@ -21,6 +21,7 @@ import mimetypes
 
 import urllib.parse
 
+import time
 import struct
 import random
 
@@ -55,7 +56,6 @@ class HTTPServer (nerve.Server, socketserver.ThreadingMixIn, http.server.HTTPSer
         config_info.add_setting('password', "Admin Password", default='')
         config_info.add_setting('ssl_enable', "SSL Enable", default=False)
         config_info.add_setting('ssl_cert', "SSL Certificate File", default='')
-        config_info.add_setting('template', "Default Template", datatype='object', weight=1, default=dict(__type__='http/views/template/TemplateView'))
         return config_info
 
 
@@ -64,7 +64,8 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
     server_version = "Nerve HTTP/0.3"
 
     def log_message(self, format, *args):
-        nerve.log(self.address_string() + ' ' + format % args)
+        execute_time = " (%.4fs)" % (self.execute_time,) if hasattr(self, 'execute_time') else ''
+        nerve.log(self.address_string() + ' ' + (format % args) + execute_time)
 
     def get_setting(self, name, typename=None):
         return self.server.get_setting(name, typename)
@@ -114,7 +115,7 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
         """
 
         if not self.is_valid_path(self.path):
-            self.send_404()
+            self.send_400()
 
         if reqtype == 'POST':
             if 'content-type' in self.headers:
@@ -141,9 +142,11 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
             self.handle_websocket(postvars)
             return
 
+        start = time.time()
         request = nerve.Request(self, None, reqtype, self.path, postvars, headers=dict(self.headers))
         controller = self.server.make_controller(request)
         controller.handle_request(request)
+        self.execute_time = time.time() - start
 
         redirect = controller.get_redirect()
         error = controller.get_error()

@@ -19,7 +19,7 @@ import urllib
 import urllib.parse
 
 
-class PyHTML (nerve.View):
+class PyHTML (nerve.HTMLView):
     """PyHTML - HTML with Embedded Python:
 
     The following code will take a filename (or string contents) containing HTML
@@ -70,11 +70,9 @@ class PyHTML (nerve.View):
 
     def __init__(self, request=None, data=None, filename=None, code=None):
         super().__init__()
-        self._mimetype = 'text/html'
         self._contents = ''
         self._segments = [ ]
         self._pycode = ''
-        self._output = None
         self._start_time = 0
         self._run_time = 0
 
@@ -128,19 +126,11 @@ class PyHTML (nerve.View):
         self._globals['urlencode'] = urllib.parse.quote
         self._globals['urldecode'] = urllib.parse.unquote
 
-    def print(self, *args, **kwargs):
-        kwargs['file'] = self._output
-        print(*args, **kwargs)
-
     @staticmethod
     def htmlspecialchars(text):
         return cgi.escape(text, True)
 
     ### Parser and Execution Code ###
-
-    def get_output(self):
-        self.finalize()
-        return bytes(self._output.getvalue(), 'utf-8')
 
     def render(self):
         self.evaluate()
@@ -148,7 +138,7 @@ class PyHTML (nerve.View):
     def evaluate(self):
         self._start_time = time.time()
 
-        self._output = io.StringIO()
+        #self._output = io.StringIO()
         segments = self._parse_segments(self._contents)
         self._pycode = self._generate_python(segments)
         self._execute_python()
@@ -168,7 +158,7 @@ class PyHTML (nerve.View):
         self.inline(code)
 
     def _read_contents(self, filename):
-        with open(filename, 'r') as f:
+        with open(nerve.files.find_source(filename), 'r') as f:
             contents = f.read()
         return contents
 

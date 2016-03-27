@@ -40,7 +40,7 @@ class ControllerMixIn (object):
                 break
 
             except Exception as e:
-                self.handle_connection_error(e, traceback.format_exc(), logtype='error')
+                self.handle_connection_error(e, traceback.format_exc())
 
         self.on_disconnect()
         # TODO should this close maybe be on the server side?

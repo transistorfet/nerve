@@ -8,6 +8,25 @@ import threading
 import traceback
 
 
+updater_task = None
+
+def start_updater(updaters):
+    global updater_task
+    if updater_task:
+        return
+    updater_task = MediaLibUpdaterTask()
+    #updater_task.add('files', MediaFilesUpdater())
+    #updater_task.add('youtube', YoutubePlaylistUpdater())
+    for updater in updaters:
+        names = updater.split('/')
+        classtype = nerve.Module.get_class(updater)
+        updater_task.add(names[-2] if len(names) >= 2 else '', classtype())
+    updater_task.start()
+
+def run_updater():
+    updater_task.run_updater()
+
+
 class MediaLibUpdater (object):
     def __init__(self):
         self.stopflag = threading.Event()
@@ -48,7 +67,8 @@ class MediaLibUpdaterTask (nerve.Task):
             if self.stopflag.is_set():
                 break
 
-            self.interrupt.wait(60)
+            if self.interrupt.wait(60):
+                self.interrupt.clear()
 
     def stop(self):
         super().stop()
