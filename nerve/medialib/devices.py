@@ -32,7 +32,7 @@ class MediaLibDevice (nerve.Device):
     def rehash(self):
         tasks.run_updater()
 
-    def get_media_list(self, mode, order, offset, limit, search=None, recent=None, media_type=None, tags=None):
+    def search(self, mode, order, offset, limit, search=None, recent=None, media_type=None, tags=None):
         if mode == 'artist':
             self.db.select('artist')
             self.db.where_not('artist', '')
@@ -44,7 +44,7 @@ class MediaLibDevice (nerve.Device):
         elif mode == 'genre':
             self.db.select('artist,album,genre')
             self.db.group_by('artist,album')
-        elif mode == 'title' or mode == 'tags':
+        elif mode == 'title':
             self.db.select('artist,album,title,track_num,duration,tags,id')
         elif mode == 'filename':
             self.db.select('SUBSTR(filename, rootlen) AS filename,artist,album,title,track_num,duration,tags,id')
@@ -121,6 +121,7 @@ class MediaLibDevice (nerve.Device):
         result = list(self.db.get_assoc('media'))
         return result
 
+    # NOTE this is no longer used, now that we use extended m3u playlists to store metadata
     def get_media_info(self, media_list):
         info = [ ]
         for filename in media_list:

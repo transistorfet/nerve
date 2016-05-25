@@ -153,6 +153,7 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
         headers = controller.get_headers()
         mimetype = controller.get_mimetype()
         output = controller.get_output()
+        status = controller.get_status()
 
         if redirect:
             self.send_content(302, mimetype, output, [ ('Location', redirect) ] + headers)
@@ -162,7 +163,7 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
             else:
                 self.send_content(404 if type(error) is nerve.NotFoundError else 500, mimetype, output, headers)
         else:
-            self.send_content(200, mimetype, output, headers)
+            self.send_content(status if status else 200, mimetype, output, headers)
         return
 
     def send_content(self, errcode, mimetype, content, headers=None):

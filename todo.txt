@@ -2,6 +2,9 @@
     * add a clone() method to objects, to clone the object, and use it for controllers, so that the server will have an instantiated
       controller object for each controller, and it clones that object for each request.  
 
+    * make a popup view at the bottom of the screen, a tab sort of thing, that you can drag upwards to show the "Remote" tab, so it's
+      easy to change the song or turn something on quick while in the middle of something else, like making a playlist/searching media
+
     * wsgi needs a better way to handle userpermissionsrequired
 
     * there's an issue accessing google's oauth and having it redirect to an internal ip.  This prevents it from working on phone
@@ -9,7 +12,9 @@
 
     * change /assets paths to /base/assets so it's more consistent.  This will require either a blank assets controller or http
       will have to accept more complex controller names
-    * should the name of the 'controllers' dict in servers be called something different, like 'paths' or 'handlers' or something?
+    * rename controllers to routes in server
+    * should there be a Router type separate from server, which is responsible for dispatching, and the server would have some kind of
+      reference to the router object.  There could still be multiple router objects, but there can also be a shared router object
     * change server's 'controllers' to 'mappings' to allow multiple parts in the path name ("/things/stuff/config" -> "config controller")
     * add a config setting to controllers to specify the path of the model/device they should access, rather than hard coding it
 
@@ -86,6 +91,7 @@
     * add support for JOIN to db driver
     * can you make it use a different SQL database?  At the very least, you could alter init() to take just the db name without the extension (which
       could be used by a MySQL driver as a table name prefix or something)
+    * it would be cool if you could have multiple database sources, so like datalog module could use a different db for example, and medialib another
     * add PUT and DELETE request types to the http server
     * should Model actually inherit from object, and Device would be an ObjectNode that's also a Model? (multiple inheritence)
 

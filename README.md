@@ -1,5 +1,5 @@
  
-Nerve is a web-based integration framework with a similar MVC architecture to CodeIgniter, but implemented in python3.  It's primarily used as a home automation server and media player/media library.  Its modular structure makes it easy to extend and customize, and its generic widgets and devices system makes it easier to tie together different hardware devices, sensors, and internet information sources into one place (or across distributed servers).
+Nerve is a web-based home automation system implemented in python3.  It's primarily used as an interface to a media player/media library (VLC, XMMS2, etc).  Its modular structure makes it easy to extend and customize, and its generic widgets and devices system makes it easier to tie together different hardware devices, sensors, and internet information sources into one place (or across distributed servers).
 
 ## Installation
 

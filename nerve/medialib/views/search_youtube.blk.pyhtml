@@ -9,7 +9,9 @@
 
 <div class="medialib-search">
 
-<% if media_list and 'results' in media_list['responseData']: %>
+<!-- <%= json.dumps(media_list, sort_keys=True, indent=4, separators=(',', ': ')) %> -->
+
+<% if media_list and 'items' in media_list: %>
     <div id="search-table">
         <hr>
         <div>
@@ -32,16 +34,15 @@
                 <th>Title</th>
             </tr></thead>
             <tbody>
-                <% for media in media_list['responseData']['results']: %>
+                <% for media in media_list['items']: %>
                     <tr>
-                        <td><input type="checkbox" name="media[]" value="url=<%= urlencode(media['url']) %>&title=<%= urlencode(media['title']) %>&album=YouTube&duration=<%= media['duration'] %>" /></td>
-                        <td><img src="<%= media['tbUrl'] %>"></td>
-                        <td><%= media['title'] %></td>
+                        <td><input type="checkbox" name="media[]" value="url=<%= urlencode('https://www.youtube.com/watch?v=' + media['id']['videoId']) %>&title=<%= urlencode(media['snippet']['title']) %>&album=YouTube" /></td>
+                        <td><img src="<%= media['snippet']['thumbnails']['default']['url'] %>" /></td>
+                        <td><%= media['snippet']['title'] %></td>
                     </tr>
                 <% end %>
             </tbody>
             </table>
-            </div>
         </div>
 
         <button type="submit" class="pl_replace" value="1">Replace</button>

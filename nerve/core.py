@@ -11,6 +11,7 @@ import os.path
 import traceback
 import mimetypes
 import urllib.parse
+import email.utils
 
 
 def delistify(kwargs):
@@ -121,6 +122,7 @@ class Controller (nerve.ObjectNode):
         self._error = None
         self._view = None
         self._request = request
+        self._status = 0
 
     def finalize(self, request):
         pass
@@ -141,6 +143,17 @@ class Controller (nerve.ObjectNode):
         self.set_view(JsonView(data))
 
     def load_file_view(self, filename, base=None):
+        fullpath = os.path.join(base, filename) if base else filename
+        mtime = os.path.getmtime(fullpath)
+        since = self._request.get_header('If-Modified-Since', None)
+        if since:
+            since = time.mktime(email.utils.parsedate(since))
+            if since <= mtime:
+                self._status = 304
+                return
+        #self.add_header('Cache-Control', 'max-age=604800')  # 7 days
+        self.add_header('Cache-Control', 'max-age=2592000')  # 30 days
+        self.add_header('Last-Modified', time.strftime("%a, %e %b %Y %H:%M:%S %z", time.localtime(mtime)))
         self.set_view(FileView(filename, base))
 
     def get_mimetype(self):
@@ -158,6 +171,9 @@ class Controller (nerve.ObjectNode):
 
     def get_redirect(self):
         return self._redirect
+
+    def get_status(self):
+        return self._status
 
     def set_error(self, error):
         self._error = error
@@ -226,6 +242,9 @@ class View (nerve.ObjectNode):
 
     def get_mimetype(self):
         return (self._mimetype, self._encoding)
+
+    def add_header(self, name, value):
+        self._headers.append( (name, value) )
 
     def set_output(self, output):
         self._output = output

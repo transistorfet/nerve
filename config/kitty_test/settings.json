@@ -50,11 +50,11 @@
                     "__children__": {},
                     "__type__": "irremote/devices/IRRemoteDevice"
                 },
-                "medialib": {
+                "medialibrem": {
                     "__type__": "core/SymbolicLink",
                     "target": "http://panther:8888/query/medialib"
                 },
-                "medialibold": {
+                "medialib": {
                     "__children__": {},
                     "__type__": "medialib/devices/MediaLibDevice",
                     "medialib_dirs": [
@@ -263,7 +263,8 @@
                             "__type__": "irremote/controllers/IRRemoteController"
                         },
                         "medialib": {
-                            "__type__": "medialib/MediaLibController"
+                            "__type__": "medialib/MediaLibController",
+                            "device": "/devices/medialibrem"
                         },
                         "pages": {
                             "__type__": "pages/PagesController"

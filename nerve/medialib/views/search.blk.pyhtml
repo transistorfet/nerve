@@ -11,7 +11,7 @@
         <a href="/medialib/search?mode=album&order=last_modified&recent=52">Most Recent</a>
         <a href="/medialib/search?mode=album&order=random">Random</a>
         <a href="/medialib/search_youtube">YouTube</a>
-        <a href="/medialib/search?mode=filename&order=last_modified&recent=52&media_type=video&tags=!watched">Videos</a>
+        <a href="/medialib/search?mode=filename&order=last_modified&recent=312&media_type=video&tags=!watched">Videos</a>
         <a href="/medialib/search?mode=filename&order=filename&recent=156&media_type=video&tags=!watched">To Watch</a>
     </div>
 
@@ -36,8 +36,8 @@
             <option value="video" <%= ' selected' if media_type == 'video' else '' %>>video</option>
         </select>
 
-        <input type="text" name="recent" placeholder="(weeks back)" value="<%= recent if recent else '' %>">
-        <input type="text" name="tags" placeholder="(tags)" value="<%= tags if tags else '' %>" list="tag-suggestions">
+        <input type="text" name="recent" placeholder="(weeks back)" value="<%= recent if recent else '' %>" />
+        <input type="text" name="tags" placeholder="(tags)" value="<%= tags if tags else '' %>" list="tag-suggestions" />
 
         <br />
 
@@ -51,7 +51,11 @@
             <option value="random" <%= ' selected' if order == 'random' else '' %>>random</option>
             <option value="filename" <%= ' selected' if order == 'filename' else '' %>>filename</option>
         </select>
-        <input type="text" name="search" placeholder="(search)" value="<%= search if search else '' %>">
+        <input type="text" name="search" placeholder="(search)" value="<%= search if search else '' %>" />
+
+        <!-- <input type="hidden" name="limit" value="<%= limit if limit else '100' %>" />
+        <input type="hidden" name="offset" value="<%= offset if offset else '100' %>" /> -->
+
         <button type="submit" name="pl_search" value="">Search</button>
     </form>
 
@@ -62,10 +66,14 @@
         <hr/>
 
         <div class="nerve-floatingbar-top nerve-background">
+
+            <!-- <button type="submit" class="pl_load" value="1">L</button> -->
+
             <select id="select-playlist">
             <% for name in list_of_playlists: %>
                 <option value="<%= name %>"><%= name %></option>
             <% end %>
+                <!-- <option value="">&lt;new&gt;</option> -->
             </select>
 
             <button type="submit" class="pl_replace" value="1">Replace</button>
@@ -140,7 +148,7 @@
                             dataval = 'artist=' + urlencode(media['artist'])
                         elif mode == 'album' or mode == 'genre':
                             dataval = 'artist=' + urlencode(media['artist']) + '&album=' + urlencode(media['album'])
-                        elif mode == 'title' or mode == 'tags' or mode == 'filename':
+                        elif mode == 'title' or mode == 'filename':
                             dataval = 'id=' + str(media['id'])
                         end
                         %>
