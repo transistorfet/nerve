@@ -13,13 +13,13 @@ class IRRemoteDevice (nerve.Device):
         self.db = nerve.Database('irremote.sqlite')
         self.db.create_table('remotenames', "id INTEGER PRIMARY KEY, remote_name TEXT UNIQUE")
         self.db.create_table('codenames', "id INTEGER PRIMARY KEY, code TEXT UNIQUE, remote_name TEXT, button_name TEXT")
-        self.db.create_table('events', "id INTEGER PRIMARY KEY, code TEXT UNIQUE, object TEXT")
+        self.db.create_table('actions', "id INTEGER PRIMARY KEY, code TEXT UNIQUE, object TEXT")
 
         self.code_history = [ ]
         self.program_mode = False
 
         self.db.select("code,object")
-        for row in self.db.get('events'):
+        for row in self.db.get('actions'):
             config = json.loads(row[1])
             self.set_object(row[0], nerve.objects.Module.make_object(config['__type__'], config))
 
@@ -47,7 +47,7 @@ class IRRemoteDevice (nerve.Device):
         self.db.where('remote_name', name)
         for row in self.db.get('codenames'):
             self.db.where('code', row[0])
-            self.db.delete('events')
+            self.db.delete('actions')
 
         self.db.where('remote_name', name)
         self.db.delete('remotenames')
@@ -65,7 +65,7 @@ class IRRemoteDevice (nerve.Device):
 
     def delete_code(self, code):
         self.db.where('code', code)
-        self.db.delete('events')
+        self.db.delete('actions')
 
         self.db.where('code', code)
         self.db.delete('codenames')
@@ -151,17 +151,17 @@ class IRRemoteDevice (nerve.Device):
             except AttributeError:
                 nerve.log("No action set for IR code " + code)
 
-    def get_event(self, code):
+    def get_action(self, code):
         self.db.select("id, object")
         self.db.where('code', code)
-        results = list(self.db.get('events'))
+        results = list(self.db.get('actions'))
         if len(results) <= 0:
             return None
         return json.loads(results[0][1])
 
-    def set_event(self, code, obj):
+    def set_action(self, code, obj):
         self.set_object(code, nerve.objects.Module.make_object(obj['__type__'], obj))
         data = { 'code': code, 'object': json.dumps(obj, sort_keys=True) }
-        self.db.insert('events', data, replace=True)
+        self.db.insert('actions', data, replace=True)
 
 

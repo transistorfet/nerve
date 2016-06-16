@@ -42,6 +42,9 @@ def init():
         add_user(UID_SYSTEM, 'system', None, 'system')
         add_user(-1, 'guest', '', 'guest')
 
+    # TODO you should add a table for authentication tokens, such that when the system logs into another computer (like during a remote query)
+    # could save the login token in this table to be accessed in future, until it expires.  If not found or expired, it would attempt to reauthenticate
+    #_user_db.create_table('authentication_tokens', "uid INTEGER PRIMARY KEY, dataname TEXT, data TEXT")
     _user_db.create_table('user_data', "uid INTEGER PRIMARY KEY, dataname TEXT, data TEXT")
 
 

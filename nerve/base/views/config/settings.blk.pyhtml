@@ -13,16 +13,40 @@
 
             obj = nerve.get_object(path)
 
-            #print(nerve.base.views.formview.FormView(obj.get_config_data(), obj.get_config_info()))
             %>
             <li><div class="nerve-config-buttons">
                 <% if len(obj.get_config_info()) > 0: %>
-                <button class="nerve-config-edit" name="<%= path %>">Edit</button>
+                <!-- <button class="nerve-config-edit" name="<%= path %>">Edit</button> -->
+                <button class="nerve-dialog-open modal" data-fetch="/config/edit<%= path %>?dialog=1">Edit</button>
                 <% end %>
                 <button class="nerve-config-rename" name="<%= path %>">Rename</button>
                 <button class="nerve-config-delete" name="<%= path %>">Delete</button>
             </div></li>
             <%
+
+            %><!--
+            #print(nerve.base.views.formview.FormView(obj.get_config_data(), obj.get_config_info()))
+            #for (key, value) in sorted(obj._config.items()):
+            #    if key == '__type__' or not key.startswith('_'):
+            #        %><li>
+            #            <div class="nerve-form-item" style="margin-bottom: 0px;">
+            #                <label><#%= key %></label>
+            #                <span><#%= repr(value) %></span>
+            #            </div>
+            #        </li><#%
+            #    end
+            #end -->
+            <%
+
+            for (name, propername, datatype, data) in obj.get_config_info().get_items(obj._config):
+                %><li>
+                    <div class="nerve-form-item" style="margin-bottom: 0px;">
+                        <label><%= propername %></label>
+                        <span><%= repr(data) %></span>
+                    </div>
+                </li><%
+            end
+
 
             if path == '/': path = ''
             for child in sorted(obj.keys_children()):
@@ -31,7 +55,8 @@
 
             %>
             <li><div class="nerve-config-buttons">
-                <button class="nerve-config-add" name="<%= path %>">Add</button>
+                <!-- <button class="nerve-config-add" name="<%= path %>">Add</button> -->
+                <button class="nerve-dialog-open modal" data-fetch="/config/add<%= path %>?dialog=1">Add</button>
             </div></li>
             <%
 

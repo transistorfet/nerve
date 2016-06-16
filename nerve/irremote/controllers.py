@@ -122,7 +122,7 @@ class IRRemoteController (nerve.http.Controller):
         self.load_json_view({ 'notice' : "Remote " + remote_name + " has been removed.", 'remote_name': remote_name })
 
     @nerve.public
-    def edit_event(self, request):
+    def edit_action(self, request):
         code = request.get_slug()
         if not code:
             raise nerve.ControllerError("You must provide a IR code")
@@ -132,17 +132,17 @@ class IRRemoteController (nerve.http.Controller):
         try:
             obj = nerve.get_object(path)
         except AttributeError:
-            obj = nerve.objects.Module.make_object("events/PyCodeEvent", { })
+            obj = nerve.objects.Module.make_object("asyncs/PyCodeAsyncTask", { })
 
         #self.set_view(nerve.base.FormView(obj.get_config_info(), obj.get_config_data(), '/config/save' + path, submitback=True))
         #self.load_template_view(None, None, request)
         #self.template_add_to_section('jsfiles', '/assets/js/formview.js')
-        #self.template_add_to_section('content', nerve.base.FormView(obj.get_config_info(), obj.get_config_data(), '/irremote/save_event/' + code, submitback=True))
-        self.set_view(nerve.base.FormView(obj.get_config_info(), obj.get_config_data(), '/irremote/save_event/' + code, textbefore="<h5>Event for {0}</h5>".format(code)))
-        #self.set_view(nerve.base.FormView(obj.get_config_info(), obj.get_config_data(), '/irremote/save_event/' + code, textbefore='<div><script type="text/javascript" src="/assets/js/formview.js"></script>', textafter='</div>'))
+        #self.template_add_to_section('content', nerve.base.FormView(obj.get_config_info(), obj.get_config_data(), '/irremote/save_action/' + code, submitback=True))
+        self.set_view(nerve.base.FormView(obj.get_config_info(), obj.get_config_data(), '/irremote/save_action/' + code, textbefore="<h5>Event for {0}</h5>".format(code)))
+        #self.set_view(nerve.base.FormView(obj.get_config_info(), obj.get_config_data(), '/irremote/save_action/' + code, textbefore='<div><script type="text/javascript" src="/assets/js/formview.js"></script>', textafter='</div>'))
 
     @nerve.public
-    def save_event(self, request):
+    def save_action(self, request):
         nerve.users.require_group('admin')
 
         if request.reqtype != "POST":
@@ -159,9 +159,9 @@ class IRRemoteController (nerve.http.Controller):
             config = obj.get_config_info().validate(request.args)
             obj.update_config_data(config)
         except AttributeError:
-            defaults = nerve.Module.get_class_config_info('events/PyCodeEvent')
+            defaults = nerve.Module.get_class_config_info('asyncs/PyCodeAsyncTask')
             config = defaults.validate(request.args)
-            obj = nerve.Module.make_object('events/PyCodeEvent', config)
+            obj = nerve.Module.make_object('asyncs/PyCodeAsyncTask', config)
             nerve.set_object(path, obj)
 
         nerve.save_config()
@@ -169,11 +169,11 @@ class IRRemoteController (nerve.http.Controller):
         """
 
         irremote = nerve.get_object('/devices/irremote')
-        defaults = nerve.Module.get_class_config_info('events/PyCodeEvent')
+        defaults = nerve.Module.get_class_config_info('asyncs/PyCodeAsyncTask')
         config = defaults.validate(request.args)
-        config['__type__'] = 'events/PyCodeEvent'
-        irremote.set_event(code, config)
-        self.load_json_view({ 'notice': "Event added" })
+        config['__type__'] = 'asyncs/PyCodeAsyncTask'
+        irremote.set_action(code, config)
+        self.load_json_view({ 'notice': "Action added" })
 
     @nerve.public
     def toggle_program_mode(self, request):

@@ -11,7 +11,7 @@
                 <td><input type="text" name="button_name[]" value="<%= button_name %>" /></td>
                 <td><button class="irremote-send" data-code="<%= code %>">Send</button></td>
                 <!-- <td><button class="irremote-edit" data-code="<%= code %>">Edit Action</button></td> -->
-                <td><button class="nerve-dialog-open modal" data-fetch="/irremote/edit_event/<%= code %>">Edit Action</button></td>
+                <td><button class="nerve-dialog-open modal" data-fetch="/irremote/edit_action/<%= code %>">Edit Action</button></td>
                 <td><%= '<span style="color: #900;">&bull;</span>' if nerve.has_object('/devices/irremote/' + code) else '' %></td>
                 <td class="irremote-delete-row">&#10006;</td>
             </tr>

@@ -2,10 +2,6 @@
     "__children__": {
         "devices": {
             "__children__": {
-                "computer": {
-                    "__children__": {},
-                    "__type__": "system/_linux/devices/SystemDevice"
-                },
                 "datalogs": {
                     "__children__": {
                         "testlog": {
@@ -18,7 +14,7 @@
                                     "max": 100,
                                     "min": 0,
                                     "name": "kitty_temp",
-                                    "ref": "/devices/computer/cputemp",
+                                    "ref": "/devices/system/cputemp",
                                     "units": "C"
                                 },
                                 {
@@ -27,7 +23,7 @@
                                     "max": 100,
                                     "min": 0,
                                     "name": "kitty_systemp1",
-                                    "ref": "/devices/computer/systemp1",
+                                    "ref": "/devices/system/systemp1",
                                     "units": "C"
                                 },
                                 {
@@ -36,7 +32,7 @@
                                     "max": 100,
                                     "min": 0,
                                     "name": "kitty_systemp2",
-                                    "ref": "/devices/computer/systemp2",
+                                    "ref": "/devices/system/systemp2",
                                     "units": "C"
                                 }
                             ],
@@ -45,6 +41,23 @@
                         }
                     },
                     "__type__": "objects/ObjectNode"
+                },
+                "events": {
+                    "__children__": {
+                        "change": {
+                            "__children__": {
+                                "test": {
+                                    "__type__": "core/PyCodeQuery",
+                                    "code": "print(args[0])"
+                                }
+                            },
+                            "__type__": "events/EventListener",
+                            "eventmask": {
+                                "type": "change"
+                            }
+                        }
+                    },
+                    "__type__": "events/EventRouter"
                 },
                 "irremote": {
                     "__children__": {},
@@ -71,12 +84,27 @@
                         "PLDY5kejDqaCcKT2lRKFBeY7cy6BrHKeN0"
                     ]
                 },
-                "player": {
+                "morse": {
                     "__children__": {},
-                    "__type__": "player/devices/PlayerDevice",
-                    "backend": {
-                        "__type__": "player/xmms2cli/devices/Xmms2CLI"
+                    "__type__": "tinythings/morse/devices/MorseCodeDevice"
+                },
+                "notify": {
+                    "__children__": {},
+                    "__type__": "notify/devices/NotifyDevice",
+                    "forwards": []
+                },
+                "playlists": {
+                    "__children__": {},
+                    "__type__": "medialib/devices/PlaylistsDevice"
+                },
+                "player": {
+                    "__children__": {
+                        "xmms2": {
+                            "__type__": "player/xmms2cli/devices/Xmms2CLI"
+                        }
                     },
+                    "__type__": "player/devices/PlayerDevice",
+                    "backend": "xmms2",
                     "backendold": "player/gstreamer/devices/GstreamerPlayer"
                 },
                 "realtime": {
@@ -86,8 +114,35 @@
                 "rgb": {
                     "__children__": {},
                     "__type__": "serial/devices/NerveSerialDevice",
+                    "enabled": false,
                     "baud": 19200,
-                    "file": "/dev/ttyACM1"
+                    "file": "/dev/ttyACM1",
+                    "publish": true
+                },
+                "rrgb": {
+                    "__children__": {},
+                    "__type__": "core/SymbolicLink",
+                    "target": "http://192.168.1.102:8889/query/rgb"
+                },
+                "system": {
+                    "__children__": {
+                        "sysfs": {
+                            "__type__": "system/linux/devices/sysfs/SysFSDevice"
+                        },
+                        "cputemp": {
+                            "__type__": "core/SymbolicLink",
+                            "target": "/devices/system/sysfs/thermal/2"
+                        },
+                        "systemp1": {
+                            "__type__": "core/SymbolicLink",
+                            "target": "/devices/system/sysfs/thermal/0"
+                        },
+                        "systemp2": {
+                            "__type__": "core/SymbolicLink",
+                            "target": "/devices/system/sysfs/thermal/1"
+                        }
+                    },
+                    "__type__": "system/linux/devices/system/SystemDevice"
                 },
                 "test": {
                     "__children__": {},
@@ -98,30 +153,45 @@
                     "__children__": {
                         "auto": {
                             "__children__": {},
-                            "__type__": "events/PyCodeEvent",
-                            "code": "#print('SPAM!')",
+                            "__type__": "asyncs/PyCodeAsyncTask",
+                            "code": "print('SPAM!')",
+                            "repeat": 1.0,
+                            "trigger": ""
+                        },
+                        "event": {
+                            "__children__": {},
+                            "__type__": "asyncs/PyCodeAsyncTask",
+                            "code": "nerve.query('/devices/events/publish', type='change', src='/devices/thing/event')",
                             "repeat": 1.0,
                             "trigger": ""
                         },
                         "lamp": {
                             "__children__": {},
-                            "__type__": "events/PyCodeEvent",
-                            "code": "time.sleep(2)\nnerve.query(\"http://dev:dev@localhost:8889/query/deskclock/relay_toggle\")",
+                            "__type__": "asyncs/PyCodeAsyncTask",
+                            "code": "time.sleep(2)\nnerve.query(\"http://admin:admin@localhost:8889/query/deskclock/relay_toggle\")",
                             "repeat": 0.0,
                             "trigger": ""
                         },
                         "spam": {
                             "__children__": {},
-                            "__type__": "events/PyCodeEvent",
+                            "__type__": "asyncs/PyCodeAsyncTask",
                             "code": "print('SPAM!')\nself.repeat_in(1.0)",
                             "repeat": 0.0,
                             "trigger": ""
                         },
                         "test": {
                             "__children__": {},
-                            "__type__": "events/PyCodeEvent",
+                            "__type__": "asyncs/PyCodeAsyncTask",
                             "code": "print('Hey there2342')",
                             "repeat": 0.0,
+                            "trigger": ""
+                        },
+                        "alarm": {
+                            "__children__": {},
+                            "__type__": "asyncs/PyCodeAsyncTask",
+                            "autorun": true,
+                            "code": "if nerve.query('/devices/system/cputemp') > 60:\n  nerve.query('/devices/notify/add', \"It's getting hot!\")",
+                            "repeat": 60.0,
                             "trigger": ""
                         }
                     },
@@ -141,14 +211,14 @@
                             "__children__": {
                                 "event_dispatch": {
                                     "__children__": {},
-                                    "__type__": "events/PyCodeEvent",
+                                    "__type__": "asyncs/PyCodeAsyncTask",
                                     "code": "nerve.query('/events/ir/irrecv/' + args[0])",
                                     "repeat": 0.0,
                                     "trigger": ""
                                 },
                                 "irremote_dispatch": {
                                     "__children__": {},
-                                    "__type__": "events/PyCodeEvent",
+                                    "__type__": "asyncs/PyCodeAsyncTask",
                                     "code": "nerve.query('/devices/irremote/on_receive_code', *args)",
                                     "repeat": 0.0,
                                     "trigger": ""
@@ -164,21 +234,21 @@
                             "__children__": {
                                 "N:628": {
                                     "__children__": {},
-                                    "__type__": "events/PyCodeEvent",
+                                    "__type__": "asyncs/PyCodeAsyncTask",
                                     "code": "nerve.query('/devices/player/toggle')",
                                     "repeat": 0.0,
                                     "trigger": ""
                                 },
                                 "N:650": {
                                     "__children__": {},
-                                    "__type__": "events/PyCodeEvent",
+                                    "__type__": "asyncs/PyCodeAsyncTask",
                                     "code": "nerve.query('/devices/player/previous')",
                                     "repeat": 0.0,
                                     "trigger": ""
                                 },
                                 "N:690": {
                                     "__children__": {},
-                                    "__type__": "events/PyCodeEvent",
+                                    "__type__": "asyncs/PyCodeAsyncTask",
                                     "code": "nerve.query('/devices/player/next')",
                                     "repeat": 0.0,
                                     "trigger": ""
@@ -188,6 +258,20 @@
                         }
                     },
                     "__type__": "objects/ObjectNode"
+                },
+                "querytest": {
+                    "__children__": {},
+                    "__type__": "asyncs/PyCodeAsyncTask",
+                    "code": "if len(args) <= 0:\n  return\n\nif args[0] == 'off':\n  self.stop = True\n  return\n\nself.stop = False\nself.target = args[0]\nwhile not self.stop:\n  nerve.query(self.target)\n",
+                    "repeat": 0.0,
+                    "trigger": "" 
+                },
+                "querytest2": {
+                    "__children__": {},
+                    "__type__": "asyncs/PyCodeAsyncTask",
+                    "code": "if len(args) <= 0:\n  return\n\nself.start = time.time()\nself.target = args[0]\nfor i in range(0, 100):\n  nerve.query(self.target)\nprint(str(100 / (time.time() - self.start)) + ' requests per second')\n",
+                    "repeat": 0.0,
+                    "trigger": "" 
                 }
             },
             "__type__": "objects/ObjectNode"
@@ -266,6 +350,9 @@
                             "__type__": "medialib/MediaLibController",
                             "device": "/devices/medialibrem"
                         },
+                        "notify": {
+                            "__type__": "notify/controllers/NotifyController"
+                        },
                         "pages": {
                             "__type__": "pages/PagesController"
                         },
@@ -299,8 +386,9 @@
                     "parent": "/servers/default",
                     "password": "",
                     "port": 8888,
-                    "ssl_cert": "",
+                    "ssl_cert": "ssl/nerve.test.cert",
                     "ssl_enable": false,
+                    "ssl_key": "ssl/nerve.test.key",
                     "use_usersdb": true,
                     "username": "",
                     "template": {

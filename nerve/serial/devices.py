@@ -17,6 +17,9 @@ class SerialDevice (nerve.Device):
         self.file = self.get_setting('file')
         self.baud = self.get_setting('baud')
 
+        if not self.get_setting('enabled'):
+            return
+
         self.thread = nerve.Task('SerialTask', self.run)
 
         if sys.platform == 'win32':
@@ -30,6 +33,7 @@ class SerialDevice (nerve.Device):
     @classmethod
     def get_config_info(cls):
         config_info = super().get_config_info()
+        config_info.add_setting('enabled', "Enable on Startup", default=True)
         config_info.add_setting('file', "Device File", default='/dev/ttyS0')
         config_info.add_setting('baud', "Baud Rate", default=19200)
         return config_info
@@ -119,6 +123,7 @@ class NerveSerialDevice (SerialDevice):
     def get_config_info(cls):
         config_info = super().get_config_info()
         config_info.add_setting('notify', "Notify", default='/events/serial')
+        config_info.add_setting('publish', "Publish Events?", default=False)
         config_info.add_default_child('event_recv', { '__type__': 'objects/ObjectNode' })
         return config_info
 
@@ -152,6 +157,10 @@ class NerveSerialDevice (SerialDevice):
             return
         notify_ref = self.get_setting('notify').rstrip('/') + '/' + ref + '/*'
         nerve.query(notify_ref, args)
+
+        if self.get_setting('publish'):
+            nerve.events.publish(type='change', src=self.get_pathname() + '/' + ref, value=args)
+
         #self.query('event_recv/*', args)
 
         #print("Received unmatched serial return: " + ref + " " + str(args))

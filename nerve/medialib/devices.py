@@ -26,7 +26,6 @@ class MediaLibDevice (nerve.Device):
         self.db.create_table('media', "id INTEGER PRIMARY KEY, filename TEXT, rootlen INTEGER, artist TEXT, album TEXT, title TEXT, track_num NUMERIC, genre TEXT, tags TEXT, duration NUMERIC, media_type TEXT, mimetype TEXT, file_hash TEXT, file_size INTEGER, last_modified NUMERIC")
         self.db.create_table('info', "name TEXT PRIMARY KEY, value TEXT")
 
-        self.current = 'default'
         tasks.start_updater([ 'medialib/updaters/files/MediaFilesUpdater', 'medialib/updaters/youtube/YoutubePlaylistUpdater' ])
 
     def rehash(self):
@@ -188,6 +187,27 @@ class MediaLibDevice (nerve.Device):
             else:
                 tagstring += tag + ' '
         return tagstring.rstrip()
+
+
+class PlaylistsDevice (nerve.Device):
+    def __init__(self, **config):
+        super().__init__(**config)
+        self.current = 'default'
+
+    def __getattr__(self, name):
+        try:
+            return super().__getattr__(name)
+        except AttributeError:
+            pass
+        return Playlist(name)
+
+    """
+    def set_child(self, index, obj):
+        pass
+
+    def del_child(self, index):
+        return False
+    """
 
     def get_playlist_list(self):
         playlist_list = Playlist.listnames()

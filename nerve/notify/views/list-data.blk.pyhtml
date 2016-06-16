@@ -1,0 +1,25 @@
+
+    <!-- <span><%= len(notifications) %> notifications</span> -->
+
+    <% import humanize %>
+
+    <table class="nerve-table">
+    <thead><tr>
+	<th><input type="checkbox" class="notify-select-all" /></th>
+	<th>Message</th>
+	<th>Severity</th>
+	<th>Time</th>
+    </tr></thead>
+    <tbody>
+	<% for num,notification in enumerate(notifications, 1): %>
+	    <tr <%= ' class="nerve-highlight"' if not notification['acknowledged'] else '' %>>
+		<td><input type="checkbox" name="nids[]" value="<%= notification['id'] %>" /></td>
+		<td><%= notification['message'] %></td>
+		<td><%= notification['severity'] %></td>
+		<!-- <td><%= time.strftime("%H:%M on %a, %d %b", time.localtime(notification['timestamp'])) %></td> -->
+		<td><%= humanize.naturaltime(time.time() - notification['timestamp']) %></td>
+	    </tr>
+	<% end %>
+    </tbody>
+    </table>
+ 

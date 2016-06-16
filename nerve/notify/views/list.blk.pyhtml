@@ -1,0 +1,13 @@
+
+<div class="nerve-floatingbar-top nerve-background">
+    <div class="nerve-form-item-row">
+        <button type="button" class="notify-acknowledge">Acknowledge</button>
+        <button type="button" class="notify-acknowledge-all">Acknowledge All</button>
+        <button type="button" class="notify-clear">Clear</button>
+        <button type="button" class="notify-clear-all">Clear All</button>
+    </div>
+</div>
+
+<div id="nerve-notifications-list">
+</div>
+ 

@@ -10,6 +10,9 @@ import urllib.parse
 
 
 class WSGIHandler (nerve.Server):
+    def __init__(self, **config):
+        super().__init__(**config)
+
     def __call__(self, environ, start_response):
         nerve.logs.redirect(environ['wsgi.errors'])
 
@@ -17,7 +20,7 @@ class WSGIHandler (nerve.Server):
         #    print(key, value, file=environ['wsgi.errors'])
 
         reqtype = environ['REQUEST_METHOD']
-        scheme = environ['REQUEST_SCHEME']
+        scheme = environ['REQUEST_SCHEME'] if 'REQUEST_SCHEME' in environ else ''
         servername = environ['SERVER_NAME']
         path = environ['PATH_INFO']
         querystring = environ['QUERY_STRING']
@@ -61,7 +64,7 @@ class WSGIHandler (nerve.Server):
         if output:
             headers += [ ('Content-Type', mimetype), ('Content-Length', str(len(output))) ]
         else:
-            headers += [ ('Content-Length', str(0)) ]
+            headers += [ ('Content-Length', '0') ]
         """
 
         start_response(status, headers)

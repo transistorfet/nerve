@@ -147,25 +147,31 @@ function MediaLibSearch(element)
 {
     var that = this;
 
-    /*
-    that.search = function ()
+    that.get_query = function () {
+        var query = { };
+
+        query['mode'] = $(element).find('[name="mode"]').val();
+        query['media_type'] = $(element).find('[name="media_type"]').val();
+        query['recent'] = $(element).find('[name="recent"]').val();
+        query['tags'] = $(element).find('[name="tags"]').val();
+        query['order'] = $(element).find('[name="order"]').val();
+        query['search'] = $(element).find('[name="search"]').val();
+        query['offset'] = $(element).find('[name="offset"]').val();
+        query['limit'] = $(element).find('[name="limit"]').val();
+        return query;
+    }
+
+    that.search = function (query)
     {
-        var postvars = { };
-
-        postvars['mode'] = $(element).find('#mode').val();
-        postvars['order'] = $(element).find('#order').val();
-        postvars['offset'] = $(element).find('#offset').val();
-        postvars['limit'] = $(element).find('#limit').val();
-        postvars['search'] = $(element).find('#search').val();
-        postvars['recent'] = $(element).find('#recent').val();
-        postvars['media_type'] = $(element).find('#media_type').val();
-
-        $.post('/medialib/get_search_results', postvars, function (response) {
-            $(element).find('#medialib-search-results').html(response);
-            $(element).find('#medialib-search-table').show();
+        var $table = $(element).find('#medialib-search-table');
+        $table.html("<hr>Searching...");
+        $.post('/medialib/search_data', query, function (response) {
+            $table.html(response);
+            Nerve.attachWidgets($table);
         }, 'html');
     }
 
+    /*
     that.expand_artist = function (artist)
     {
         var postvars = { };
@@ -211,20 +217,20 @@ function MediaLibSearch(element)
     */
 
 
-    $(element).find('.pl_enqueue').click(function () {
+    $(element).on('click', '.pl_enqueue', function () {
         that.add_media_items('enqueue', { 'playlist': $('#select-playlist').val() });
     });
 
-    $(element).find('.pl_replace').click(function () {
+    $(element).on('click', '.pl_replace', function () {
         if (confirm("Are you sure you want to replace everything on playlist " + $('#select-playlist').val()))
             that.add_media_items('replace', { 'playlist': $('#select-playlist').val() });
     });
 
-    $(element).find('.pl_playnow').click(function () {
+    $(element).on('click', '.pl_playnow', function () {
         that.add_media_items('playnow', { 'playlist': $('#select-playlist').val() });
     });
 
-    $(element).find('.pl_addtags').click(function () {
+    $(element).on('click', '.pl_addtags', function () {
         var postvars = { };
         postvars['tags'] = $('#medialib-add-tags').val();
         postvars['media[]'] = [ ];
@@ -246,7 +252,7 @@ function MediaLibSearch(element)
         }, 'json');
     });
 
-    $(element).find('.remove-tag').click(function () {
+    $(element).on('click', '.remove-tag', function () {
         var that = this;
         var postvars = { };
         postvars['id'] = $(this).attr('data-id');
@@ -265,9 +271,24 @@ function MediaLibSearch(element)
     });
     */
 
-    $(document).on('submit', '#medialib-search-form', function () {
-        $('#medialib-search-table').html("<hr/>Searching...");
+    $(element).on('submit', '#medialib-search-form', function (e) {
+        //e.preventDefault();
+        //$(element).find('#medialib-search-table').html("<hr/>Searching...");
+        //var query = that.get_query();
+        //that.search(query);
+        //history.pushState(query, null, '/medialib/search?' + $.param(query));
     });
+
+    /*
+    $(window).on('popstate', function (e) {
+        console.log(e.originalEvent.state);
+        that.search(e.originalEvent.state);
+    });
+    */
+
+    if (location.href.indexOf('?') >= 0)
+        that.search(that.get_query());
+        //$(element).find('#medialib-search-form').trigger('submit');
 
     return that;
 }
@@ -290,16 +311,25 @@ $(document).ready(function ()
     });
     */
 
-    $('.medialib-list').on('click', 'tr', function (event) {
+    var $last = null;
+
+    $('.medialib-playlist,.medialib-search').on('click', '.medialib-list tr', function (event) {
         if (event.target.type !== 'checkbox')
             $(this).find(':checkbox').trigger('click');
+
+        if (event.shiftKey) {
+            console.log("YES", $last);
+        }
+
+        $last = $(event.target);
     });
 
-    $('.medialib-list').on('change', 'td:first-child input', function () {
+    $('.medialib-playlist,.medialib-search').on('change', '.medialib-list td:first-child input', function (event) {
         if ($(this).is(':checked'))
             $(this).closest('tr').addClass('nerve-highlight-dim');
         else
             $(this).closest('tr').removeClass('nerve-highlight-dim');
+        $last = $(event.target);
     });
 });
 

@@ -72,7 +72,7 @@ $(document).ready(function ()
             {
                 console.log("Good");
             })
-            .open_url('/irremote/edit_event/' + $(this).attr('data-code'));
+            .open_url('/irremote/edit_action/' + $(this).attr('data-code'));
     });
 
     $('#irremote-view').click(function ()
@@ -98,7 +98,7 @@ $(document).ready(function ()
 
         dialog.set_modal(true);
         if (remote) {
-            dialog.set_content("Are you sure you want to delete <b>" + remote + "</b> and all of it's associated buttons and events?")
+            dialog.set_content("Are you sure you want to delete <b>" + remote + "</b> and all of it's associated buttons and actions?")
             dialog.open(function (that)
             {
                 $.post('/irremote/remove_remote', { remote_name: remote }, function (response)

@@ -510,6 +510,7 @@ NerveTabs = (function ()
             }
         });
 
+        // handle clicking on tabs
         $(element).find('.tab').mousedown(function(e) {
             var data_content = $(this).attr('data-content');
 
@@ -526,6 +527,18 @@ NerveTabs = (function ()
                 }
             }
         });
+
+        // TODO make it hide the tabs and show them when you scroll up a bit without being at the top (conflicts with floatingbar)
+        /*
+        if ($(element).hasClass('pulldown')) {
+            var current = $(window).scrollTop();
+            $(window).scroll(function () {
+                if ($(window).scrollTop() >= current) {
+                    current = $(window).scrollTop();
+                }
+            });
+        }
+        */
 
         return this;
     }
@@ -1041,6 +1054,41 @@ NerveDialog = (function ()
 //        });
 
 
+Nerve.attachWidgets = function (element)
+{
+    $('.nerve-slider', element).each(function () {
+        new NerveSlider(this);
+    });
+
+    $('.nerve-input-submit', element).each(function () {
+        new NerveInputSubmit(this);
+    });
+
+    $('.nerve-query', element).each(function () {
+        new NerveQuery(this);
+    });
+
+    $('.nerve-query-block', element).each(function () {
+        new NerveQueryBlock(this);
+    });
+
+    $('.nerve-editor', element).each(function () {
+        new NerveEditor(this);
+    });
+
+    $('.nerve-tabs', element).each(function () {
+        new NerveTabs(this);
+    });
+
+    $('.nerve-floatingbar-top', element).each(function () {
+        new NerveFloatingBarTop(this);
+    });
+
+    $('.nerve-dialog', element).each(function () {
+        new NerveDialog(this);
+    });
+}
+
 
 $(document).ready(function()
 {
@@ -1057,41 +1105,12 @@ $(document).ready(function()
 
     NerveButton.ready();
 
-    $('.nerve-slider').each(function () {
-        new NerveSlider(this);
-    });
-
-    $('.nerve-input-submit').each(function () {
-        new NerveInputSubmit(this);
-    });
-
-    $('.nerve-query').each(function () {
-        new NerveQuery(this);
-    });
-
-    $('.nerve-query-block').each(function () {
-        new NerveQueryBlock(this);
-    });
-
-    $('.nerve-editor').each(function () {
-        new NerveEditor(this);
-    });
-
-    $('.nerve-tabs').each(function () {
-        new NerveTabs(this);
-    });
-
-    $('.nerve-floatingbar-top').each(function () {
-        new NerveFloatingBarTop(this);
-    });
-
     NerveDisplayToggle.ready();
 
     NerveDialogOpen.ready();
 
-    $('.nerve-dialog').each(function () {
-        new NerveDialog(this);
-    });
+    Nerve.attachWidgets(document);
+
 });
 
 

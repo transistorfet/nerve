@@ -19,28 +19,30 @@ class MediaLibController (nerve.http.Controller):
         config_info = super().get_config_info()
         #config_info.add_setting('devices', "Medialib Devices", default=list('/devices/medialib'), itemtype='str')
         config_info.add_setting('device', "Medialib Device", default='/devices/medialib')
+        config_info.add_setting('playlists', "Playlists Device", default='/devices/playlists')
+        config_info.add_setting('player', "Player Device", default='/devices/player')
         return config_info
 
     @nerve.public
     def index(self, request):
-        #medialib = nerve.get_object('/devices/medialib')
         medialib = nerve.get_object(self.get_setting('device'))
+        playlists = nerve.get_object(self.get_setting('playlists'))
         playlist = request.args['playlist'] if 'playlist' in request.args else 'default'
 
         data = { }
-        data['list_of_playlists'] = medialib.get_playlist_list()
+        data['list_of_playlists'] = playlists.get_playlist_list()
         self.load_template_view('nerve/medialib/views/playlist.blk.pyhtml', data, request)
         self.template_add_to_section('jsfiles', '/medialib/assets/js/medialib.js')
         self.template_add_to_section('cssfiles', '/medialib/assets/css/medialib.css')
 
     @nerve.public
     def get_playlist(self, request):
-        #medialib = nerve.get_object('/devices/medialib')
-        medialib = nerve.get_object(self.get_setting('device'))
+        playlists = nerve.get_object(self.get_setting('playlists'))
         playlist = request.args['playlist'] if 'playlist' in request.args else 'default'
 
         data = { }
-        data['playlist'] = medialib.get_playlist(playlist)
+        data['playlist'] = playlists.get_playlist(playlist)
+        data['playlist'] = playlists.get_playlist()
         try:
             data['current_pos'] = nerve.query('/devices/player/get_position')
         except:
@@ -49,12 +51,40 @@ class MediaLibController (nerve.http.Controller):
 
     @nerve.public
     def search(self, request):
-        #medialib = nerve.get_object('/devices/medialib')
         medialib = nerve.get_object(self.get_setting('device'))
+        playlists = nerve.get_object(self.get_setting('playlists'))
 
         data = { }
         data['medialib'] = medialib
-        data['list_of_playlists'] = medialib.get_playlist_list()
+        data['list_of_playlists'] = playlists.get_playlist_list()
+        data['mode'] = request.arg('mode', default='album')
+        data['order'] = request.arg('order', default='artist')
+        data['offset'] = request.arg('offset', default=0)
+        data['limit'] = request.arg('limit', default=0)
+        data['search'] = request.arg('search', default='')
+        data['tags'] = request.arg('tags', default='')
+        data['recent'] = request.arg('recent', default=None)
+        data['media_type'] = request.arg('media_type', default=None)
+
+        """
+        if request.arg('mode'):
+            data['media_list'] = medialib.search(data['mode'], data['order'], data['offset'], data['limit'], data['search'], data['recent'], data['media_type'], data['tags'])
+        else:
+            data['media_list'] = None
+        """
+
+        self.load_template_view('nerve/medialib/views/search.blk.pyhtml', data, request)
+        self.template_add_to_section('jsfiles', '/medialib/assets/js/medialib.js')
+        self.template_add_to_section('cssfiles', '/medialib/assets/css/medialib.css')
+
+    @nerve.public
+    def search_data(self, request):
+        medialib = nerve.get_object(self.get_setting('device'))
+        playlists = nerve.get_object(self.get_setting('playlists'))
+
+        data = { }
+        data['medialib'] = medialib
+        data['list_of_playlists'] = playlists.get_playlist_list()
         data['mode'] = request.arg('mode', default='album')
         data['order'] = request.arg('order', default='artist')
         data['offset'] = request.arg('offset', default=0)
@@ -69,17 +99,15 @@ class MediaLibController (nerve.http.Controller):
         else:
             data['media_list'] = None
 
-        self.load_template_view('nerve/medialib/views/search.blk.pyhtml', data, request)
-        self.template_add_to_section('jsfiles', '/medialib/assets/js/medialib.js')
-        self.template_add_to_section('cssfiles', '/medialib/assets/css/medialib.css')
+        self.load_html_view('nerve/medialib/views/search-data.blk.pyhtml', data, request)
 
     @nerve.public
     def search_youtube(self, request):
-        #medialib = nerve.get_object('/devices/medialib')
         medialib = nerve.get_object(self.get_setting('device'))
+        playlists = nerve.get_object(self.get_setting('playlists'))
 
         data = { }
-        data['list_of_playlists'] = medialib.get_playlist_list()
+        data['list_of_playlists'] = playlists.get_playlist_list()
         data['media_list'] = None
         data['search'] = request.arg('search', default='')
 
@@ -99,24 +127,21 @@ class MediaLibController (nerve.http.Controller):
 
     @nerve.public
     def shuffle_playlist(self, request):
-        #medialib = nerve.get_object('/devices/medialib')
-        medialib = nerve.get_object(self.get_setting('device'))
-        playlist = request.args['playlist']
-        medialib.shuffle_playlist(playlist)
+        playlists = nerve.get_object(self.get_setting('playlists'))
+        playlist_name = request.args['playlist']
+        playlists.shuffle_playlist(playlist_name)
 
     @nerve.public
     def sort_playlist(self, request):
-        #medialib = nerve.get_object('/devices/medialib')
-        medialib = nerve.get_object(self.get_setting('device'))
-        playlist = request.args['playlist']
-        medialib.sort_playlist(playlist)
+        playlists = nerve.get_object(self.get_setting('playlists'))
+        playlist_name = request.args['playlist']
+        playlists.sort_playlist(playlist_name)
 
     @nerve.public
     def create_playlist(self, request):
-        #medialib = nerve.get_object('/devices/medialib')
-        medialib = nerve.get_object(self.get_setting('device'))
+        playlists = nerve.get_object(self.get_setting('playlists'))
         playlist_name = request.args['playlist']
-        for name in medialib.get_playlist_list():
+        for name in playlists.get_playlist_list():
             if name == playlist_name:
                 raise nerve.ControllerError("A playlist by that name already exists")
 
@@ -125,10 +150,9 @@ class MediaLibController (nerve.http.Controller):
 
     @nerve.public
     def delete_playlist(self, request):
-        #medialib = nerve.get_object('/devices/medialib')
-        medialib = nerve.get_object(self.get_setting('device'))
+        playlists = nerve.get_object(self.get_setting('playlists'))
         playlist_name = request.args['playlist']
-        for name in medialib.get_playlist_list():
+        for name in playlists.get_playlist_list():
             if name == playlist_name:
                 nerve.medialib.Playlist.delete(playlist_name)
                 self.load_json_view({ 'notice' : "Playlist deleted successfully" })
@@ -144,7 +168,7 @@ class MediaLibController (nerve.http.Controller):
             raise nerve.ControllerError("'media[]' field must be set")
 
         count = 0
-        medialib = nerve.get_object('/devices/medialib')
+        medialib = nerve.get_object(self.get_setting('device'))
 
         media = [ ]
         for argstr in request.arg('media[]'):
@@ -152,7 +176,7 @@ class MediaLibController (nerve.http.Controller):
             media.extend(medialib.get_media_query(query))
 
         if operation == 'playnow':
-            player = nerve.get_object('/devices/player')
+            player = nerve.get_object(self.get_setting('player'))
             if len(media) > 0:
                 player.play(media[0]['filename'])
                 for media_item in media[1:]:
@@ -206,7 +230,6 @@ class MediaLibController (nerve.http.Controller):
 
     @nerve.public
     def modify_tags(self, request):
-        #medialib = nerve.get_object('/devices/medialib')
         medialib = nerve.get_object(self.get_setting('device'))
 
         if not request.arg('media[]'):
@@ -235,7 +258,6 @@ class MediaLibController (nerve.http.Controller):
 
     @nerve.public
     def add_tag(self, request):
-        #medialib = nerve.get_object('/devices/medialib')
         medialib = nerve.get_object(self.get_setting('device'))
         id = request.arg('id')
         tag = request.arg('tag')
@@ -248,7 +270,6 @@ class MediaLibController (nerve.http.Controller):
 
     @nerve.public
     def remove_tag(self, request):
-        #medialib = nerve.get_object('/devices/medialib')
         medialib = nerve.get_object(self.get_setting('device'))
         id = request.arg('id')
         tag = request.arg('tag')
@@ -261,7 +282,6 @@ class MediaLibController (nerve.http.Controller):
 
     @nerve.public
     def rehash(self, request):
-        #medialib = nerve.get_object('/devices/medialib')
         medialib = nerve.get_object(self.get_setting('device'))
         medialib.rehash()
 

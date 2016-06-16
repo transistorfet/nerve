@@ -38,7 +38,7 @@ class RootNode (nerve.ObjectNode):
 
     def init_system(self):
         try:
-            nerve.events.init()
+            nerve.asyncs.init()
             nerve.users.init()
 
             if not self.load_config('settings.json'):
@@ -205,7 +205,7 @@ def has_object(name):
         pass
     return False
 
-
+""""
 def query(urlstring, *args, **kwargs):
     global rootnodes
 
@@ -260,17 +260,101 @@ def query(urlstring, *args, **kwargs):
 
         nerve.log("executing query: " + path + " " + repr(args) + " " + repr(kwargs), logtype='query')
 
-        """
-        obj = rootnodes[0].get_object(url.path.lstrip('/'))
-        if callable(obj):
-            result = obj(*args, **kwargs)
-        else:
-            result = obj
-        """
+        #obj = rootnodes[0].get_object(url.path.lstrip('/'))
+        #if callable(obj):
+        #    result = obj(*args, **kwargs)
+        #else:
+        #    result = obj
         result = rootnodes[0].query(path.lstrip('/'), *args, **kwargs)
 
         rstr = str(result)
         nerve.log("result: " + ( rstr[:75] + '...' if len(rstr) > 75 else rstr ), logtype='debug')
         return result
+"""
+
+_scheme_handlers = { }
+
+def register_scheme(scheme, handler):
+    if type(scheme) != str:
+        raise Exception("invalid uri scheme name: " + str(scheme))
+    _scheme_handlers[scheme] = handler
+
+
+def query(urlstring, *args, **kwargs):
+    url = urllib.parse.urlparse(urlstring)
+
+    scheme = url.scheme if url.scheme else 'local' if not url.netloc else 'http'
+    if not scheme in _scheme_handlers:
+        raise Exception("unsupported url scheme: " + scheme)
+    return _scheme_handlers[scheme](url, *args, **kwargs)
+
+
+def LocalQueryHandler(_queryurl, *args, **kwargs):
+    path = urllib.parse.unquote_plus(_queryurl.path)
+    kwargs = nerve.Request.parse_query_args(_queryurl, kwargs)
+    args = nerve.Request.parse_positional_args(args, kwargs)
+
+    nerve.log("executing query: " + path + " " + repr(args) + " " + repr(kwargs), logtype='query')
+
+    """
+    obj = rootnodes[0].get_object(_queryurl.path.lstrip('/'))
+    if callable(obj):
+        result = obj(*args, **kwargs)
+    else:
+        result = obj
+    """
+    result = rootnodes[0].query(path.lstrip('/'), *args, **kwargs)
+
+    rstr = str(result)
+    nerve.log("result: " + ( rstr[:75] + '...' if len(rstr) > 75 else rstr ), logtype='debug')
+    return result
+
+register_scheme('local', LocalQueryHandler)
+
+
+def HTTPQueryHandler(_queryurl, *args, **kwargs):
+    # TODO we ignore args and kwargs when querying a http server.  We could automatically make a query string of kwargs, and possible
+    #      still ignore args, or we could use a POST request instead, and send the json of the arguments (possible JSON-RPC style)
+
+    nerve.log("executing query: " + _queryurl.path + " " + repr(args) + " " + repr(kwargs), logtype='query')
+
+    # TODO is this valid?  To have query options in the kwargs?  Might that cause problems for some things?  Should the key be deleted here if
+    # present, so that it doesn't get encoded.
+    #if 'query_method' in kwargs:
+    #   method = kwargs['query_method']
+    #   del kwargs['query_method']
+    #else:
+    #   method = 'POST'
+
+    #method = kwargs['query_method'] if 'query_method' in kwargs else 'POST'
+
+    for i in range(len(args)):
+        #if '$'+str(i) in kwargs:
+        #   raise ValueError("positional argument " + '$'+str(i) + " already exists in kwargs")
+        kwargs['$'+str(i)] = args[i]
+
+    method = 'GET' if len(kwargs) <= 0 else 'POST'
+    urlstring = urllib.parse.urlunparse((_queryurl.scheme, _queryurl.netloc, _queryurl.path, '', '', ''))
+    nerve.log("remote query: " + method + " " + urlstring, logtype='query')
+    # TODO should there be an option to encode the args as json?
+    #options = { }
+    r = requests.request(method, urlstring, json=None if method == 'GET' else kwargs)
+
+    if r.status_code != 200:
+        raise Exception("request to " + urlstring + " failed. " + str(r.status_code) + ": " + r.reason, r.text)
+
+    (mimetype, pdict) = cgi.parse_header(r.headers['content-type'])
+    if mimetype == 'application/json':
+        return r.json()
+    elif mimetype == 'application/x-www-form-urlencoded':
+        return urllib.parse.parse_qs(r.text, keep_blank_values=True)
+    else:
+        return r.text
+
+register_scheme('http', HTTPQueryHandler)
+register_scheme('https', HTTPQueryHandler)
+
+
+
 
 

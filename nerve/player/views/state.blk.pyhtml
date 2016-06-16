@@ -1,6 +1,6 @@
 
 <div class="nerve-row">
-    <button data-query="player/save_state" class="nerve-button">Save State</button>
+    <button id="player-states-save" class="nerve-button">Save State</button>
 </div>
 <div class="nerve-row">
     <button id="player-states-load" class="nerve-button" style="flex: 0.15;">Load State</button>
@@ -12,6 +12,13 @@
     <button id="player-states-delete" class="nerve-button" style="flex: 0.15;">Delete</button>
     <script>
         $(document).ready(function () {
+            $('#player-states-save').click(function (e) {
+                $.post('/query/player/save_state', function (response) {
+                    console.log(response);
+                    location.reload();
+                });
+            });
+
             $('#player-states-load').click(function (e) {
                 $.post('/query/player/load_state', { 'i' : $('#player-states-list').val() }, function(response) {
                     location.reload();
@@ -19,11 +26,13 @@
             });
 
             $('#player-states-delete').click(function (e) {
-                if (confirm("Delete state " + $('#player-states-list :selected').html())) {
+                new NerveDialog().confirm("Delete state " + $('#player-states-list :selected').html(), function (dialog) {
                     $.post('/query/player/delete_state', { 'i' : $('#player-states-list').val() }, function(response) {
-                        window.location.reload();
+                        $('#player-states-list option:selected').remove();
+                        dialog.close();
+                        return true;
                     }, 'json');
-                }
+                });
             });
         });
     </script>

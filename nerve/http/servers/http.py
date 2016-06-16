@@ -13,7 +13,6 @@ import socketserver
 import http.server
 import hashlib
 import base64
-import ssl
 
 import cgi
 import json
@@ -36,8 +35,11 @@ class HTTPServer (nerve.Server, socketserver.ThreadingMixIn, http.server.HTTPSer
         self.password = self.get_setting("password")
 
         http.server.HTTPServer.__init__(self, ('', self.get_setting('port')), HTTPRequestHandler)
-        #if self.get_setting('ssl_enable'):
-        #    self.socket = ssl.wrap_socket(self.socket, certfile=self.get_setting('ssl_cert'), server_side=True)
+        if self.get_setting('ssl_enable'):
+            import ssl
+            certfile = nerve.files.name(self.get_setting('ssl_cert'))
+            keyfile = nerve.files.name(self.get_setting('ssl_key'))
+            self.socket = ssl.wrap_socket(self.socket, certfile=certfile, keyfile=keyfile, server_side=True)
 
         sa = self.socket.getsockname()
         nerve.log('starting http(s) on port ' + str(sa[1]))
@@ -56,6 +58,7 @@ class HTTPServer (nerve.Server, socketserver.ThreadingMixIn, http.server.HTTPSer
         config_info.add_setting('password', "Admin Password", default='')
         config_info.add_setting('ssl_enable', "SSL Enable", default=False)
         config_info.add_setting('ssl_cert', "SSL Certificate File", default='')
+        config_info.add_setting('ssl_key', "SSL Key File", default='')
         return config_info
 
 
@@ -103,6 +106,20 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
         try:
             with self.check_authorization():
                 self.do_request('POST')
+        except nerve.users.UserLoginError as e:
+            self.send_401(str(e))
+
+    def do_PUT(self):
+        try:
+            with self.check_authorization():
+                self.do_request('PUT')
+        except nerve.users.UserLoginError as e:
+            self.send_401(str(e))
+
+    def do_DELETE(self):
+        try:
+            with self.check_authorization():
+                self.do_request('DELETE')
         except nerve.users.UserLoginError as e:
             self.send_401(str(e))
 
@@ -207,9 +224,10 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
         self.send_header('Connection', 'Upgrade')
         key = hashlib.sha1(bytes(self.headers['Sec-WebSocket-Key'] + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", 'utf-8')).digest()
         self.send_header('Sec-WebSocket-Accept', base64.b64encode(key).decode('utf-8'))
+        protocol = self.headers['Sec-WebSocket-Protocol']
+        self.send_header('Sec-WebSocket-Protocol', protocol)
         self.end_headers()
 
-        protocol = self.headers['Sec-WebSocket-Protocol']
         conn = WebSocketConnection(self.rfile, self.wfile)
         request = nerve.Request(conn, None, 'CONNECT', self.path, postvars, headers=dict(self.headers))
 
@@ -362,6 +380,25 @@ class WebSocketConnection (nerve.connect.Connection):
     def websocket_write_frame(self, opcode, data):
         length = len(data)
         frame = b''
+        frame += struct.pack("!B", WS_B1_FINBIT | (0x0f & opcode))
+        if length < 0x7e:
+            frame += struct.pack("!B", length)
+        elif length < 0xffff:
+            frame += struct.pack("!BH", 0x7e, length)
+        else:
+            frame += struct.pack("!BQ", 0x7f, length)
+        #maskkey = struct.pack("!I", random.getrandbits(32))
+        #frame += maskkey
+        #frame += bytes(b ^ maskkey[i % 4] for (i, b) in enumerate(data))
+        frame += data
+
+        #print("SEND: " + ' '.join(hex(b) for b in frame))
+        self.wfile.write(frame)
+
+    """
+    def websocket_write_frame_masked(self, opcode, data):
+        length = len(data)
+        frame = b''
         frame += struct.pack("!B", WS_B1_FINBIT | opcode)
         if length < 0x7e:
             frame += struct.pack("!B", WS_B2_MASKBIT | length)
@@ -375,6 +412,7 @@ class WebSocketConnection (nerve.connect.Connection):
 
         #print("SEND: " + ' '.join(hex(b) for b in frame))
         self.wfile.write(frame)
+    """
 
     def websocket_write_close(self, statuscode, message):
         self.websocket_write_frame(WS_OP_CLOSE, struct.pack("!H", statuscode) + bytes(message, 'utf-8'))

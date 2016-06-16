@@ -54,7 +54,8 @@
                 <td><%= node.nodeid %></td>
                 <td><%= node.name %></td>
                 <td><%= node.version %></td>
-                <td></td>
+                <td><%= format_timestamp(node.last_recv) %></td>
+                <!-- <td></td> -->
                 <td><button class="nerve-button" data-query="mysensors/reset_node?id=<%= node.nodeid %>">Reset</button></td>
             </tr>
             <% for sensorname in sorted(node.keys_children(), key=lambda id: int(id)): %>

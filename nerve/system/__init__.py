@@ -4,8 +4,7 @@
 import platform
 
 if platform.system() == "Windows":
-    from ._windows.devices import SystemDevice
+    from .windows import devices
 else:
-    from ._linux.devices import SystemDevice
-
+    from .linux import devices
 

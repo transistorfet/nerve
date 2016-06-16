@@ -134,7 +134,7 @@ config = {
 }
 
 
-
+"""
 class SpecialEvent (nerve.events.Event):
     def __init__(self, **config):
         config['repeat'] = 1.0
@@ -150,6 +150,7 @@ class SpecialEvent (nerve.events.Event):
         if self.high and float(temp) < 23:
             self.high = False
             print("IT'S NOT HAPPENING")
+"""
 
 #nerve.set_object("/devices/thing/special", SpecialEvent())
 

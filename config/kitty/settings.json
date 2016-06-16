@@ -9,10 +9,11 @@
                     "medialib_dirs": [
                         "/media/media/Torrents",
                         "/media/media/Music",
-                        "/media/media/Comedy"
+                        "/media/media/Comedy",
+                        "/media/media/Video"
                     ],
                     "ignore_dirs": [
-			"zz Incomplete zz"
+			"/media/media/Torrents/zz Incomplete zz"
                     ],
                     "youtube_playlists": [
                         "FL_VkJGWFV9ZEIv87E-0NM5w"
@@ -24,13 +25,13 @@
         },
         "devices": {
             "__children__": {
-                "computer": {
-                    "__type__": "system/SystemDevice"
+                "system": {
+                    "__type__": "system/linux/devices/system/SystemDevice"
                 },
                 "rgb": {
+                    "__type__": "serial/NerveSerialDevice",
                     "baud": 19200,
-                    "file": "/dev/ttyACM1",
-                    "__type__": "serial/NerveSerialDevice"
+                    "file": "/dev/ttyACM1"
                 },
                 "player": {
                     "__type__": "player/xmms2cli/Xmms2CLI"
@@ -40,12 +41,33 @@
                 }
             }
         },
+        "events": {
+            "__children__": {
+                "serial": {
+                    "__children__": {
+                        "irrecv": {
+                            "__children__": {
+                                "print_code": {
+                                    "__children__": {},
+                                    "__type__": "asyncs/PyCodeAsyncTask",
+                                    "code": "nerve.log(\"Received IR code \" + args[0])",
+                                    "repeat": 0.0,
+                                    "trigger": ""
+                                }
+                            }
+                        }
+                    },
+                    "__type__": "objects/ObjectNode"
+                }
+            },
+            "__type__": "objects/ObjectNode"
+        },
         "servers": {
             "__children__": {
                 "console": {
                     "controllers": {
                         "__default__": {
-                            "__type__": "base/QueryController"
+                            "__type__": "base/controllers/shell/ShellController"
                         }
                     },
                     "__type__": "base/servers/console/Console"
@@ -54,10 +76,19 @@
                     "port": 5959,
                     "controllers": {
                         "__default__": {
-                            "__type__": "base/QueryController"
+                            "__type__": "base/controllers/query/QueryController"
                         }
                     },
                     "__type__": "base/servers/udpserver/UDPServer"
+                },
+                "tcp": {
+                    "port": 5959,
+                    "controllers": {
+                        "__default__": {
+                            "__type__": "base/controllers/shell/ShellController"
+                        }
+                    },
+                    "__type__": "connect/servers/tcpserver/TCPServer"
                 },
                 "http": {
                     "username" : "dev",
@@ -83,9 +114,6 @@
                         },
                         "pages": {
                             "__type__": "pages/controllers/PagesController"
-                        },
-                        "remote": {
-                            "__type__": "remote/RemoteController"
                         }
                     },
                     "template": {

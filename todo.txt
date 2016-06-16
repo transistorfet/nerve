@@ -1,11 +1,48 @@
 
+    * should you replace the IR receiver on deskclock with a temperature sensor?
+    * this raises an import question about events and notifications and all that business... right now, deskclock reads in either a button
+      or an ir code and does an action (the exact same action) for either condition.  If we made this more distributed and stuff, there
+      would need to be a way for the deskclock to send an ir code or to send a button press event somewhere to be processed.  The irremote
+      module only handles IR codes.  Could we use the same system for button codes?  How would either be sent to where they need to be to
+      activate their respective actions, and is it possible to direct both to the same action, so editing one action changes it for both
+      the button and the ircode
+
+    * you need to address the modules system as it's currently implemented
+
+    * add a morse code device of some sorts, which could be used by notify or by anything, to encode/decode/play/etc morse code
+    * you kinda need a way to organize modules into subdirectories, so these types of modules don't clutter the system
+
+
+    * rename tasks to threads?
+    * move asynctasks into its own module?
+    * remove trigger setting from asynctasks
+    * move db to its own module?
+
+    * with an eye towards REST, objects like the playlists, mysensors, and possibly others could have a 'list' function, such that
+      GET playlists would return a list of playlist names, and GET playlists/A%20Playlist would return the playlist itself.  This might
+      not fully work across all REST functions though, since the same method is called during a get or post
+    * make http support REST api, maybe use that for models/devices
+    * the issue with REST is that it doesn't map well onto the object system that GET/POST requests are making.  To make it work, I'd
+      have to establish a clear mapping, like translating them into 'put', 'delete' methods on the object, or tying them to 'add_child',
+      'remove_child' but those might be too low level
+
+    * wsgi needs a better way to handle userpermissionsrequired
+    * modify to use websocket (optionally, if available) for all data requests.  This might require big changes to all the frontend code
+      which you might do anyways.  Then notifications and other data updates could be done (somehow) as data pushes, so you don't have to
+      poll the server constantly.  Also notifications could happen instantaneously
+
+    * what can you use the notifications system for...
+    * make the mysensors timeout check only send a notification if it hasn't already sent one.  Should that be handled by the notification
+      system (kinda like android's notifications)?
+    * need a way to send a ping to a mysensors node when it hasn't responeded, so we can *accurately* know when a sensor is not responding
+    * add support for sending ir codes with irremote
+
     * add a clone() method to objects, to clone the object, and use it for controllers, so that the server will have an instantiated
       controller object for each controller, and it clones that object for each request.  
 
     * make a popup view at the bottom of the screen, a tab sort of thing, that you can drag upwards to show the "Remote" tab, so it's
       easy to change the song or turn something on quick while in the middle of something else, like making a playlist/searching media
-
-    * wsgi needs a better way to handle userpermissionsrequired
+    * add advanced web editor widget, with support for tab, indent-selected, etc
 
     * there's an issue accessing google's oauth and having it redirect to an internal ip.  This prevents it from working on phone
     * could you have a redirect on jabberwocky.ca that just redirects the browser to a local address?
@@ -22,7 +59,6 @@
       pings for more than 30 minutes, you raise an alarm so I can fix it in a timely manner
 
     * change queries to use @nerve.public
-    * would it be better to have a @Singleton decorator instead of overloading __new__?
 
     * make backups of settings file when saving, or possible add a revision control type system to it
     * make sure when loading config with saved module data that it gets used
@@ -35,6 +71,9 @@
     * add help system that uses docstrings
 
   Frontend:
+
+    * have a slide up panel with the remote control on it, so it's easy to switch to it while in the middle of something
+    * make tabs appear as a fixed bar when scrolling up (hides when scrolling down, shows when scrolling up no matter where you are on the page)
 
     * change all uses of document to document.body??
     * do something about notices and errors... the message should be visible without scrolling to the top... maybe insert it after the button
@@ -56,6 +95,9 @@
     * move module stuff to it's own file??
 
   ObjectFS:
+
+    * what about making a database of objects, where the config dictionary is saved as json encoded text, along with the pathname where it belongs.
+      It would be quicker to update config for just one object, but it would be harder to edit the objects/config data with text
 
     * should you re-unify the config namespace, or make it accessible somehow through the filesystem (like /devices/rgb/config:baud)
 
@@ -92,7 +134,6 @@
     * can you make it use a different SQL database?  At the very least, you could alter init() to take just the db name without the extension (which
       could be used by a MySQL driver as a table name prefix or something)
     * it would be cool if you could have multiple database sources, so like datalog module could use a different db for example, and medialib another
-    * add PUT and DELETE request types to the http server
     * should Model actually inherit from object, and Device would be an ObjectNode that's also a Model? (multiple inheritence)
 
   Medialib:
@@ -106,8 +147,6 @@
 
     * medialib file updater should check to make sure there isn't some accessing or missing filesystem condition before removing a media file entry
       from the database
-    * there's a Thievery Corp file with a question mark that seems to be added and then removed each cycle.  Is it because the sql query has the
-      question mark?  Or is there an issue with the file or something
 
   Connections:
 
@@ -126,8 +165,6 @@
     * add type parameters (like object(Server) to give a list of only objects that inherit from Server, or objectref(/devices) to only list
       object names (path/ref) in the dropdown
 
-    * what about making a database of objects, where the config dictionary is saved as json encoded text, along with the pathname where it belongs
-
     * would it be useful (or more complicated) to add a 'parent' or 'template' field to pages in the pages module, so that a parent
       page can be specified other than '__default__'?
 
@@ -135,7 +172,6 @@
     * add a system of notifications/messages that's global to the system but specific to a user (ie. can leave messages for individual users)
     * add irc/chat sort of things?
 
-    * add SSL support to HTTP server
     * make more advanced widgets for various things (ideas?)
     * there could be a way to automatically minify js and css files on the fly
     * add support for multiline comments in pyhtml

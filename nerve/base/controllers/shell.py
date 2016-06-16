@@ -129,6 +129,19 @@ class ShellController (nerve.Controller, nerve.connect.ControllerMixIn):
     def cmd_save(self, args):
         nerve.save_config()
 
+    def cmd_ln(self, args):
+        if len(args) != 3:
+            self.print("usage: ln <target> <link>")
+            return
+
+        linkname = nerve.join_path(self.pwd, args[2])
+        if nerve.has_object(linkname):
+            self.print(linkname + " already exists")
+            return
+
+        link = nerve.SymbolicLink(target=args[1])
+        nerve.set_object(linkname, link)
+
     def cmd_mkdir(self, args):
         pass
 

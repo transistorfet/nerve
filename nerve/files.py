@@ -46,6 +46,11 @@ def path(filename, create=False):
         os.makedirs(dirpath)
     return fullpath
 
+def name(filename):
+    if len(nerve_config_path) <= 0:
+        raise OSError("No config directory set.")
+    return os.path.join(nerve_config_path[0], filename)
+
 def createfile(filename):
     fullpath = path(filename, create=True)
     if not os.path.exists(fullpath):

@@ -5,10 +5,11 @@ core:
     python3-apsw
     python3-requests
     python3-colorama
+    python3-humanize        # currently only used in notify module but I might use it more
 
 aggregator:
     python3-lxml
-    python-oauth2client
+    python3-oauth2client
 
 serial:
     python3-serial

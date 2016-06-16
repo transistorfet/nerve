@@ -2,9 +2,9 @@
     "__children__": {
         "devices": {
             "__children__": {
-                "computer": {
+                "system": {
                     "__children__": {},
-                    "__type__": "system/_linux/devices/SystemDevice"
+                    "__type__": "system/linux/devices/system/SystemDevice"
                 },
                 "realtime": {
                     "__children__": {},
@@ -25,21 +25,21 @@
                             "__children__": {
                                 "N:628": {
                                     "__children__": {},
-                                    "__type__": "events/PyCodeEvent",
+                                    "__type__": "asyncs/PyCodeAsyncTask",
                                     "code": "nerve.query('/devices/player/toggle')",
                                     "repeat": 0.0,
                                     "trigger": ""
                                 },
                                 "N:650": {
                                     "__children__": {},
-                                    "__type__": "events/PyCodeEvent",
+                                    "__type__": "asyncs/PyCodeAsyncTask",
                                     "code": "nerve.query('/devices/player/previous')",
                                     "repeat": 0.0,
                                     "trigger": ""
                                 },
                                 "N:690": {
                                     "__children__": {},
-                                    "__type__": "events/PyCodeEvent",
+                                    "__type__": "asyncs/PyCodeAsyncTask",
                                     "code": "nerve.query('/devices/player/next')",
                                     "repeat": 0.0,
                                     "trigger": ""

@@ -37,6 +37,7 @@ def join_path(base, path):
 
 class ObjectNode (object):
     def __init__(self, **config):
+        self._name = ''
         self._parent = None
         self._children = { }
         self.set_config_data(config)
@@ -77,6 +78,7 @@ class ObjectNode (object):
         for objname in config.keys():
             typeinfo = config[objname]['__type__'] if '__type__' in config[objname] else 'objects/ObjectNode'
             obj = Module.make_object(typeinfo, config[objname])
+            obj._name = objname
             obj._parent = self
             self._children[objname] = obj
 
@@ -111,6 +113,7 @@ class ObjectNode (object):
     def set_child(self, index, obj):
         nerve.users.require_access('w', self._config['owner'], self._config['group'], self._config['access'])
         if isinstance(obj, ObjectNode):
+            obj._name = index
             obj._parent = self
         self._children[index] = obj
 
@@ -124,6 +127,9 @@ class ObjectNode (object):
     def keys_children(self):
         return list(self._children.keys())
 
+    def parent(self):
+        return self._parent
+
     def get_root(self):
         if not self._parent:
             return None
@@ -131,6 +137,14 @@ class ObjectNode (object):
         while root._parent:
             root = root._parent
         return root
+
+    def get_pathname(self):
+        path = self._name
+        obj = self._parent
+        while obj:
+            path = obj._name + '/' + path
+            obj = obj._parent
+        return path
 
     ### Direct Attributes ###
 
@@ -188,26 +202,16 @@ class ObjectNode (object):
             return None
         return root.del_child(leaf)
 
-    """
-    def notify(self, querystring, *args, **kwargs):
-        if not querystring.endswith('/*'):
-            raise Exception("Invalid notify query: " + querystring)
-        results = [ ]
-        parent = self.get_object(querystring.strip('/*'))
-        for objname in sorted(parent.keys_children()):
-            obj = parent.get_child(objname)
-            if callable(obj):
-                results.append(obj(*args, **kwargs))
-        return results
-    """
-
     def query(self, querystring, *args, **kwargs):
         (name, slash, remain) = querystring.partition('/')
 
         if name != '*':
             obj = self.get_object(name)
             if slash:
-                return obj.query(remain, *args, **kwargs)
+                if hasattr(obj, 'query'):
+                    return obj.query(remain, *args, **kwargs)
+                else:
+                    raise NotImplementedError("can't resolve child of non-ObjectNode object")
             elif callable(obj):
                 return obj(*args, **kwargs)
             else:

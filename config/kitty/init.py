@@ -10,13 +10,11 @@ class DeskClock (nerve.serial.SerialDevice):
         nerve.serial.SerialDevice.__init__(self, **config)
         self.relay1 = False
 
-    def p0(self):
-        if len(msg.args):
-            self.send('P0=' + str(int(msg.args[0], 16)) + '\n')
+    def p0(self, value):
+        self.send('P0=' + str(int(value, 16)) + '\n')
 
-    def p1(self):
-        if len(msg.args):
-            self.send('P1=' + str(int(msg.args[0], 16)) + '\n')
+    def p1(self, value):
+        self.send('P1=' + str(int(value, 16)) + '\n')
 
     def relay_toggle(self):
         self.relay1 = not self.relay1

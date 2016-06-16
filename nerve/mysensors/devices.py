@@ -46,17 +46,24 @@ class MySensorsSerialGateway (nerve.serial.SerialDevice):
         subtype = int(args[4])
         payload = args[5]
 
+        current_time = time.time()
+        node = self.get_child(nodeid)
+        if node:
+            node.last_recv = current_time
+
         if msgtype == MsgType.PRESENTATION:
             nerve.log("mysensors: new sensor presented itself: " + str(nodeid) + ":" + str(sensorid))
             self._add_sensor(nodeid, sensorid, subtype, payload)
 
         elif msgtype == MsgType.SET:
-            sensor = self.get_sensor(nodeid, sensorid)
+            #sensor = self.get_sensor(nodeid, sensorid)
+            sensor = node.get_child(sensorid)
             if not sensor:
                 sensor = self._add_sensor(nodeid, sensorid)
-            sensor.last_recv = time.time()
+            sensor.last_recv = current_time
             sensor.last_type = subtype
             sensor.last_value = payload
+            # TODO publish event? maybe even have a per sensor or per node flag for whether to publish
 
         elif msgtype == MsgType.REQ:
             pass
@@ -123,11 +130,7 @@ class MySensorsNode (nerve.Device):
         self.name = ''
         self.version = ''
         self.battery_level = 0.0
-
-    """
-    def get_config_data(self):
-        return None
-    """
+        self.last_recv = time.time()
 
     def set_child(self, index, obj):
         pass
@@ -150,11 +153,6 @@ class MySensorsSensor (nerve.Device):
         self.last_recv = 0
         self.last_type = None
         self.last_value = None
-
-    """
-    def get_config_data(self):
-        return None
-    """
 
     def send_msg(self, subtype, val):
         node = self._parent

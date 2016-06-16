@@ -144,11 +144,11 @@ class Controller (nerve.ObjectNode):
 
     def load_file_view(self, filename, base=None):
         fullpath = os.path.join(base, filename) if base else filename
-        mtime = os.path.getmtime(fullpath)
+        mtime = int(os.path.getmtime(fullpath))
         since = self._request.get_header('If-Modified-Since', None)
         if since:
-            since = time.mktime(email.utils.parsedate(since))
-            if since <= mtime:
+            since = int(time.mktime(email.utils.parsedate(since)))
+            if mtime <= since:
                 self._status = 304
                 return
         #self.add_header('Cache-Control', 'max-age=604800')  # 7 days
@@ -436,12 +436,36 @@ class PyCodeQuery (nerve.ObjectNode):
     @classmethod
     def get_config_info(cls):
         config_info = super().get_config_info()
+        config_info.add_setting('argslist', "Python Arguments", default='*args, **kwargs')
         config_info.add_setting('code', "Python Code", default='', datatype='textarea')
         return config_info
 
-    def __call__(self, *args):
-        code = self.get_setting('code')
-        exec(code)
+    def update_config_data(self, config):
+        super().update_config_data(config)
+        self.compile()
+
+    def set_setting(self, name, value):
+        super().set_setting(name, value)
+        self.compile()
+
+    def compile(self):
+        argslist = self.get_setting('argslist')
+        code = '\n'.join( '  ' + line for line in self.get_setting('code').split('\n') )
+        code = 'def eventfunc(self, {0}):\n'.format(argslist) + code
+        exec(code, globals(), locals())
+        self._compiledfunc = locals()['eventfunc']
+
+    def execute(self, *args, **kwargs):
+        #code = self.get_setting('code')
+        #exec(code)
+        #self.compile()
+        self._compiledfunc(self, *args, **kwargs)
+
+    def __call__(self, *args, **kwargs):
+        #code = self.get_setting('code')
+        #exec(code)
+        self._compiledfunc(self, *args, **kwargs)
+
 
 
 class SymbolicLink (nerve.ObjectNode):

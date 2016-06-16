@@ -529,3 +529,54 @@ $1, $2, etc
 or, which will be parsed exactly the same
 player/load_playlist?%241=Nine+Inch+Nails
 
+
+---------------------------------------------------
+
+2016/06/11:
+
+I'm considering re-introducing something like nerve.notify, or nerve.emit, or nerve.trigger, which will be different than the one before.
+The important difference it that it would contain the *originating* ref instead of the target ref, so:
+
+nerve.notify("/devices/rgb/ir", "N:690", type='change')
+
+This might even use the same notifications module I recently added, in which case user notifications would be identical in origin to
+all signals of conditions.  I'm debating whether these should be called notifications, signals, events, messages, or something else.  These
+would be more similar in function to signals, or events in terms of html/dom.
+
+Other things could then subscribe, which would run some code, call a callback, execute a query, or something when an event/signal/notification
+matches certain criteria.
+
+The type='change' part would be to indicate it's a notification that the value of /devices/rgb/ir has changed or updated.  In the case of a
+notification to the user, the type might be 'message' or something else.
+
+nerve.subscribe(src="/devices/*/ir", type='change', action="/events/serial/ir/*")
+
+So the above would add a trigger subscription which, when a notice comes in with type change, and with a src ref that matches the regex, it will
+query the given target.  If action was a function, it would be called.
+
+This could even be added to the /devices/notify object, such that /devices/notify/subscribe?type=change&... would add a subscription to a list
+that's saved; either a config setting or as a child to the object somehow...
+
+
+It could instead be like with dom, where an event/signal would bubble up from the originating object, via a special function on ObjectNode.
+
+self.trigger('change', 'ir', "N:690")
+
+and it would check for its own listeners, and pass up towards its parent, building the reference as it goes up.  It might want to continue bubbling,
+or maybe a special option in the listener could stop the propogation if it wanted?
+
+self.parent.trigger('change', 'rgb/ir', "N:690") ???
+(or would it be better to always have an absolute refpath.  nerve.query and stuff couldn't handle a relative path like this...)
+
+
+In the first method, everything would call the same static method/global object, which would process and dispatch everything based on a global list of
+listeners.  (They could be organized into subdirs and stuff if needed)...  In the second method each node in the network has listeners distributed throughout
+the object tree.  It would be harder to manage all the listeners globally, but it would be easier to have specific listeners for simple things, and global
+listeners for more generic things.  (Like if an object wanted to catch its own event, or one from just above or just below that object, it can do so easily
+without cluttering a global name space, and user-configured triggers would attach to the root of the tree).
+
+
+keep in mind this is also an issue for IRC stuff.  The irc device needs to send messages/notify/signals when an irc message or something comes through.
+Right now, it has a local directory for triggers that it will query* when an event happens.  It would be nice to have both kinda, a local trigger and a
+global trigger for the same event
+
