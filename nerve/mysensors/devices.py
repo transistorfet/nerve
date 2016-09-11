@@ -184,6 +184,10 @@ class MySensorsSensor (nerve.Device):
             """
             return self.last_value
 
+    def toggle(self):
+        if self.type == SubTypePresentation.S_LIGHT:
+            self.set_value(0 if self.last_value else 1, SubTypeSet.V_LIGHT)
+
     def last_recv(self):
         return self.last_recv
 

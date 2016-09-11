@@ -50,6 +50,7 @@
             <option value="last_modified" <%= ' selected' if order == 'last_modified' else '' %>>last modified</option>
             <option value="random" <%= ' selected' if order == 'random' else '' %>>random</option>
             <option value="filename" <%= ' selected' if order == 'filename' else '' %>>filename</option>
+            <option value="duration" <%= ' selected' if order == 'duration' else '' %>>duration</option>
         </select>
         <input type="text" name="search" placeholder="(search)" value="<%= search if search else '' %>" />
 

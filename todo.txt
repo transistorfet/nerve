@@ -12,6 +12,9 @@
     * add a morse code device of some sorts, which could be used by notify or by anything, to encode/decode/play/etc morse code
     * you kinda need a way to organize modules into subdirectories, so these types of modules don't clutter the system
 
+    * irremote doesn't prevent saving of all the event objects to the settings.json file, even though they come from the events db
+    * standardize on some humanize formatting stuff?
+
 
     * rename tasks to threads?
     * move asynctasks into its own module?
@@ -40,6 +43,7 @@
     * add a clone() method to objects, to clone the object, and use it for controllers, so that the server will have an instantiated
       controller object for each controller, and it clones that object for each request.  
 
+    * make medialib controller use a single medialib request for modifying tags
     * make a popup view at the bottom of the screen, a tab sort of thing, that you can drag upwards to show the "Remote" tab, so it's
       easy to change the song or turn something on quick while in the middle of something else, like making a playlist/searching media
     * add advanced web editor widget, with support for tab, indent-selected, etc

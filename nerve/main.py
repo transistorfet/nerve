@@ -345,11 +345,15 @@ def HTTPQueryHandler(_queryurl, *args, **kwargs):
 
     (mimetype, pdict) = cgi.parse_header(r.headers['content-type'])
     if mimetype == 'application/json':
-        return r.json()
+        result = r.json()
     elif mimetype == 'application/x-www-form-urlencoded':
-        return urllib.parse.parse_qs(r.text, keep_blank_values=True)
+        result = urllib.parse.parse_qs(r.text, keep_blank_values=True)
     else:
-        return r.text
+        result = r.text
+
+    rstr = str(result)
+    nerve.log("result: " + ( rstr[:75] + '...' if len(rstr) > 75 else rstr ), logtype='debug')
+    return result
 
 register_scheme('http', HTTPQueryHandler)
 register_scheme('https', HTTPQueryHandler)

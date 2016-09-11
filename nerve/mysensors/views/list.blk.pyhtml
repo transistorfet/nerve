@@ -46,6 +46,7 @@
             <th>Version</th>
             <th>Last Update</th>
             <th>Last Value</th>
+            <th></th>
         </tr></thead>
         <tbody>
         <% for nodename in sorted(mysensors.keys_children(), key=lambda id: int(id)): %>
@@ -66,6 +67,7 @@
                     <td>&nbsp;&nbsp;<%= sensor.version %></td>
                     <td>&nbsp;&nbsp;<%= format_timestamp(sensor.last_recv) %></td>
                     <td>&nbsp;&nbsp;<%= str(sensor.last_value) %></td>
+                    <td><% if get_sensor_type(sensor.type) == 'S_LIGHT': %><button class="nerve-button" data-query="mysensors/<%= node.nodeid %>/<%= sensor.sensorid %>/toggle">Toggle</button><% end %></td>
                 </tr>
             <% end %>
         <% end %>

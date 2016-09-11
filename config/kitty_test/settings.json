@@ -65,7 +65,7 @@
                 },
                 "medialibrem": {
                     "__type__": "core/SymbolicLink",
-                    "target": "http://panther:8888/query/medialib"
+                    "target": "http://kitty:8889/query/medialib"
                 },
                 "medialib": {
                     "__children__": {},
@@ -190,7 +190,7 @@
                             "__children__": {},
                             "__type__": "asyncs/PyCodeAsyncTask",
                             "autorun": true,
-                            "code": "if nerve.query('/devices/system/cputemp') > 60:\n  nerve.query('/devices/notify/add', \"It's getting hot!\")",
+                            "code": "if nerve.query('/devices/system/cputemp') > 60:\n  nerve.query('/devices/notify/send', 'cputemp-warning', \"It's getting hot!\")",
                             "repeat": 60.0,
                             "trigger": ""
                         }

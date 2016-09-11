@@ -450,7 +450,11 @@ class PyCodeQuery (nerve.ObjectNode):
 
     def compile(self):
         argslist = self.get_setting('argslist')
-        code = '\n'.join( '  ' + line for line in self.get_setting('code').split('\n') )
+        code = self.get_setting('code')
+        if not code:
+            self._compiledfunc = self._nop
+            return
+        code = '\n'.join( '  ' + line for line in code.split('\n') )
         code = 'def eventfunc(self, {0}):\n'.format(argslist) + code
         exec(code, globals(), locals())
         self._compiledfunc = locals()['eventfunc']
@@ -466,6 +470,8 @@ class PyCodeQuery (nerve.ObjectNode):
         #exec(code)
         self._compiledfunc(self, *args, **kwargs)
 
+    def _nop(self, *args, **kwargs):
+        return None
 
 
 class SymbolicLink (nerve.ObjectNode):

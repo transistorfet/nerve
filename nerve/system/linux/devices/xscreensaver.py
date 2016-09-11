@@ -6,6 +6,12 @@ import nerve
 import os
 
 class ScreenSaverDevice (nerve.Device):
+    def run(self):
+        os.system("xdg-open /etc/xdg/autostart/xscreensaver.desktop")
+
+    def exit(self):
+        os.system("xscreensaver-command -exit")
+
     def activate(self):
         os.system("xscreensaver-command -activate")
 

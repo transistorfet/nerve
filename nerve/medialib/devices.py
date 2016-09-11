@@ -7,6 +7,7 @@ import os
 import time
 import shlex
 import random
+import urllib.parse
 
 from . import tasks
 from .playlists import Playlist
@@ -78,6 +79,8 @@ class MediaLibDevice (nerve.Device):
             self.db.order_by('last_modified DESC')
         elif order == 'filename':
             self.db.order_by('filename ASC')
+        elif order == 'duration':
+            self.db.order_by('duration ASC')
 
         if recent:
             self.db.where_gt('last_modified', time.time() - (float(recent) * (60*60*24*7)))
@@ -97,30 +100,40 @@ class MediaLibDevice (nerve.Device):
         return result
 
     def get_media_query(self, criteria):
+        if type(criteria) == str:
+            criteria = nerve.delistify(urllib.parse.parse_qs(criteria))
+
         if 'url' in criteria:
             return [{
                 'id': -1,
-                'filename': criteria['url'][0],
-                'artist': criteria['artist'][0] if 'artist' in criteria else '',
-                'album': criteria['album'][0] if 'album' in criteria else '',
-                'title': criteria['title'][0] if 'title' in criteria else '',
-                'duration': criteria['duration'][0] if 'duration' in criteria else 0
+                'filename': criteria['url'],
+                'artist': criteria['artist'] if 'artist' in criteria else '',
+                'album': criteria['album'] if 'album' in criteria else '',
+                'title': criteria['title'] if 'title' in criteria else '',
+                'duration': criteria['duration'] if 'duration' in criteria else 0
             }]
 
         self.db.select('id,filename,artist,album,title,duration')
         if 'artist' in criteria:
-            self.db.where('artist', criteria['artist'][0])
+            self.db.where('artist', criteria['artist'])
             self.db.where_not('artist', '')
         if 'album' in criteria:
-            self.db.where('album', criteria['album'][0])
+            self.db.where('album', criteria['album'])
             self.db.where_not('album', '')
         if 'id' in criteria:
-            self.db.where('id', criteria['id'][0])
+            self.db.where('id', criteria['id'])
         self.db.order_by('artist,album,title ASC')
         result = list(self.db.get_assoc('media'))
         return result
 
+    def get_media_queries(self, criteria_list):
+        media = [ ]
+        for criteria in criteria_list:
+            media.extend(self.get_media_query(criteria))
+        return media
+
     # NOTE this is no longer used, now that we use extended m3u playlists to store metadata
+    """
     def get_media_info(self, media_list):
         info = [ ]
         for filename in media_list:
@@ -142,6 +155,7 @@ class MediaLibDevice (nerve.Device):
                     'duration' : 0
                 })
         return info
+    """
 
     def add_tag(self, id, tag):
         self.db.select('tags')

@@ -53,12 +53,13 @@ class NotifyDevice (nerve.Device):
     def list(self):
         return list(self.notifications)
 
-    def add(self, message, severity='info'):
+    def add(self, message, severity='info', label=''):
         nid = self.next_id
         self.next_id += 1
 
         self.notifications.insert(0, {
             'id': nid,
+            'label': label,
             'timestamp': time.time(),
             'acknowledged': False,
             'severity': severity,
@@ -66,6 +67,16 @@ class NotifyDevice (nerve.Device):
         })
         self.forward(self.notifications[0])
         return nid
+
+    def send(self, label, message, severity='info'):
+        for note in self.notifications:
+            if note['label'] == label:
+                note['acknowledged'] = False
+                note['severity'] = severity
+                note['message'] = message
+                note['timestamp'] = time.time()
+                return note['id']
+        return self.add(message, severity, label)
 
     def acknowledge(self, nid=-1):
         nid = int(nid)

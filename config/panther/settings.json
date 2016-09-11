@@ -226,6 +226,54 @@
                             },
                             "__type__": "mysensors/devices/MySensorsNode",
                             "nodeid": "13"
+                        },
+                        "22": {
+                            "__children__": {
+                                "1": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/devices/MySensorsSensor",
+                                    "sensorid": "1",
+                                    "type": 3,
+                                    "version": "1.4.1"
+                                },
+                                "2": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/devices/MySensorsSensor",
+                                    "sensorid": "2",
+                                    "type": 3,
+                                    "version": "1.4.1"
+                                },
+                                "255": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/devices/MySensorsSensor",
+                                    "sensorid": "255",
+                                    "type": 18,
+                                    "version": "1.4.1"
+                                },
+                                "3": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/devices/MySensorsSensor",
+                                    "sensorid": "3",
+                                    "type": 3,
+                                    "version": "1.4.1"
+                                },
+                                "4": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/devices/MySensorsSensor",
+                                    "sensorid": "4",
+                                    "type": 3,
+                                    "version": "1.4.1"
+                                },
+                                "5": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/devices/MySensorsSensor",
+                                    "sensorid": "5",
+                                    "type": 3,
+                                    "version": "1.4.1"
+                                }
+                            },
+                            "__type__": "mysensors/devices/MySensorsNode",
+                            "nodeid": "22"
                         }
                     },
                     "__type__": "mysensors/MySensorsSerialGateway",
@@ -294,7 +342,7 @@
                             "__children__": {},
                             "__type__": "asyncs/PyCodeAsyncTask",
                             "autorun": true,
-                            "code": "mysensors = nerve.get_object('/devices/mysensors')\ncurrent_time = time.time()\n\nfor nodename in mysensors.keys_children():\n  node = mysensors.get_child(nodename)\n  if current_time > node.last_recv + 7200:\n    nerve.query('/devices/notify/add', \"haven't heard from mysensors node {0} in {1} minutes.\".format(node.nodeid, int((current_time - node.last_recv) / 60)))\n",
+                            "code": "import humanize\nmysensors = nerve.get_object('/devices/mysensors')\ncurrent_time = time.time()\n\nfor nodename in mysensors.keys_children():\n  node = mysensors.get_child(nodename)\n  if current_time > node.last_recv + 7200:\n    nerve.query('/devices/notify/send', 'mysensors-loss-of-signal-' + str(node.nodeid), \"haven't heard from mysensors node {0} in {1} minutes.\".format(node.nodeid, humanize.naturaltime(current_time - node.last_recv)))\n",
                             "repeat": 300.0,
                             "trigger": ""
                         }

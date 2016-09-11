@@ -23,6 +23,10 @@ class Stereo (nerve.Device):
         nerve.query("/devices/mysensors/11/1/send_msg", 32, 0xC81)
         nerve.query("/devices/mysensors/11/1/send_msg", 32, 0xC81)
 
+    def mute(self):
+        #self.serial.send("ir S 0xC41")
+        nerve.query("/devices/mysensors/11/1/send_msg", 32, 0x281)
+
     def tape(self):
         #self.serial.send("ir S 0xC41")
         nerve.query("/devices/mysensors/11/1/send_msg", 32, 0xC41)

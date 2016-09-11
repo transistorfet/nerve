@@ -42,7 +42,6 @@ class MediaLibController (nerve.http.Controller):
 
         data = { }
         data['playlist'] = playlists.get_playlist(playlist)
-        data['playlist'] = playlists.get_playlist()
         try:
             data['current_pos'] = nerve.query('/devices/player/get_position')
         except:
@@ -170,10 +169,7 @@ class MediaLibController (nerve.http.Controller):
         count = 0
         medialib = nerve.get_object(self.get_setting('device'))
 
-        media = [ ]
-        for argstr in request.arg('media[]'):
-            query = urllib.parse.parse_qs(argstr)
-            media.extend(medialib.get_media_query(query))
+        media = medialib.get_media_queries(request.arg('media[]'))
 
         if operation == 'playnow':
             player = nerve.get_object(self.get_setting('player'))
@@ -197,6 +193,8 @@ class MediaLibController (nerve.http.Controller):
         else:
             self.load_json_view({ 'error': "No tracks were added" })
 
+    # TODO this doesn't seem to be used anymore... not sure why it's still around
+    """
     @nerve.public
     def add_urls(self, request):
         urls = [ ]
@@ -213,6 +211,7 @@ class MediaLibController (nerve.http.Controller):
             self.load_json_view({ 'notice': str(count) + " track(s) were added to playlist " + request.arg('playlist') })
         else:
             self.load_json_view({ 'error': "No tracks were added" })
+    """
 
     @nerve.public
     def remove_urls(self, request):
@@ -239,10 +238,7 @@ class MediaLibController (nerve.http.Controller):
             raise nerve.ControllerError("'tags' field must be set")
         tags = nerve.medialib.MediaLibDevice.split_tags(request.arg('tags'))
 
-        media = [ ]
-        for argstr in request.arg('media[]'):
-            query = urllib.parse.parse_qs(argstr)
-            media.extend(medialib.get_media_query(query))
+        media = medialib.get_media_queries(request.arg('media[]'))
 
         for media_item in media:
             for tag in tags:
