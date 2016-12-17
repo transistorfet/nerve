@@ -154,8 +154,8 @@ class Controller (nerve.ObjectNode):
                 return
         #self.add_header('Cache-Control', 'max-age=604800')  # 7 days
         self.add_header('Cache-Control', 'max-age=2592000')  # 30 days
-        """
         self.add_header('Last-Modified', time.strftime("%a, %e %b %Y %H:%M:%S %z", time.localtime(mtime)))
+        """
         self.set_view(FileView(filename, base))
 
     def get_mimetype(self):
