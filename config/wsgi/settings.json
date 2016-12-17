@@ -1,0 +1,93 @@
+{
+    "__children__": {
+        "devices": {
+            "__children__": {
+                "system": {
+                    "__children__": {},
+                    "__type__": "system/linux/devices/system/SystemDevice"
+                },
+                "datalogs": {
+                    "__children__": {
+                        "temperature": {
+                            "__children__": {},
+        	            "__type__": "core/SymbolicLink",
+	                    "target": "http://panther:8888/query/datalogs/temperature"
+			}
+                    },
+                    "__type__": "objects/ObjectNode"
+                },
+                "medialib": {
+                    "__type__": "core/SymbolicLink",
+                    "target": "http://kitty:8889/query/medialib"
+                },
+                "realtime": {
+                    "__children__": {},
+                    "__type__": "base/devices/realtime/RealtimeDevice"
+                }
+            },
+            "__type__": "objects/ObjectNode"
+        },
+        "events": {
+            "__children__": {},
+            "__type__": "objects/ObjectNode"
+        },
+        "modules": {
+            "__children__": {
+                "datalog": {
+                    "__children__": {},
+                    "__type__": "objects/Module",
+                    "name": "nerve.datalog"
+                },
+                "pages": {
+                    "__children__": {},
+                    "__type__": "objects/Module",
+                    "name": "nerve.pages"
+                }
+            },
+            "__type__": "objects/Module",
+            "name": "nerve"
+        },
+        "servers": {
+            "__children__": {
+                "default": {
+                    "__children__": {},
+                    "__type__": "core/Server",
+                    "controllers": {
+                        "__default__": {
+                            "__type__": "base/FileController",
+                            "root": "nerve/base/assets"
+                        },
+                        "assets": {
+                            "__type__": "base/FileController",
+                            "root": "nerve/base/assets"
+                        },
+                        "config": {
+                            "__type__": "base/ConfigController"
+                        },
+                        "datalog": {
+                            "__type__": "datalog/DatalogController"
+                        },
+                        "medialib": {
+                            "__type__": "medialib/MediaLibController"
+                        },
+                        "pages": {
+                            "__type__": "pages/PagesController"
+                        }
+                    },
+                    "parent": "",
+                    "template": {
+                        "__type__": "pages/views/page/PageView",
+                        "theme": "dark"
+                    }
+                },
+                "wsgi": {
+                    "__children__": {},
+                    "__type__": "http/servers/wsgi/WSGIHandler",
+                    "parent": "/servers/default"
+                }
+            },
+            "__type__": "objects/ObjectNode"
+        }
+    },
+    "__type__": "main/Main"
+}
