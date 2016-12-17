@@ -14,7 +14,7 @@ class WSGIHandler (nerve.Server):
         super().__init__(**config)
 
     def __call__(self, environ, start_response):
-        nerve.logs.redirect(environ['wsgi.errors'])
+        #nerve.logs.redirect(environ['wsgi.errors'])
 
         #for (key, value) in sorted(environ.items()):
         #    print(key, value, file=environ['wsgi.errors'])
@@ -25,7 +25,31 @@ class WSGIHandler (nerve.Server):
         path = environ['PATH_INFO']
         querystring = environ['QUERY_STRING']
         uri = urllib.parse.urlunsplit( (scheme, servername, path, querystring, '') )
-        postvars = cgi.parse_qs(querystring)
+        getvars = nerve.core.delistify(cgi.parse_qs(querystring))
+
+        try:
+            contentlen = int(environ.get('CONTENT_LENGTH', 0))
+        except (ValueError):
+            contentlen = 0
+        contents = environ['wsgi.input'].read(contentlen).decode('utf-8')
+
+        if 'CONTENT_TYPE' in environ:
+            (mimetype, pdict) = cgi.parse_header(environ['CONTENT_TYPE'])
+        else:
+            mimetype = None         # empty post doesn't provide a content-type.
+
+        if mimetype == None:
+            postvars = { }
+        elif mimetype == 'multipart/form-data':
+            postvars = nerve.core.delistify(cgi.parse_multipart(self.rfile, pdict))
+        elif mimetype == 'application/x-www-form-urlencoded':
+            postvars = nerve.core.delistify(urllib.parse.parse_qs(contents, keep_blank_values=True))
+        elif mimetype == 'application/json':
+            postvars = json.loads(contents)
+        else:
+            raise Exception("unrecognized content-type in POST " + self.path + " (" + mimetype + ")")
+
+        postvars.update(getvars)
 
         headers = { }
         for (key, value) in environ.items():
@@ -60,15 +84,17 @@ class WSGIHandler (nerve.Server):
         if mimetype:
             headers += [ ('Content-Type', mimetype) ]
 
-        """
         if output:
-            headers += [ ('Content-Type', mimetype), ('Content-Length', str(len(output))) ]
+            headers += [ ('Content-Length', str(len(output))) ]
         else:
             headers += [ ('Content-Length', '0') ]
-        """
+
+        #print(path, file=environ['wsgi.errors'])
+        #for (key, value) in sorted(headers):
+        #    print(key, value, file=environ['wsgi.errors'])
 
         start_response(status, headers)
-        nerve.logs.redirect(None)
+        #nerve.logs.redirect(None)
         yield output if output is not None else b''
 
  

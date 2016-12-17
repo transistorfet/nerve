@@ -71,7 +71,7 @@ class Controller (nerve.Controller):
     def assets(self, request):
         if not nerve.files.validate(request.url.path):
             raise Exception("invalid path: " + repr(filename))
-        filename = nerve.files.find_source('nerve/' + request.url.path.rstrip('/'))
+        filename = nerve.files.find_source('nerve/' + request.url.path.lstrip('/'))
 
         if not os.path.isfile(filename):
             raise nerve.NotFoundError("Error file not found: " + filename)

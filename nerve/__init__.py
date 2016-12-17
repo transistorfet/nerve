@@ -10,5 +10,5 @@ from nerve.db import Database
 from nerve.tasks import Task
 from nerve import asyncs
 from nerve import users
-from nerve.main import Main, loop, root, quit, get_main, save_config, set_object, get_object, del_object, has_object, query
+from nerve.main import Main, loop, root, get_root, quit, get_main, save_config, set_object, get_object, del_object, has_object, query
 

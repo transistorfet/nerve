@@ -168,6 +168,12 @@ def root():
     rootnodes.insert(0, root)
     root.init_system()
 
+def get_root():
+    global rootnodes
+    if len(rootnodes) > 0:
+        return rootnodes[0]
+    return root()
+
 def quit():
     global rootnodes
     rootnodes[0].stopflag.set()

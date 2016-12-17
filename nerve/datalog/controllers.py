@@ -28,7 +28,7 @@ class DatalogController (nerve.http.Controller):
 
         data = { }
         data['datalog_name'] = remain
-        data['datalog_list'] = [ name for name in datalogs.keys_children() if isinstance(getattr(datalogs, name), nerve.datalog.DatalogDevice) ]
+        data['datalog_list'] = [ name for name in datalogs.keys_children() ]
         self.load_template_view('nerve/datalog/views/graph.blk.pyhtml', data, request)
         self.template_add_to_section('jsfiles', '/datalog/assets/js/datalog.js')
         self.template_add_to_section('cssfiles', '/datalog/assets/css/datalog.css')
