@@ -273,7 +273,7 @@ class VLCHTTP (nerve.Device):
             current_time = time.time()
             if current_time < self.next_update:
                 continue
-            self.next_update = current_time + 30
+            self.next_update = current_time + 10
 
             try:
                 r = requests.get('http://%s/requests/status.json' % (self.server,), auth=('', 'test'))

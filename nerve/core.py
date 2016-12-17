@@ -143,6 +143,7 @@ class Controller (nerve.ObjectNode):
         self.set_view(JsonView(data))
 
     def load_file_view(self, filename, base=None):
+        """
         fullpath = os.path.join(base, filename) if base else filename
         mtime = int(os.path.getmtime(fullpath))
         since = self._request.get_header('If-Modified-Since', None)
@@ -153,6 +154,7 @@ class Controller (nerve.ObjectNode):
                 return
         #self.add_header('Cache-Control', 'max-age=604800')  # 7 days
         self.add_header('Cache-Control', 'max-age=2592000')  # 30 days
+        """
         self.add_header('Last-Modified', time.strftime("%a, %e %b %Y %H:%M:%S %z", time.localtime(mtime)))
         self.set_view(FileView(filename, base))
 

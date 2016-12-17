@@ -1,4 +1,16 @@
 
+    * make it easier to access the common settings config for an object without opening the whole thing. ie. open the datalog config from
+      the datalog page, to add and remove tags from the log
+    * make datalogs reorderable, colour selectable
+    * add ability to have live trends
+    * fix datalog to allow variable periods per datalog (right now it's always 60 seconds)
+    * make datalog alter the db table on startup if needed
+
+    * you could run the sensors handling and collection using a different process on the panther, running in the background, with the
+      webserver/controllers being in the main process that vlc is controlled through.  It should be possible with symlinks to add all
+      the sensor process's data to local references.  You may want to add/improve another protocol for data transfer rather than HTTP/POST
+      You could even run the process on the server, and have it collect data centrally
+
     * should you replace the IR receiver on deskclock with a temperature sensor?
     * this raises an import question about events and notifications and all that business... right now, deskclock reads in either a button
       or an ir code and does an action (the exact same action) for either condition.  If we made this more distributed and stuff, there
@@ -6,11 +18,10 @@
       module only handles IR codes.  Could we use the same system for button codes?  How would either be sent to where they need to be to
       activate their respective actions, and is it possible to direct both to the same action, so editing one action changes it for both
       the button and the ircode
-
-    * you need to address the modules system as it's currently implemented
+    * you could add an 'event bubbling' type thing, where events instead are tied to ObjectNodes and bubble up the tree.  I'm thinking this
+      might be a thing, when it comes to sending events to other machines on the network
 
     * add a morse code device of some sorts, which could be used by notify or by anything, to encode/decode/play/etc morse code
-    * you kinda need a way to organize modules into subdirectories, so these types of modules don't clutter the system
 
     * irremote doesn't prevent saving of all the event objects to the settings.json file, even though they come from the events db
     * standardize on some humanize formatting stuff?
@@ -53,7 +64,7 @@
 
     * change /assets paths to /base/assets so it's more consistent.  This will require either a blank assets controller or http
       will have to accept more complex controller names
-    * rename controllers to routes in server
+    * rename controllers to routes in server object
     * should there be a Router type separate from server, which is responsible for dispatching, and the server would have some kind of
       reference to the router object.  There could still be multiple router objects, but there can also be a shared router object
     * change server's 'controllers' to 'mappings' to allow multiple parts in the path name ("/things/stuff/config" -> "config controller")
@@ -94,6 +105,8 @@
 
   Modules:
 
+    * you need to address the modules system as it's currently implemented. the issue of config data would be the same if tasks were objnodes
+    * you kinda need a way to organize modules into subdirectories, so these types of modules don't clutter the system
     * there needs to be a way to convert a normal module into a Module object if it contains 'get_config_data'...  Right now, only modules
       that have config data in the settings file get created as Module objects, and the rest are just regular modules
     * move module stuff to it's own file??

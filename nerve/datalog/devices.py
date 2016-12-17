@@ -66,9 +66,13 @@ class DatalogDevice (nerve.Device):
         self.db.add_column(self.name, column_name, datatype)
         datapoints = self.get_setting('datapoints')
         datapoints.append(entry)
+        # TODO I guess the config needs to be updated somehow
 
     def remove_datapoint(self, column_name):
-        pass
+        for (i, datapoint) in enumerate(self.get_setting('datapoints')):
+            if datapoint['name'] == column_name:
+                # TODO finish this
+                return
 
     def get_datapoint_info(self, name):
         for datapoint in self.get_setting('datapoints'):

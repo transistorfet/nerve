@@ -17,14 +17,15 @@ function NerveGraph(element)
     var originX = leftMargin;
     var areaHeight = height - 100;
     var areaWidth = width - 100;
-    var cursorPosition = 0;
+    var cursorPositionX = 0;
+    var cursorPositionY = 0;
 
     var end_time = Math.ceil((new Date().getTime() / 1000) / 3600) * 3600;
     var domain = 86400;
     var rangeSteps = 5;
     var domainSteps = 6;
 
-    var colours = [ "red", "blue", "green", "purple", "gray", "orange", "teal", "brown" ];
+    var colours = [ "red", "blue", "green", "purple", "royalblue", "darkorange", "teal", "brown" ];
 
     this.update_graph = function ()
     {
@@ -133,17 +134,24 @@ function NerveGraph(element)
 	c.lineWidth = 1;
 	c.strokeStyle = 'black';
 
-        if (cursorPosition > 0) {
+        if (cursorPositionX > 0) {
             c.beginPath();
-            c.moveTo(cursorPosition, topMargin);
-            c.lineTo(cursorPosition, bottomMargin);
+            c.moveTo(cursorPositionX, topMargin);
+            c.lineTo(cursorPositionX, bottomMargin);
+            c.stroke();
+        }
+
+        if (cursorPositionY > 0) {
+            c.beginPath();
+            c.moveTo(leftMargin, cursorPositionY);
+            c.lineTo(rightMargin, cursorPositionY);
             c.stroke();
         }
     }
 
     this.update_legend = function (data) {
 	var legend_div = $(element).find('.legend');
-	var cursor_date = new Date((end_time - domain + (domain * ((cursorPosition - leftMargin) / areaWidth))) * 1000);
+	var cursor_date = new Date((end_time - domain + (domain * ((cursorPositionX - leftMargin) / areaWidth))) * 1000);
 
 	var checks = [ ];
 	for (var i = 2; i < data.columns.length; i++)
@@ -168,10 +176,10 @@ function NerveGraph(element)
     }
 
     this.get_value_at_cursor = function (data, column) {
-        if (cursorPosition <= 0)
+        if (cursorPositionX <= 0)
             return data.data[data.data.length - 1][column]
 
-        var timestamp = end_time - domain + (domain * ((cursorPosition - leftMargin) / areaWidth));
+        var timestamp = end_time - domain + (domain * ((cursorPositionX - leftMargin) / areaWidth));
 	for (var i = 0; i < data.data.length; i++) {
             if (data.data[i][1] > timestamp)
                 return data.data[i][column];
@@ -179,19 +187,25 @@ function NerveGraph(element)
         return data.data[data.data.length - 1][column]
     }
 
-    canvas.addEventListener("mousedown", function (e) {
-        var x = e.pageX - canvas.offsetLeft;
-        var y = e.pageY - canvas.offsetTop;
+    this.handle_move_cursor = function (e) {
+        var x = (e.pageX ? e.pageX : e.changedTouches[0].pageX) - canvas.offsetLeft;
+        var y = (e.pageY ? e.pageY : e.changedTouches[0].pageY) - canvas.offsetTop;
 
-        if (x > leftMargin && x < rightMargin && y > bottomMargin)
-            cursorPosition = x;
+        if (x > leftMargin && x < rightMargin)
+            cursorPositionX = x;
         else
-            cursorPosition = 0;
+            cursorPositionX = 0;
+
+        if (y > topMargin && y < bottomMargin)
+            cursorPositionY = y;
+        else
+            cursorPositionY = 0;
 
 	var c = canvas.getContext('2d');
         graphobj.draw_graph(c, graphData);
-    }, false);
-
+    };
+    canvas.addEventListener("mousedown", this.handle_move_cursor, false);
+    canvas.addEventListener("touchstart", this.handle_move_cursor, false);
 
 
     $(element).delegate('.legend', 'change', function () {
