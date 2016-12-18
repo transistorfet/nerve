@@ -68,7 +68,8 @@ class MediaFilesUpdater (MediaLibUpdater):
 
         self.check_for_deleted()
         self.db.insert('info', { 'name' : 'last_updated', 'value' : str(time.time()) }, replace=True)
-        nerve.log("Medialib update complete")
+        #nerve.log("Medialib update complete")
+        nerve.query('/devices/notify/send', 'medialib update complete')
 
     def check_for_deleted(self):
         for libpath in self.path:

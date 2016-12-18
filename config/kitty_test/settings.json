@@ -34,6 +34,15 @@
                                     "name": "kitty_systemp2",
                                     "ref": "/devices/system/systemp2",
                                     "units": "C"
+                                },
+                                {
+                                    "datatype": "NUMERIC",
+                                    "label": "Office Temperature",
+                                    "max": 40,
+                                    "min": -10,
+                                    "name": "office_temp",
+                                    "ref": "http://kitty:8889/query/deskclock/t0",
+                                    "units": "C"
                                 }
                             ],
                             "name": "testlog",
@@ -155,44 +164,38 @@
                             "__children__": {},
                             "__type__": "asyncs/PyCodeAsyncTask",
                             "code": "print('SPAM!')",
-                            "repeat": 1.0,
-                            "trigger": ""
+                            "repeat": 1.0
                         },
                         "event": {
                             "__children__": {},
                             "__type__": "asyncs/PyCodeAsyncTask",
                             "code": "nerve.query('/devices/events/publish', type='change', src='/devices/thing/event')",
-                            "repeat": 1.0,
-                            "trigger": ""
+                            "repeat": 1.0
                         },
                         "lamp": {
                             "__children__": {},
                             "__type__": "asyncs/PyCodeAsyncTask",
                             "code": "time.sleep(2)\nnerve.query(\"http://admin:admin@localhost:8889/query/deskclock/relay_toggle\")",
-                            "repeat": 0.0,
-                            "trigger": ""
+                            "repeat": 0.0
                         },
                         "spam": {
                             "__children__": {},
                             "__type__": "asyncs/PyCodeAsyncTask",
                             "code": "print('SPAM!')\nself.repeat_in(1.0)",
-                            "repeat": 0.0,
-                            "trigger": ""
+                            "repeat": 0.0
                         },
                         "test": {
                             "__children__": {},
                             "__type__": "asyncs/PyCodeAsyncTask",
                             "code": "print('Hey there2342')",
-                            "repeat": 0.0,
-                            "trigger": ""
+                            "repeat": 0.0
                         },
                         "alarm": {
                             "__children__": {},
                             "__type__": "asyncs/PyCodeAsyncTask",
                             "autorun": true,
-                            "code": "if nerve.query('/devices/system/cputemp') > 60:\n  nerve.query('/devices/notify/send', 'cputemp-warning', \"It's getting hot!\")",
-                            "repeat": 60.0,
-                            "trigger": ""
+                            "code": "if nerve.query('/devices/system/cputemp') > 60:\n  nerve.query('/devices/notify/send', \"It's getting hot!\", label='cputemp-warning')",
+                            "repeat": 60.0
                         }
                     },
                     "__type__": "objects/ObjectNode"
@@ -213,15 +216,13 @@
                                     "__children__": {},
                                     "__type__": "asyncs/PyCodeAsyncTask",
                                     "code": "nerve.query('/events/ir/irrecv/' + args[0])",
-                                    "repeat": 0.0,
-                                    "trigger": ""
+                                    "repeat": 0.0
                                 },
                                 "irremote_dispatch": {
                                     "__children__": {},
                                     "__type__": "asyncs/PyCodeAsyncTask",
                                     "code": "nerve.query('/devices/irremote/on_receive_code', *args)",
-                                    "repeat": 0.0,
-                                    "trigger": ""
+                                    "repeat": 0.0
                                 }
                             }
                         }
@@ -236,22 +237,19 @@
                                     "__children__": {},
                                     "__type__": "asyncs/PyCodeAsyncTask",
                                     "code": "nerve.query('/devices/player/toggle')",
-                                    "repeat": 0.0,
-                                    "trigger": ""
+                                    "repeat": 0.0
                                 },
                                 "N:650": {
                                     "__children__": {},
                                     "__type__": "asyncs/PyCodeAsyncTask",
                                     "code": "nerve.query('/devices/player/previous')",
-                                    "repeat": 0.0,
-                                    "trigger": ""
+                                    "repeat": 0.0
                                 },
                                 "N:690": {
                                     "__children__": {},
                                     "__type__": "asyncs/PyCodeAsyncTask",
                                     "code": "nerve.query('/devices/player/next')",
-                                    "repeat": 0.0,
-                                    "trigger": ""
+                                    "repeat": 0.0
                                 }
                             },
                             "__type__": "objects/ObjectNode"
@@ -263,15 +261,13 @@
                     "__children__": {},
                     "__type__": "asyncs/PyCodeAsyncTask",
                     "code": "if len(args) <= 0:\n  return\n\nif args[0] == 'off':\n  self.stop = True\n  return\n\nself.stop = False\nself.target = args[0]\nwhile not self.stop:\n  nerve.query(self.target)\n",
-                    "repeat": 0.0,
-                    "trigger": "" 
+                    "repeat": 0.0
                 },
                 "querytest2": {
                     "__children__": {},
                     "__type__": "asyncs/PyCodeAsyncTask",
                     "code": "if len(args) <= 0:\n  return\n\nself.start = time.time()\nself.target = args[0]\nfor i in range(0, 100):\n  nerve.query(self.target)\nprint(str(100 / (time.time() - self.start)) + ' requests per second')\n",
-                    "repeat": 0.0,
-                    "trigger": "" 
+                    "repeat": 0.0
                 }
             },
             "__type__": "objects/ObjectNode"
@@ -349,6 +345,10 @@
                         "medialib": {
                             "__type__": "medialib/MediaLibController",
                             "device": "/devices/medialibrem"
+                        },
+                        "mithril": {
+                            "__type__": "base/FileController",
+                            "root": "nerve/mithril"
                         },
                         "notify": {
                             "__type__": "notify/controllers/NotifyController"

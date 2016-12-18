@@ -322,7 +322,7 @@ def HTTPQueryHandler(_queryurl, *args, **kwargs):
     # TODO we ignore args and kwargs when querying a http server.  We could automatically make a query string of kwargs, and possible
     #      still ignore args, or we could use a POST request instead, and send the json of the arguments (possible JSON-RPC style)
 
-    nerve.log("executing query: " + _queryurl.path + " " + repr(args) + " " + repr(kwargs), logtype='query')
+    #nerve.log("executing query: " + _queryurl.path + " " + repr(args) + " " + repr(kwargs), logtype='query')
 
     # TODO is this valid?  To have query options in the kwargs?  Might that cause problems for some things?  Should the key be deleted here if
     # present, so that it doesn't get encoded.
@@ -341,7 +341,9 @@ def HTTPQueryHandler(_queryurl, *args, **kwargs):
 
     method = 'GET' if len(kwargs) <= 0 else 'POST'
     urlstring = urllib.parse.urlunparse((_queryurl.scheme, _queryurl.netloc, _queryurl.path, '', '', ''))
-    nerve.log("remote query: " + method + " " + urlstring, logtype='query')
+    #nerve.log("remote query: " + method + " " + urlstring, logtype='debug')
+    nerve.log("executing query: " + method + " " + urlstring + " " + repr(args) + " " + repr(kwargs), logtype='query')
+
     # TODO should there be an option to encode the args as json?
     #options = { }
     r = requests.request(method, urlstring, json=None if method == 'GET' else kwargs)

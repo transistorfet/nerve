@@ -9,6 +9,7 @@ class DeskClock (nerve.serial.SerialDevice):
     def __init__(self, **config):
         nerve.serial.SerialDevice.__init__(self, **config)
         self.relay1 = False
+        self.temp = 0.0
 
     def p0(self, value):
         self.send('P0=' + str(int(value, 16)) + '\n')
@@ -22,6 +23,10 @@ class DeskClock (nerve.serial.SerialDevice):
             self.send('R1=1\n')
         else:
             self.send('R1=0\n')
+
+    def t0(self):
+        #self.send('T0\n')
+        return self.temp
 
     def on_idle(self):
         self.send('L0=' + time.strftime("%H:%M %a %b %d") + '\n')
@@ -53,7 +58,11 @@ class DeskClock (nerve.serial.SerialDevice):
             nerve.query("/devices/player/sort")
         elif line.startswith('I0=N:A25D'):
             nerve.query("/devices/rgb/key", "0x2" + line[9:11])
+        elif line.startswith('T0='):
+            self.temp = float(line[3:])
+            nerve.log('deskclock: ' + str(self.temp) + 'C', logtype='info')
+            #nerve.events.publish('change', self.get_pathname() + '/t0', self.temp)
 
-nerve.set_object('/devices/deskclock', DeskClock(file="/dev/ttyACM0", baud=19200))
+nerve.set_object('/devices/deskclock', DeskClock(file="/dev/ttyACM0", baud=115200))
 
 

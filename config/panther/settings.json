@@ -50,6 +50,15 @@
                                 },
                                 {
                                     "datatype": "NUMERIC",
+                                    "label": "Office Temperature",
+                                    "max": 40,
+                                    "min": -10,
+                                    "name": "office_temp",
+                                    "ref": "http://kitty:8889/query/deskclock/t0",
+                                    "units": "C"
+                                },
+                                {
+                                    "datatype": "NUMERIC",
                                     "label": "Indoor Humidity",
                                     "max": 100,
                                     "min": 0,
@@ -154,6 +163,41 @@
                                     "type": 3,
                                     "version": "1.4.1"
                                 },
+                                "2": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/devices/MySensorsSensor",
+                                    "sensorid": "2",
+                                    "type": 3,
+                                    "version": "1.4.1"
+                                },
+                                "3": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/devices/MySensorsSensor",
+                                    "sensorid": "3",
+                                    "type": 3,
+                                    "version": "1.4.1"
+                                },
+                                "4": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/devices/MySensorsSensor",
+                                    "sensorid": "4",
+                                    "type": 3,
+                                    "version": "1.4.1"
+                                },
+                                "5": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/devices/MySensorsSensor",
+                                    "sensorid": "5",
+                                    "type": 3,
+                                    "version": "1.4.1"
+                                },
+                                "6": {
+                                    "__children__": {},
+                                    "__type__": "mysensors/devices/MySensorsSensor",
+                                    "sensorid": "6",
+                                    "type": 3,
+                                    "version": "1.4.1"
+                                },
                                 "20": {
                                     "__children__": {},
                                     "__type__": "mysensors/MySensorsSensor",
@@ -226,54 +270,6 @@
                             },
                             "__type__": "mysensors/devices/MySensorsNode",
                             "nodeid": "13"
-                        },
-                        "22": {
-                            "__children__": {
-                                "1": {
-                                    "__children__": {},
-                                    "__type__": "mysensors/devices/MySensorsSensor",
-                                    "sensorid": "1",
-                                    "type": 3,
-                                    "version": "1.4.1"
-                                },
-                                "2": {
-                                    "__children__": {},
-                                    "__type__": "mysensors/devices/MySensorsSensor",
-                                    "sensorid": "2",
-                                    "type": 3,
-                                    "version": "1.4.1"
-                                },
-                                "255": {
-                                    "__children__": {},
-                                    "__type__": "mysensors/devices/MySensorsSensor",
-                                    "sensorid": "255",
-                                    "type": 18,
-                                    "version": "1.4.1"
-                                },
-                                "3": {
-                                    "__children__": {},
-                                    "__type__": "mysensors/devices/MySensorsSensor",
-                                    "sensorid": "3",
-                                    "type": 3,
-                                    "version": "1.4.1"
-                                },
-                                "4": {
-                                    "__children__": {},
-                                    "__type__": "mysensors/devices/MySensorsSensor",
-                                    "sensorid": "4",
-                                    "type": 3,
-                                    "version": "1.4.1"
-                                },
-                                "5": {
-                                    "__children__": {},
-                                    "__type__": "mysensors/devices/MySensorsSensor",
-                                    "sensorid": "5",
-                                    "type": 3,
-                                    "version": "1.4.1"
-                                }
-                            },
-                            "__type__": "mysensors/devices/MySensorsNode",
-                            "nodeid": "22"
                         }
                     },
                     "__type__": "mysensors/MySensorsSerialGateway",
@@ -328,8 +324,7 @@
                                     "__children__": {},
                                     "__type__": "asyncs/PyCodeAsyncTask",
                                     "code": "nerve.query('/devices/irremote/on_receive_code', *args)",
-                                    "repeat": 0.0,
-                                    "trigger": ""
+                                    "repeat": 0.0
                                 }
                             }
                         }
@@ -342,9 +337,8 @@
                             "__children__": {},
                             "__type__": "asyncs/PyCodeAsyncTask",
                             "autorun": true,
-                            "code": "import humanize\nmysensors = nerve.get_object('/devices/mysensors')\ncurrent_time = time.time()\n\nfor nodename in mysensors.keys_children():\n  node = mysensors.get_child(nodename)\n  if current_time > node.last_recv + 7200:\n    nerve.query('/devices/notify/send', 'mysensors-loss-of-signal-' + str(node.nodeid), \"haven't heard from mysensors node {0} in {1} minutes.\".format(node.nodeid, humanize.naturaltime(current_time - node.last_recv)))\n",
-                            "repeat": 300.0,
-                            "trigger": ""
+                            "code": "import humanize\nmysensors = nerve.get_object('/devices/mysensors')\ncurrent_time = time.time()\n\nfor nodename in mysensors.keys_children():\n  node = mysensors.get_child(nodename)\n  if current_time > node.last_recv + 7200:\n    nerve.query('/devices/notify/send', \"haven't heard from mysensors node {0} in {1} minutes.\".format(node.nodeid, humanize.naturaltime(current_time - node.last_recv)), label='mysensors-loss-of-signal-' + str(node.nodeid))\n",
+                            "repeat": 300.0
                         }
                     },
                     "__type__": "objects/ObjectNode"

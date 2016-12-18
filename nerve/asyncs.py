@@ -36,14 +36,9 @@ class AsyncTask (nerve.ObjectNode):
         config_info = super().get_config_info()
         config_info.add_setting('autorun', "Run on Startup", default=False)
         config_info.add_setting('repeat', "Repeat Time", default=0.0)
-        config_info.add_setting('trigger', "Trigger", default='')
         return config_info
 
     def __call__(self, *args, **kwargs):
-        trigger = self.get_setting('trigger')
-        if trigger and (len(args) <= 0 or str(args[0]) != self.trigger):
-            return False
-
         _asynctaskpool.schedule_now(self, *args, **kwargs)
         return True
 

@@ -51,8 +51,7 @@
                                     "__children__": {},
                                     "__type__": "asyncs/PyCodeAsyncTask",
                                     "code": "nerve.log(\"Received IR code \" + args[0])",
-                                    "repeat": 0.0,
-                                    "trigger": ""
+                                    "repeat": 0.0
                                 }
                             }
                         }

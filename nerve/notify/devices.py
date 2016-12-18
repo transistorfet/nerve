@@ -53,7 +53,18 @@ class NotifyDevice (nerve.Device):
     def list(self):
         return list(self.notifications)
 
-    def add(self, message, severity='info', label=''):
+    def send(self, message, severity='info', label=''):
+        # if a note with a matching label is found, update it and return
+        for note in self.notifications:
+            if label and note['label'] == label:
+                note['occurances'] += 1
+                note['acknowledged'] = False
+                note['severity'] = severity
+                note['message'] = message
+                note['timestamp'] = time.time()
+                return note['id']
+
+        # create a new note with a new id
         nid = self.next_id
         self.next_id += 1
 
@@ -61,22 +72,14 @@ class NotifyDevice (nerve.Device):
             'id': nid,
             'label': label,
             'timestamp': time.time(),
+            'occurances': 1,
             'acknowledged': False,
             'severity': severity,
             'message': message
         })
         self.forward(self.notifications[0])
+        nerve.log("[{0}] {1}".format(severity, message), logtype='notify')
         return nid
-
-    def send(self, label, message, severity='info'):
-        for note in self.notifications:
-            if note['label'] == label:
-                note['acknowledged'] = False
-                note['severity'] = severity
-                note['message'] = message
-                note['timestamp'] = time.time()
-                return note['id']
-        return self.add(message, severity, label)
 
     def acknowledge(self, nid=-1):
         nid = int(nid)

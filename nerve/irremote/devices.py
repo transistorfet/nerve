@@ -29,6 +29,9 @@ class IRRemoteDevice (nerve.Device):
         config_info.add_setting('max_history', "Max Code History", default=20)
         return config_info
 
+    def save_object_children(self):
+        return { }
+
     def get_remote_names(self):
         self.db.select('remote_name')
         self.db.order_by('remote_name')
@@ -146,6 +149,7 @@ class IRRemoteDevice (nerve.Device):
             except AttributeError:
                 pass
 
+            # TODO isn't this just for legacy support?  We can remove this
             try:
                 return nerve.query('/events/ir/irrecv/' + code)
             except AttributeError:

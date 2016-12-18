@@ -27,22 +27,19 @@
                                     "__children__": {},
                                     "__type__": "asyncs/PyCodeAsyncTask",
                                     "code": "nerve.query('/devices/player/toggle')",
-                                    "repeat": 0.0,
-                                    "trigger": ""
+                                    "repeat": 0.0
                                 },
                                 "N:650": {
                                     "__children__": {},
                                     "__type__": "asyncs/PyCodeAsyncTask",
                                     "code": "nerve.query('/devices/player/previous')",
-                                    "repeat": 0.0,
-                                    "trigger": ""
+                                    "repeat": 0.0
                                 },
                                 "N:690": {
                                     "__children__": {},
                                     "__type__": "asyncs/PyCodeAsyncTask",
                                     "code": "nerve.query('/devices/player/next')",
-                                    "repeat": 0.0,
-                                    "trigger": ""
+                                    "repeat": 0.0
                                 }
                             },
                             "__type__": "objects/ObjectNode"

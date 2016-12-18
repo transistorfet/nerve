@@ -32,7 +32,7 @@ class MySensorsSerialGateway (nerve.serial.SerialDevice):
         time.sleep(2)
         for node in self.keys_children():
             self.reset_node(int(node))
-            time.sleep(3)
+            time.sleep(5)
 
     def on_receive(self, line):
         args = line.split(';')

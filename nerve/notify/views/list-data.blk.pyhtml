@@ -8,7 +8,8 @@
 	<th><input type="checkbox" class="notify-select-all" /></th>
 	<th>Message</th>
 	<th>Severity</th>
-	<th>Time</th>
+	<th>Timestamp</th>
+	<th>Occurances</th>
     </tr></thead>
     <tbody>
 	<% for num,notification in enumerate(notifications, 1): %>
@@ -18,6 +19,7 @@
 		<td><%= notification['severity'] %></td>
 		<!-- <td><%= time.strftime("%H:%M on %a, %d %b", time.localtime(notification['timestamp'])) %></td> -->
 		<td><%= humanize.naturaltime(time.time() - notification['timestamp']) %></td>
+		<td><%= notification['occurances'] %></td>
 	    </tr>
 	<% end %>
     </tbody>

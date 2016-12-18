@@ -954,7 +954,11 @@ NerveDialog = (function ()
         //console.log(posX + " " + posY);
         that.dialog.css('position', 'fixed');
         that.dialog.css('left', posX + 'px');
+        if (posX == 0)
+            that.dialog.css('right', '0px');
         that.dialog.css('top', posY + 'px');
+        if (posY == 0)
+            that.dialog.css('bottom', '0px');
     }
 
     Proto.submit = function (button)

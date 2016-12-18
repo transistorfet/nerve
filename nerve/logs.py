@@ -32,7 +32,8 @@ def init_colour():
         'success': colorama.Fore.GREEN,
         'query': colorama.Style.BRIGHT + colorama.Fore.BLUE,
         'debug': colorama.Style.BRIGHT + colorama.Fore.BLACK,
-        'event': colorama.Style.BRIGHT + colorama.Fore.CYAN
+        'event': colorama.Style.BRIGHT + colorama.Fore.CYAN,
+        'notify': colorama.Style.BRIGHT + colorama.Fore.MAGENTA
     }
 
 def redirect(dest):

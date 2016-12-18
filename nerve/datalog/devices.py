@@ -81,17 +81,18 @@ class DatalogDevice (nerve.Device):
         return { 'name': name }
 
     def get_data(self, start_time=None, length=None):
-        self.db.select('*')
+        columns = [ datapoint['name'] for datapoint in self.get_setting('datapoints') ]
+        self.db.select('timestamp,' + ','.join(columns))
         if start_time != None:
             self.db.where_gt('timestamp', start_time)
             if length != None:
                 self.db.where_lt('timestamp', start_time + length)
         result = self.db.get(self.name)
 
-        columns = [ ]
-        for column in self.db.get_columns():
-            columns.append(self.get_datapoint_info(column[0]))
-        return { 'columns' : columns, 'data' : list(result) }
+        #columns = [ ]
+        #for column in self.db.get_columns():
+        #    columns.append(self.get_datapoint_info(column[0]))
+        return { 'columns' : [{ 'name': 'timestamp' }] + self.get_setting('datapoints'), 'data' : list(result) }
 
     def _collect_data(self):
         data = { }

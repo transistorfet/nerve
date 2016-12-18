@@ -122,7 +122,7 @@ class NerveSerialDevice (SerialDevice):
     @classmethod
     def get_config_info(cls):
         config_info = super().get_config_info()
-        config_info.add_setting('notify', "Notify", default='/events/serial')
+        config_info.add_setting('query', "Emit Query", default='/events/serial')
         config_info.add_setting('publish', "Publish Events?", default=False)
         config_info.add_default_child('event_recv', { '__type__': 'objects/ObjectNode' })
         return config_info
@@ -153,13 +153,14 @@ class NerveSerialDevice (SerialDevice):
                     query.ready.set()
                     return
 
-        if not args:
-            return
-        notify_ref = self.get_setting('notify').rstrip('/') + '/' + ref + '/*'
-        nerve.query(notify_ref, args)
-
         if self.get_setting('publish'):
             nerve.events.publish(type='change', src=self.get_pathname() + '/' + ref, value=args)
+
+        # TODO this isn't really used anymore (actually it is still the main interface to irremote, but should be replace with events when that gets working)
+        if not args:
+            return
+        notify_ref = self.get_setting('query').rstrip('/') + '/' + ref + '/*'
+        nerve.query(notify_ref, args)
 
         #self.query('event_recv/*', args)
 

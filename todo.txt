@@ -1,36 +1,123 @@
 
-    * make it easier to access the common settings config for an object without opening the whole thing. ie. open the datalog config from
-      the datalog page, to add and remove tags from the log
-    * make datalogs reorderable, colour selectable
+    * queries using http don't use Request.parse_positional_args() and I don't know why
+    * move query code somewhere else than main?
+
+    * add zoom and pan control to vertical scale too?
     * add ability to have live trends
     * fix datalog to allow variable periods per datalog (right now it's always 60 seconds)
-    * make datalog alter the db table on startup if needed
+    * add optional limits to how long the datalog data is kept
+    * add way to analyze, integrate, differentiate, etc, by selecting a range of time (more on asana)
+    * make datalogs reorderable, colour selectable; this could be done through config, but should also be doable directly through interface
+      (see it, change it; rather than hunting in a config somewhere)
+
+    * this raises an important question about events and notifications and all that business... right now, deskclock reads in either a button
+      or an ir code and does an action (the exact same action) for either condition.  If we made this more distributed and stuff, there
+      would need to be a way for the deskclock to send an ir code or to send a button press event somewhere to be processed.  The irremote
+      module only handles IR codes.  Could we use the same system for button codes?  How would either be sent to where they need to be to
+      activate their respective actions, and is it possible to direct both to the same action, so editing one action changes it for both
+      the button and the ircode
+    * might want to separate these out? so you have an actions module, for registering bits of code to run when something happens, and then
+      ir codes coming in would generate an event, and it would be up to the actions module to respond appropriately, but it could also get
+      events from elsewhere
+    * you could add an 'event bubbling' type thing, where events instead are tied to ObjectNodes and bubble up the tree.  I'm thinking this
+      might be a thing, when it comes to sending events to other machines on the network
+    * change src to topic to match mqtt pub/sub terminology?
+
+    * what about making notify a static module so that it's easily accessible
+    * add a system of notifications/messages that's global to the system but specific to a user (ie. can leave messages for individual users)
+    * add alarms, such that you can notify that something's gone wrong.  Like if a mysensors node hasn't sent any data and hasn't responded to
+      pings for more than 30 minutes, you raise an alarm so I can fix it in a timely manner
+    * make it configurable to send an email for serious alarms
+    * need a way to send a ping to a mysensors node when it hasn't responeded, so we can *accurately* know when a sensor is not responding
+    * there still isn't a clean way of notifying that a medialib update on another machine (remote medialib) has finished updating.  It only
+      works locally but notifications aren't sent to all the other machines
+    * notifications webpage when updating it forgets the checkbox values, which makes it irritating to ack or clear select notifications
+      this is a general issue with the entire frontend system
+
+
+    * fix config display for lists and dicts (datalog datapoints is just str()'d)
+    * make backups of settings file when saving, or possible add a revision control type system to it
+    * make sure when loading config with saved module data that it gets used
+    * make sure it creates a sane default settings file if the config dir doesn't have a file already
+    * add run and config instructions to the readme (so that somebody could actually run the thing)
+    * fix pyhtml to ignore tags in comments
+
 
     * you could run the sensors handling and collection using a different process on the panther, running in the background, with the
       webserver/controllers being in the main process that vlc is controlled through.  It should be possible with symlinks to add all
       the sensor process's data to local references.  You may want to add/improve another protocol for data transfer rather than HTTP/POST
       You could even run the process on the server, and have it collect data centrally
 
-    * should you replace the IR receiver on deskclock with a temperature sensor?
-    * this raises an import question about events and notifications and all that business... right now, deskclock reads in either a button
-      or an ir code and does an action (the exact same action) for either condition.  If we made this more distributed and stuff, there
-      would need to be a way for the deskclock to send an ir code or to send a button press event somewhere to be processed.  The irremote
-      module only handles IR codes.  Could we use the same system for button codes?  How would either be sent to where they need to be to
-      activate their respective actions, and is it possible to direct both to the same action, so editing one action changes it for both
-      the button and the ircode
-    * you could add an 'event bubbling' type thing, where events instead are tied to ObjectNodes and bubble up the tree.  I'm thinking this
-      might be a thing, when it comes to sending events to other machines on the network
-
-    * add a morse code device of some sorts, which could be used by notify or by anything, to encode/decode/play/etc morse code
-
-    * irremote doesn't prevent saving of all the event objects to the settings.json file, even though they come from the events db
+    * move asynctasks into its own module?
+    * should asynctasks be merged with the proposed actions module (actions which respond to events)?
+    * rename tasks to threads?
+    * move db to its own module?
     * standardize on some humanize formatting stuff?
 
+    * add support for sending ir codes with irremote
+    * add a description field to each mysensors node so it can be labelled (ie. which relay switch is which)
+    * add a morse code device of some sorts, which could be used by notify or by anything, to encode/decode/play/etc morse code
+    * add power consumption measurement
+    * implement mqtt server (like a mysensors host) and client (so that nerve can export part of its tree to another server)
 
-    * rename tasks to threads?
-    * move asynctasks into its own module?
-    * remove trigger setting from asynctasks
-    * move db to its own module?
+
+    * wsgi needs a better way to handle userpermissionsrequired
+    * modify to use websocket (optionally, if available) for all data requests.  This might require big changes to all the frontend code
+      which you might do anyways.  Then notifications and other data updates could be done (somehow) as data pushes, so you don't have to
+      poll the server constantly.  Also notifications could happen instantaneously
+
+    * change /assets paths to /base/assets so it's more consistent.  This will require either a blank assets controller or http
+      will have to accept more complex controller names
+    * rename controllers to routes in server object
+    * should there be a Router type separate from server, which is responsible for dispatching, and the server would have some kind of
+      reference to the router object.  There could still be multiple router objects, but there can also be a shared router object
+    * change server's 'controllers' to 'routes' to allow multiple parts in the path name ("/things/stuff/config" -> "config controller")
+    * add a config setting to controllers to specify the path of the model/device they should access, rather than hard coding it
+
+
+    * make medialib controller use a single medialib request for modifying tags
+    * make a popup view at the bottom of the screen, a tab sort of thing, that you can drag upwards to show the "Remote" tab, so it's
+      easy to change the song or turn something on quick while in the middle of something else, like making a playlist/searching media
+    * add advanced web editor widget, with support for tab, indent-selected, etc
+
+    * change queries to use @nerve.public (I'm not sure I want to do that)
+
+    * make projectm kill the process when the program quits
+    * move the save/load state feature to the common player object, and have it use the backend driver to actually get and restore the state
+
+    * add help system that uses docstrings
+
+  Frontend:
+
+    * you need to redesign the frontend to be more responsive/interactive.  Changing settings on the fly, using widgets pieces all over. There
+      is some merit in going all js or something so that it's easier to have widget components (or you could use web components somehow)
+
+    * have a slide up panel with the remote control on it, so it's easy to switch to it while in the middle of something
+    * make tabs appear as a fixed bar when scrolling up (hides when scrolling down, shows when scrolling up no matter where you are on the page)
+
+    * change all uses of document to document.body??
+    * do something about notices and errors... the message should be visible without scrolling to the top... maybe insert it after the button
+    * should you change js names to camelcase?
+
+    * when adding an irremote action via the dialog-open button, there is no way to add the red dot without reloading the page
+    * is there a way to specify that a submit action (on forms?) should reload the page
+    * add an optional delete button to forms to delete the object you're editing? (would this only be for config objects)
+    * make use of nerve.join_path() in js and python
+
+    * when you delete a block, it does not update the list of blocks
+    * make it so that if a block is renamed, it's references in page definitions is updated
+
+  Modules:
+
+    * what if you had a class in __init__.py that could be instantiated to get the module definition, rather than having a get_config_data
+      function
+    * you need to address the modules system as it's currently implemented. the issue of config data would be the same if tasks were objnodes
+    * you kinda need a way to organize modules into subdirectories, so these types of modules don't clutter the system
+    * there needs to be a way to convert a normal module into a Module object if it contains 'get_config_data'...  Right now, only modules
+      that have config data in the settings file get created as Module objects, and the rest are just regular modules
+    * move module stuff to it's own file??
+
+  ObjectFS:
 
     * with an eye towards REST, objects like the playlists, mysensors, and possibly others could have a 'list' function, such that
       GET playlists would return a list of playlist names, and GET playlists/A%20Playlist would return the playlist itself.  This might
@@ -40,83 +127,14 @@
       have to establish a clear mapping, like translating them into 'put', 'delete' methods on the object, or tying them to 'add_child',
       'remove_child' but those might be too low level
 
-    * wsgi needs a better way to handle userpermissionsrequired
-    * modify to use websocket (optionally, if available) for all data requests.  This might require big changes to all the frontend code
-      which you might do anyways.  Then notifications and other data updates could be done (somehow) as data pushes, so you don't have to
-      poll the server constantly.  Also notifications could happen instantaneously
-
-    * what can you use the notifications system for...
-    * make the mysensors timeout check only send a notification if it hasn't already sent one.  Should that be handled by the notification
-      system (kinda like android's notifications)?
-    * need a way to send a ping to a mysensors node when it hasn't responeded, so we can *accurately* know when a sensor is not responding
-    * add support for sending ir codes with irremote
-
     * add a clone() method to objects, to clone the object, and use it for controllers, so that the server will have an instantiated
       controller object for each controller, and it clones that object for each request.  
-
-    * make medialib controller use a single medialib request for modifying tags
-    * make a popup view at the bottom of the screen, a tab sort of thing, that you can drag upwards to show the "Remote" tab, so it's
-      easy to change the song or turn something on quick while in the middle of something else, like making a playlist/searching media
-    * add advanced web editor widget, with support for tab, indent-selected, etc
-
-    * there's an issue accessing google's oauth and having it redirect to an internal ip.  This prevents it from working on phone
-    * could you have a redirect on jabberwocky.ca that just redirects the browser to a local address?
-
-    * change /assets paths to /base/assets so it's more consistent.  This will require either a blank assets controller or http
-      will have to accept more complex controller names
-    * rename controllers to routes in server object
-    * should there be a Router type separate from server, which is responsible for dispatching, and the server would have some kind of
-      reference to the router object.  There could still be multiple router objects, but there can also be a shared router object
-    * change server's 'controllers' to 'mappings' to allow multiple parts in the path name ("/things/stuff/config" -> "config controller")
-    * add a config setting to controllers to specify the path of the model/device they should access, rather than hard coding it
-
-    * add alarms, such that you can notify that something's gone wrong.  Like if a mysensors node hasn't sent any data and hasn't responded to
-      pings for more than 30 minutes, you raise an alarm so I can fix it in a timely manner
-
-    * change queries to use @nerve.public
-
-    * make backups of settings file when saving, or possible add a revision control type system to it
-    * make sure when loading config with saved module data that it gets used
-    * make sure it creates a sane default settings file if the config dir doesn't have a file already
-    * add run and config instructions to the readme (so that somebody could actually run the thing)
-
-    * make projectm kill the process when the program quits
-    * move the save/load state feature to the common player object, and have it use the backend driver to actually get and restore the state
-
-    * add help system that uses docstrings
-
-  Frontend:
-
-    * have a slide up panel with the remote control on it, so it's easy to switch to it while in the middle of something
-    * make tabs appear as a fixed bar when scrolling up (hides when scrolling down, shows when scrolling up no matter where you are on the page)
-
-    * change all uses of document to document.body??
-    * do something about notices and errors... the message should be visible without scrolling to the top... maybe insert it after the button
-    * should you change js names to camelcase?
-
-    * when adding an action via the dialog-open button, there is no way to add the red dot without reloading the page
-    * make it possible to add songs from one playlist to another playlist
-    * when you delete a block, it does not update the list of blocks
-    * is there a way to specify that a submit action (on forms?) should reload the page
-    * add an optional delete button to forms to delete the object you're editing? (would this only be for config objects)
-    * make use of nerve.join_path() in js and python
-
-    * make it so that if a block is renamed, it's references in page definitions is updated
-
-  Modules:
-
-    * you need to address the modules system as it's currently implemented. the issue of config data would be the same if tasks were objnodes
-    * you kinda need a way to organize modules into subdirectories, so these types of modules don't clutter the system
-    * there needs to be a way to convert a normal module into a Module object if it contains 'get_config_data'...  Right now, only modules
-      that have config data in the settings file get created as Module objects, and the rest are just regular modules
-    * move module stuff to it's own file??
-
-  ObjectFS:
+    * should you re-unify the config namespace, or make it accessible somehow through the filesystem (like /devices/rgb/config:baud)
+    * make it easier to access the settings config for a specific object without opening the whole thing. ie. open the datalog config from
+      the datalog page, to add and remove tags from the log
 
     * what about making a database of objects, where the config dictionary is saved as json encoded text, along with the pathname where it belongs.
-      It would be quicker to update config for just one object, but it would be harder to edit the objects/config data with text
-
-    * should you re-unify the config namespace, or make it accessible somehow through the filesystem (like /devices/rgb/config:baud)
+      It would be quicker to update config for just one object, but it would be harder to edit the objects/config data manually
 
     * should it be allowed to have special arguments passed to nerve.query() so that an http request can have options specified?  It will conflict
       with the kwargs, unfortunately.  Could there be a special way of refering to them?  They would have to be removed before encoding the query.
@@ -151,19 +169,19 @@
     * can you make it use a different SQL database?  At the very least, you could alter init() to take just the db name without the extension (which
       could be used by a MySQL driver as a table name prefix or something)
     * it would be cool if you could have multiple database sources, so like datalog module could use a different db for example, and medialib another
-    * should Model actually inherit from object, and Device would be an ObjectNode that's also a Model? (multiple inheritence)
 
   Medialib:
 
-    * should medialib be a model instead of a device?
-    * add pagation to media search results (should be possible through offset/limit)
+    * make it possible to add songs from one playlist to another playlist
     * it should be possible to easily remove items from the current playlist (like delete current song/delete all by artist/delete previous song)
       The changes should take effect immediately.  Possibly could have a list of recently played songs to delete
     * you could have a playlog of recently played tracks, and then you can delete previously played items (so it should list it even if the song played for 2 sec)
     * add is-playing animated icon next to the song title (info to be sent with getsong())
 
+    * add pagation to media search results (should be possible through offset/limit)
     * medialib file updater should check to make sure there isn't some accessing or missing filesystem condition before removing a media file entry
       from the database
+    * should medialib be a model instead of a device?
 
   Connections:
 
@@ -182,11 +200,13 @@
     * add type parameters (like object(Server) to give a list of only objects that inherit from Server, or objectref(/devices) to only list
       object names (path/ref) in the dropdown
 
+    * there's an issue accessing google's oauth and having it redirect to an internal ip.  This prevents it from working on phone
+    * could you have a redirect on jabberwocky.ca that just redirects the browser to a local address?
+
     * would it be useful (or more complicated) to add a 'parent' or 'template' field to pages in the pages module, so that a parent
       page can be specified other than '__default__'?
 
     * make mud using a special module
-    * add a system of notifications/messages that's global to the system but specific to a user (ie. can leave messages for individual users)
     * add irc/chat sort of things?
 
     * make more advanced widgets for various things (ideas?)
@@ -273,19 +293,4 @@ POSSIBLE FEATURES:
     * add recognition of clapping signals (beepish?) and/or voice commands to control things
     * add gstreamer media player (the big thing is how difficult would it be to make gstreamer play youtube files?)
 
-
-
-DONE?:
-    * I'm thinking about a widgets system as a generalized concept for building web-based views, like the remote control page now, or
-      for example, a page that displays weather/temp and various daily info type stuff, a page at a glance.  It might be reasonably
-      easy/possible to have all 'pages' be a collection of widgets (which they already are in an HTML sense, but there could be an editor
-      for it, so there'd have to be some generic way of declaring all the widgety parts needed).  Everything would be a widget like it is
-      now (the buttons and editor and stuff), but the view/assets/controller part of datalog would also be a single-ish widget, and you could
-      make widgets of widgets (the collection of buttons for a media player, or for a lights control), etc etc.  The page editor thing would
-      then allow you to select widgets from a list to place, specify config options for those widgtes (like the data query of a button, or
-      the device that a player control widget should talk to).  I guess the pages could be stored in HTML directly, since it's possible to
-      parse what's needed easily enough in python, but it could also be stored in the settings file (maybe shouldn't rely so much on that...
-      separate files are easier to mix and backup and edit manually than one big file).  Advanced mode then would be HTML editing?  That is
-      to say, the actual specification and configuration of the widget is always and only in the HTML file, and the rest of it (css, js,
-      controller, additional view pyhtml) would automatically work?  Can that work and can it be good enough without being too complicated?
 
