@@ -198,8 +198,8 @@ function NerveGraph(element)
     }
 
     this.handle_move_cursor = function (e) {
-        var x = (e.pageX ? e.pageX : e.changedTouches[0].pageX) - canvas.offsetLeft;
-        var y = (e.pageY ? e.pageY : e.changedTouches[0].pageY) - canvas.offsetTop;
+        var x = ((e.pageX ? e.pageX : e.changedTouches[0].pageX) - canvas.offsetLeft) * (canvas.width / $(canvas).width());
+        var y = ((e.pageY ? e.pageY : e.changedTouches[0].pageY) - canvas.offsetTop) * (canvas.height / $(canvas).height());
 
         if (x > leftMargin && x < rightMargin)
             cursorPositionX = x;
