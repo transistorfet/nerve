@@ -154,7 +154,7 @@ class NerveSerialDevice (SerialDevice):
                     return
 
         if self.get_setting('publish'):
-            nerve.events.publish(type='change', src=self.get_pathname() + '/' + ref, value=args)
+            nerve.events.publish(topic=self.get_pathname() + '/' + ref, type='change', value=args)
 
         # TODO this isn't really used anymore (actually it is still the main interface to irremote, but should be replace with events when that gets working)
         if not args:

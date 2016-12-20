@@ -1,4 +1,11 @@
 
+    * add publish method, and possibly subscribe method?? to ObjectNode?  It would really just publish(self.get_pathname() + topic, ...)
+    * in events, add support for topic '#' catchall?
+    * should event routing/dispatching be moved to a separate thread to decouple it from the publish call?
+    * change irremote to use the new publish hook
+    * add publishing of deskclock IR code
+
+
     * queries using http don't use Request.parse_positional_args() and I don't know why
     * move query code somewhere else than main?
 
@@ -10,6 +17,7 @@
     * make datalogs reorderable, colour selectable; this could be done through config, but should also be doable directly through interface
       (see it, change it; rather than hunting in a config somewhere)
 
+    """
     * this raises an important question about events and notifications and all that business... right now, deskclock reads in either a button
       or an ir code and does an action (the exact same action) for either condition.  If we made this more distributed and stuff, there
       would need to be a way for the deskclock to send an ir code or to send a button press event somewhere to be processed.  The irremote
@@ -19,9 +27,7 @@
     * might want to separate these out? so you have an actions module, for registering bits of code to run when something happens, and then
       ir codes coming in would generate an event, and it would be up to the actions module to respond appropriately, but it could also get
       events from elsewhere
-    * you could add an 'event bubbling' type thing, where events instead are tied to ObjectNodes and bubble up the tree.  I'm thinking this
-      might be a thing, when it comes to sending events to other machines on the network
-    * change src to topic to match mqtt pub/sub terminology?
+    """
 
     * what about making notify a static module so that it's easily accessible
     * add a system of notifications/messages that's global to the system but specific to a user (ie. can leave messages for individual users)
@@ -53,12 +59,14 @@
     * rename tasks to threads?
     * move db to its own module?
     * standardize on some humanize formatting stuff?
+    * add publish/subscribe to things like connect module, irc module etc
 
     * add support for sending ir codes with irremote
     * add a description field to each mysensors node so it can be labelled (ie. which relay switch is which)
     * add a morse code device of some sorts, which could be used by notify or by anything, to encode/decode/play/etc morse code
     * add power consumption measurement
-    * implement mqtt server (like a mysensors host) and client (so that nerve can export part of its tree to another server)
+    * add mqtt device (which is actually a broker) and server (which is actually a client) to extend the event system to other computers
+    * add XMPP peer ability, to use it as IoT (need to look into this more)
 
 
     * wsgi needs a better way to handle userpermissionsrequired

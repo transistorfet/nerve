@@ -61,8 +61,8 @@
                                 }
                             },
                             "__type__": "events/EventListener",
+                            "topic": "$/#",
                             "eventmask": {
-                                "type": "change"
                             }
                         }
                     },
@@ -70,7 +70,8 @@
                 },
                 "irremote": {
                     "__children__": {},
-                    "__type__": "irremote/devices/IRRemoteDevice"
+                    "__type__": "irremote/devices/IRRemoteDevice",
+                    "publish": true
                 },
                 "medialibrem": {
                     "__type__": "core/SymbolicLink",

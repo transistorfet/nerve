@@ -64,8 +64,6 @@ class MediaLibUpdaterTask (nerve.Task):
                 except:
                     nerve.log(traceback.format_exc(), logtype='error')
 
-            #if self.get_setting('publish'):
-            #nerve.events.publish(type='change', src=self.get_pathname(), value='medialib update complete')
             #nerve.query('/devices/notify/send', 'medialib update complete')
 
             if self.stopflag.is_set():
