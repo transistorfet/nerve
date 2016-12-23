@@ -209,10 +209,10 @@ class ObjectTypeConfigType (StrConfigType):
 
     def get_options(self):
         self.options = [ ("(select object type)", '') ]
-        superclass = nerve.Module.get_class(self.superclass) if self.superclass else None
+        superclass = nerve.modules.get_class(self.superclass) if self.superclass else None
         print(superclass)
-        for typename in nerve.Module.get_types():
-            if not superclass or issubclass(nerve.Module.get_class(typename), superclass):
+        for typename in nerve.modules.get_types(nerve.ObjectNode):
+            if not superclass or issubclass(nerve.modules.get_class(typename), superclass):
                 self.options.append( (typename, typename) )
         return self.options
 
@@ -230,7 +230,7 @@ class ObjectConfigType (ComplexConfigType):
             raise ValueError("object config must contain the __type__ key")
 
         typeinfo = data['__type__']
-        configinfo = nerve.Module.get_class(typeinfo).get_config_info()
+        configinfo = nerve.modules.get_class(typeinfo).get_config_info()
         config = configinfo.validate(data)
         config['__type__'] = typeinfo
         return config
@@ -249,7 +249,7 @@ class ObjectConfigType (ComplexConfigType):
             children = [ (key, data.get_child(key)) for key in data.keys_children() ]
         elif type(data) == dict:
             typename = data['__type__']
-            items = nerve.Module.get_class_config_info(typename).get_items(data)
+            items = nerve.ObjectNode.get_class_config_info(typename).get_items(data)
             children = data['__children__'].items() if '__children__' in data else ()
         else:
             raise ValueError("Invalid datatype in get_items(): " + type(data).__name__)

@@ -14,10 +14,27 @@ def init():
     #nerve.register_controller('medialib', MediaLibController)
     pass
 
-
+"""
 def get_config_info(config_info):
     config_info.add_setting('medialib_dirs', 'Directories', default=list(), itemtype='str')
     config_info.add_setting('youtube_playlists', 'YouTube Playlists', default=list(), itemtype='str')
     return config_info
+"""
 
+
+import nerve.modules
+
+class Module (nerve.modules.Module):
+    def __init__(self, **config):
+        super().__init__(**config)
+
+    @classmethod
+    def get_config_info(cls):
+        config_info = super().get_config_info()
+        config_info.add_setting('medialib_dirs', 'Directories', default=list(), itemtype='str')
+        config_info.add_setting('youtube_playlists', 'YouTube Playlists', default=list(), itemtype='str')
+        return config_info
+
+    def update_config_data(self, config):
+        super().update_config_data(config)
 

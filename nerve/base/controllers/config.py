@@ -82,10 +82,10 @@ class ConfigController (nerve.http.Controller):
         if not typeinfo:
             raise nerve.ControllerError("You must select a type.")
 
-        defaults = nerve.Module.get_class_config_info(typeinfo)
+        defaults = nerve.ObjectNode.get_class_config_info(typeinfo)
         config = defaults.validate(request.args)
 
-        obj = nerve.Module.make_object(typeinfo, config)
+        obj = nerve.ObjectNode.make_object(typeinfo, config)
         nerve.set_object(dirname + '/' + name, obj)
         nerve.save_config()
         self.load_json_view({ 'notice': "Object created" })

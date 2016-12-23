@@ -18,7 +18,7 @@ nerve.logs.redirect(None)
 nerve.logs.log_to_file(True)
 nerve.log("starting nerve wsgi gateway", logtype='info')
 
-nerve.get_root()
+nerve.root()
 #nerve.Task.start_all()
 
 #application = nerve.http.servers.wsgi.WSGIHandler(parent='/servers/default')

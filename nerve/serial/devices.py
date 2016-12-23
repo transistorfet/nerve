@@ -154,21 +154,11 @@ class NerveSerialDevice (SerialDevice):
                     return
 
         if self.get_setting('publish'):
-            nerve.events.publish(topic=self.get_pathname() + '/' + ref, type='change', value=args)
+            nerve.events.publish(topic=self.get_pathname(False) + '/' + ref, type='change', value=args)
 
         # TODO this isn't really used anymore (actually it is still the main interface to irremote, but should be replace with events when that gets working)
         if not args:
             return
         notify_ref = self.get_setting('query').rstrip('/') + '/' + ref + '/*'
         nerve.query(notify_ref, args)
-
-        #self.query('event_recv/*', args)
-
-        #print("Received unmatched serial return: " + ref + " " + str(args))
-        #nerve.query("/events/ir/irrecv/" + args)
-
-        #nerve.query("/events/ir/irrecv/*")
-        # this would then call all the events in the irrecv 'directory'
-        # or would this just be a query...
-
 

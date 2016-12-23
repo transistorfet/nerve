@@ -17,7 +17,7 @@ class NerveBot (IRCClient):
 
         """
         if not self.get_child('event_privmsg'):
-            self.set_child('event_privmsg', nerve.Module.make_object('objects/ObjectNode', dict()))
+            self.set_child('event_privmsg', nerve.ObjectNode.make_object('objects/ObjectNode', dict()))
         """
 
     @classmethod

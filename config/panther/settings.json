@@ -302,7 +302,8 @@
                     "__children__": {},
                     "__type__": "serial/devices/NerveSerialDevice",
                     "baud": 19200,
-                    "file": "/dev/ttyACM0"
+                    "file": "/dev/ttyACM0",
+                    "publish": true
                 },
                 "sensors": {
                     "__children__": {
@@ -349,13 +350,11 @@
             "__children__": {
                 "datalog": {
                     "__children__": {},
-                    "__type__": "objects/Module",
-                    "name": "nerve.datalog"
+                    "__type__": "datalog/Module"
                 },
                 "medialib": {
                     "__children__": {},
-                    "__type__": "objects/Module",
-                    "name": "nerve.medialib",
+                    "__type__": "medialib/Module",
                     "Dmedialib_dirs": [
                         "/media/media/Torrents",
                         "/media/media/Music",
@@ -371,12 +370,10 @@
                 },
                 "pages": {
                     "__children__": {},
-                    "__type__": "objects/Module",
-                    "name": "nerve.pages"
+                    "__type__": "pages/Module"
                 }
             },
-            "__type__": "objects/Module",
-            "name": "nerve"
+            "__type__": "modules/Module"
         },
         "servers": {
             "__children__": {

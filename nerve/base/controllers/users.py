@@ -15,7 +15,7 @@ class UsersController (nerve.http.SessionController):
         # TODO can you for this path without refering directly to the module (ie. using what's in the request)
         #self.load_html_view("nerve/base/views/config/settings.pyhtml", data)
 
-        #data['formhtml'] = FormView(nerve.get_main().get_config_info()).get_output()
+        #data['formhtml'] = FormView(nerve.root().get_config_info()).get_output()
 
         self.load_template_view('nerve/base/views/users/login.blk.pyhtml', data, request)
         #self.template_add_to_section('jsfiles', '/assets/js/formview.js')

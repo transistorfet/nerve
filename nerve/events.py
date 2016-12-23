@@ -13,7 +13,7 @@ allowed_publish = re.compile(r"^([^/#]+)(|/[^/$#]+)*$")
 
 def subscribe(topic, action, label='', **eventmask):
     if not allowed_subscribe.match(topic):
-        raise Exception("invalid event topic in subscribe")
+        raise Exception("invalid event topic in subscribe: " + topic)
 
     cur = _event_listeners
     for part in topic.split('/'):
@@ -30,7 +30,7 @@ def subscribe(topic, action, label='', **eventmask):
 
 def unsubscribe(topic, action=None, label=''):
     if not allowed_subscribe.match(topic):
-        raise Exception("invalid event topic in subscribe")
+        raise Exception("invalid event topic in unsubscribe: " + topic)
 
     publish('$SYS/unsubscribe', subtopic=topic, action=action)
 
@@ -47,6 +47,7 @@ def unsubscribe(topic, action=None, label=''):
         (listlabel, eventmask, callback) = levels[-1]['/'][i]
         if (label and listlabel == label) or (action and action == callback):
             del levels[-1]['/'][i]
+            # TODO you should probably delete all entries instead of just one
             break
 
     if len(levels[-1]['/']) <= 0:
@@ -58,7 +59,7 @@ def unsubscribe(topic, action=None, label=''):
 
 def publish(topic, **event):
     if not allowed_publish.match(topic):
-        raise Exception("invalid event topic in subscribe")
+        raise Exception("invalid event topic in publish: " + topic)
 
     # TODO what about retaining the value?  This would require necessary branches to be filled out just so you can store the value somewhere, but it
     #      shouldn't be stored on the individual handlers; this kinda isn't the right datastructure to do it with

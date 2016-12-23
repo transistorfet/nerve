@@ -42,6 +42,21 @@ class ObjectNode (object):
         self._children = { }
         self.set_config_data(config)
 
+    @staticmethod
+    def make_object(typeinfo, config):
+        classtype = nerve.modules.get_class(typeinfo)
+        if not issubclass(classtype, ObjectNode):
+            raise TypeError(str(typeinfo) + " is not a subclass of ObjectNode")
+        obj = classtype(**config)
+        return obj
+
+    @staticmethod
+    def get_class_config_info(typeinfo):
+        classtype = nerve.modules.get_class(typeinfo)
+        if not issubclass(classtype, ObjectNode):
+            raise TypeError(str(typeinfo) + " is not a subclass of ObjectNode")
+        return classtype.get_config_info()
+
     ### Settings ###
 
     @classmethod
@@ -77,7 +92,7 @@ class ObjectNode (object):
     def make_object_children(self, config):
         for objname in config.keys():
             typeinfo = config[objname]['__type__'] if '__type__' in config[objname] else 'objects/ObjectNode'
-            obj = Module.make_object(typeinfo, config[objname])
+            obj = self.make_object(typeinfo, config[objname])
             obj._name = objname
             obj._parent = self
             self._children[objname] = obj
@@ -138,13 +153,16 @@ class ObjectNode (object):
             root = root._parent
         return root
 
-    def get_pathname(self):
+    def get_pathname(self, absolute=True):
         path = self._name
         obj = self._parent
         while obj:
             path = obj._name + '/' + path
             obj = obj._parent
-        return path
+        if absolute:
+            return path
+        else:
+            return path.lstrip('/')
 
     ### Direct Attributes ###
 
@@ -187,7 +205,7 @@ class ObjectNode (object):
             return None
 
         if type(obj) == str:
-            obj = Module.make_object(obj, config)
+            obj = self.make_object(obj, config)
         if not obj:
             nerve.log("error creating object " + name, logtype='error')
             return None
@@ -222,201 +240,5 @@ class ObjectNode (object):
                 path = key + ( '/' + remain if remain else '' )
                 results.append(self.query(path, *args, **kwargs))
             return results
-
-
-class _ModuleSingleton (type):
-    def __call__(cls, **config):
-        if 'name' not in config:
-            config['name'] = 'nerve'
-
-        if not cls.root:
-            if config['name'] == 'nerve':
-                cls.root = super(_ModuleSingleton, cls).__call__(**config)
-            else:
-                cls.root = super(_ModuleSingleton, cls).__call__(name='nerve')
-
-        modulepath = config['name'].split('.')
-        module = parentmodule = cls.root
-        for (i, name) in enumerate(modulepath[1:], start=1):
-            module = parentmodule.get_child(name)
-            if not module:
-                if i + 1 == len(modulepath):
-                    module = super(_ModuleSingleton, cls).__call__(**config)
-                else:
-                    module = super(_ModuleSingleton, cls).__call__(name='.'.join(modulepath[:i+1]))
-                parentmodule.set_child(name, module)
-            parentmodule = module
-
-        #print("would have set data to " + repr(config))
-        #module.set_config_data(config)
-        return module
-
-
-class Module (ObjectNode, metaclass=_ModuleSingleton):
-    root = None
-
-    def __init__(self, **config):
-        self._module = self.get_module(config['name'])
-        super().__init__(**config)
-        self._name = self.get_setting('name')
-        #self._module = eval(self._name)
-
-    def get_config_info(self=None):
-        config_info = ObjectNode.get_config_info()
-        config_info.add_setting('name', "Full Name", default='nerve')
-
-        if self and self._module:
-            if hasattr(self._module, 'get_config_info'):
-                config_info = self._module.get_config_info(config_info)
-        return config_info
-
-    """
-    def get_child(self, index):
-        child = super().get_child(index)
-        #if not child:
-        #    child = getattr(self._module, index)
-        return child
-    """
-
-    #def set_child(self, index, obj):
-    #    pass
-
-    def del_child(self, index):
-        return False
-
-    def __getattr__(self, index):
-        attrib = self.get_child(index)
-        if attrib:
-            return attrib
-
-        attrib = getattr(self._module, index)
-        if attrib:
-            return attrib
-        raise AttributeError("'%s' object has no attribute '%s'" % (str(self), index))
-
-    # TODO is this used anywhere?
-    def keys(self):
-        keys = super().keys()
-        print(keys)
-        keys = keys + [ name for name in dir(self._module) if not name.startswith('_') and name not in keys ]
-        print(keys)
-        return keys
-
-    # TODO this doesn't work because it only gets proper modules
-    def get_module_list(self):
-        return self.keys_children()
-
-    @classmethod
-    def get_types(cls, classtype=ObjectNode, module=nerve):
-        typelist = set()
-        modulename = module.__name__
-        for attribname in dir(module):
-            attrib = getattr(module, attribname)
-            if isinstance(attrib, type) and issubclass(attrib, classtype) and attrib.__module__ == modulename:
-                typelist.add(modulename.replace('nerve.', '').replace('.', '/') + '/' + attribname)
-            elif isinstance(attrib, types.ModuleType) and attrib.__package__.startswith(modulename) and attrib.__name__ != 'nerve':
-                typelist.update(cls.get_types(classtype, attrib))
-        return sorted(typelist)
-
-    @classmethod
-    def get_class(cls, typeinfo):
-        (modulename, _, classname) = typeinfo.rpartition('/')
-        module = cls.get_module(modulename)
-        return getattr(module, classname)
-
-    @classmethod
-    def get_module(cls, modulename):
-        modulename = cls.get_python_name(modulename)
-
-        modulepath = modulename.split('.')
-        module = parentmodule = nerve
-        for (i, name) in enumerate(modulepath[1:], start=1):
-            try:
-                module = getattr(parentmodule, name)
-            except:
-                module = None
-
-            if not module:
-                module = cls.import_module('.'.join(modulepath[:i+1]))
-            parentmodule = module
-        return module
-
-    @classmethod
-    def import_module(cls, modulename):
-        """
-        nerve.log("loading module " + modulename)
-        try:
-            exec("import " + modulename, globals(), globals())
-        except ImportError:
-            nerve.log("failed loading module " + modulename, logtype='error')
-            modulename = modulename.replace("nerve.", "modules.")
-            nerve.log("loading module " + modulename)
-            exec("import " + modulename, globals(), globals())
-        #    nerve.log("error loading module " + modulename + "\n\n" + traceback.format_exc(), logtype='error')
-        #    return
-
-        module = eval(modulename)
-
-        if hasattr(module, 'init'):
-            init = getattr(module, 'init')
-            init()
-
-        return module
-        """
-
-        modulename = modulename.replace("nerve.", "")
-        nerve.log("loading module " + modulename)
-        for namespace in ('nerve', 'modules'):
-            currentname = '.'.join((namespace, modulename))
-            try:
-                exec("import " + currentname, globals(), globals())
-                #module = importlib.import_module(currentname)
-                #print(module)
-
-            except ImportError as e:
-                if e.name == currentname:
-                    continue
-                else:
-                    nerve.log(traceback.format_exc(), logtype='error')
-                    break
-
-            except:
-                nerve.log(traceback.format_exc(), logtype='error')
-                break
-
-            else:
-                module = eval(currentname)
-                if hasattr(module, 'init'):
-                    init = getattr(module, 'init')
-                    init()
-                return module
-        nerve.log("unable to load module " + modulename, logtype='error')
-        return None
-
-    @staticmethod
-    def get_python_name(modulename):
-        if modulename.startswith('/modules/'):
-            modulename = modulename[len('/modules/'):]
-        modulename = modulename.replace('/', '.')
-        if modulename[0] == '.':
-            raise Exception("attempting to import invalid module: " + modulename)
-        if not modulename.startswith('nerve'):
-            modulename = 'nerve.' + modulename
-        return modulename
-
-    @classmethod
-    def make_object(cls, typeinfo, config):
-        classtype = cls.get_class(typeinfo)
-        if not issubclass(classtype, ObjectNode):
-            raise TypeError(str(typeinfo) + " is not a subclass of ObjectNode")
-        obj = classtype(**config)
-        return obj
-
-    @classmethod
-    def get_class_config_info(cls, typeinfo):
-        classtype = cls.get_class(typeinfo)
-        if not issubclass(classtype, ObjectNode):
-            raise TypeError(str(typeinfo) + " is not a subclass of ObjectNode")
-        return classtype.get_config_info()
 
 

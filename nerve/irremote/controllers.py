@@ -127,12 +127,11 @@ class IRRemoteController (nerve.http.Controller):
         if not code:
             raise nerve.ControllerError("You must provide a IR code")
 
-        #path = '/events/ir/irrecv/' + code
         path = '/devices/irremote/' + code
         try:
             obj = nerve.get_object(path)
         except AttributeError:
-            obj = nerve.objects.Module.make_object("asyncs/PyCodeAsyncTask", { })
+            obj = nerve.ObjectNode.make_object("asyncs/PyCodeAsyncTask", { })
 
         #self.set_view(nerve.base.FormView(obj.get_config_info(), obj.get_config_data(), '/config/save' + path, submitback=True))
         #self.load_template_view(None, None, request)
@@ -159,9 +158,9 @@ class IRRemoteController (nerve.http.Controller):
             config = obj.get_config_info().validate(request.args)
             obj.update_config_data(config)
         except AttributeError:
-            defaults = nerve.Module.get_class_config_info('asyncs/PyCodeAsyncTask')
+            defaults = nerve.ObjectNode.get_class_config_info('asyncs/PyCodeAsyncTask')
             config = defaults.validate(request.args)
-            obj = nerve.Module.make_object('asyncs/PyCodeAsyncTask', config)
+            obj = nerve.ObjectNode.make_object('asyncs/PyCodeAsyncTask', config)
             nerve.set_object(path, obj)
 
         nerve.save_config()
@@ -169,7 +168,7 @@ class IRRemoteController (nerve.http.Controller):
         """
 
         irremote = nerve.get_object('/devices/irremote')
-        defaults = nerve.Module.get_class_config_info('asyncs/PyCodeAsyncTask')
+        defaults = nerve.ObjectNode.get_class_config_info('asyncs/PyCodeAsyncTask')
         config = defaults.validate(request.args)
         config['__type__'] = 'asyncs/PyCodeAsyncTask'
         irremote.set_action(code, config)

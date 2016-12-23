@@ -2,8 +2,10 @@
     * add publish method, and possibly subscribe method?? to ObjectNode?  It would really just publish(self.get_pathname() + topic, ...)
     * in events, add support for topic '#' catchall?
     * should event routing/dispatching be moved to a separate thread to decouple it from the publish call?
-    * change irremote to use the new publish hook
+    * change irremote to use the new publish hook, rather than a fixed query objnode
     * add publishing of deskclock IR code
+    * make a way of subscribing to events published by other computers on the network. what about symlinks specifically? is it possible to
+      subscribe to the value of a symlink and have it forward the subscription to the remote machine?
 
 
     * queries using http don't use Request.parse_positional_args() and I don't know why
@@ -16,18 +18,6 @@
     * add way to analyze, integrate, differentiate, etc, by selecting a range of time (more on asana)
     * make datalogs reorderable, colour selectable; this could be done through config, but should also be doable directly through interface
       (see it, change it; rather than hunting in a config somewhere)
-
-    """
-    * this raises an important question about events and notifications and all that business... right now, deskclock reads in either a button
-      or an ir code and does an action (the exact same action) for either condition.  If we made this more distributed and stuff, there
-      would need to be a way for the deskclock to send an ir code or to send a button press event somewhere to be processed.  The irremote
-      module only handles IR codes.  Could we use the same system for button codes?  How would either be sent to where they need to be to
-      activate their respective actions, and is it possible to direct both to the same action, so editing one action changes it for both
-      the button and the ircode
-    * might want to separate these out? so you have an actions module, for registering bits of code to run when something happens, and then
-      ir codes coming in would generate an event, and it would be up to the actions module to respond appropriately, but it could also get
-      events from elsewhere
-    """
 
     * what about making notify a static module so that it's easily accessible
     * add a system of notifications/messages that's global to the system but specific to a user (ie. can leave messages for individual users)
@@ -43,7 +33,6 @@
 
     * fix config display for lists and dicts (datalog datapoints is just str()'d)
     * make backups of settings file when saving, or possible add a revision control type system to it
-    * make sure when loading config with saved module data that it gets used
     * make sure it creates a sane default settings file if the config dir doesn't have a file already
     * add run and config instructions to the readme (so that somebody could actually run the thing)
     * fix pyhtml to ignore tags in comments
@@ -60,6 +49,8 @@
     * move db to its own module?
     * standardize on some humanize formatting stuff?
     * add publish/subscribe to things like connect module, irc module etc
+    * make a separate 'actions' module, like irremote, which can take ir codes, or button presses, or any other condition, and run associated
+      code.  At this point, I guess this is just an objnode which subscribes to an event, but I need a nice way of setting them up, like irremote
 
     * add support for sending ir codes with irremote
     * add a description field to each mysensors node so it can be labelled (ie. which relay switch is which)
@@ -117,13 +108,14 @@
 
   Modules:
 
+    * make sure when loading config with saved module data that it gets used
     * what if you had a class in __init__.py that could be instantiated to get the module definition, rather than having a get_config_data
       function
-    * you need to address the modules system as it's currently implemented. the issue of config data would be the same if tasks were objnodes
-    * you kinda need a way to organize modules into subdirectories, so these types of modules don't clutter the system
     * there needs to be a way to convert a normal module into a Module object if it contains 'get_config_data'...  Right now, only modules
       that have config data in the settings file get created as Module objects, and the rest are just regular modules
-    * move module stuff to it's own file??
+
+    * you need to address the modules system as it's currently implemented. the issue of config data would be the same if tasks were objnodes
+    * you kinda need a way to organize modules into subdirectories, so these types of modules don't clutter the system
 
   ObjectFS:
 

@@ -57,7 +57,7 @@ class Controller (nerve.Controller):
     def load_template_view(self, filename=None, data=None, request=None, template_data=dict()):
         template = self.find_template(request)
 
-        template_class = nerve.Module.get_class(template['__type__'])
+        template_class = nerve.modules.get_class(template['__type__'])
         del template['__type__']
         view = template_class(data=template_data, **template)
         if filename:

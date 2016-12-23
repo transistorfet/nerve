@@ -27,21 +27,21 @@ class Request (object):
         self.user = user
         self.reqtype = reqtype      # could be GET, POST, QUERY, CONNECT?
         self.url = urllib.parse.urlparse(urlstring) if type(urlstring) == str else urlstring
-        self.args = self.parse_query_args(self.url, args)
+        self.args = self.add_query_args(self.url, args)
         self.headers = [ (key.lower(), item) for (key, item) in headers.items() ]
 
         self.segments = self.url.path.lstrip('/').split('/')
         self.current_segment = 0
 
     @staticmethod
-    def parse_query_args(url, kwargs=None):
+    def add_query_args(url, kwargs=None):
         if not kwargs:
             kwargs = dict()
         kwargs.update(delistify(urllib.parse.parse_qs(url.query, keep_blank_values=True)))
         return kwargs
 
     @staticmethod
-    def parse_positional_args(args, kwargs):
+    def get_positional_args(args, kwargs):
         args = list(args)
         for i in sorted( int(key[1:]) for key in kwargs.keys() if key.startswith('$') ):
             if i != len(args):
@@ -49,6 +49,13 @@ class Request (object):
             args.append(kwargs['$' + str(i)])
             del kwargs['$' + str(i)]
         return args
+
+    @staticmethod
+    def put_positional_args(args, kwargs):
+        for i in range(len(args)):
+            #if '$'+str(i) in kwargs:
+            #   raise ValueError("positional argument " + '$'+str(i) + " already exists in kwargs")
+            kwargs['$'+str(i)] = args[i]
 
     def arg(self, name, default=None):
         if name in self.args:
@@ -418,7 +425,7 @@ class Server (nerve.ObjectNode):
         else:
             request.back_segment();
             controller = controllers['__default__']
-        return nerve.Module.make_object(controller['__type__'], controller)
+        return nerve.ObjectNode.make_object(controller['__type__'], controller)
 
 
 class Model (nerve.ObjectNode):

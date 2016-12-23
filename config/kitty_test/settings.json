@@ -71,7 +71,10 @@
                 "irremote": {
                     "__children__": {},
                     "__type__": "irremote/devices/IRRemoteDevice",
-                    "publish": true
+                    "subscriptions": [
+                        "devices/deskclock/+",
+                        "devices/serial/irrecv"
+                    ]
                 },
                 "medialibrem": {
                     "__type__": "core/SymbolicLink",
@@ -213,12 +216,6 @@
                     "__children__": {
                         "irrecv": {
                             "__children__": {
-                                "event_dispatch": {
-                                    "__children__": {},
-                                    "__type__": "asyncs/PyCodeAsyncTask",
-                                    "code": "nerve.query('/events/ir/irrecv/' + args[0])",
-                                    "repeat": 0.0
-                                },
                                 "irremote_dispatch": {
                                     "__children__": {},
                                     "__type__": "asyncs/PyCodeAsyncTask",
@@ -226,34 +223,6 @@
                                     "repeat": 0.0
                                 }
                             }
-                        }
-                    },
-                    "__type__": "objects/ObjectNode"
-                },
-                "ir": {
-                    "__children__": {
-                        "irrecv": {
-                            "__children__": {
-                                "N:628": {
-                                    "__children__": {},
-                                    "__type__": "asyncs/PyCodeAsyncTask",
-                                    "code": "nerve.query('/devices/player/toggle')",
-                                    "repeat": 0.0
-                                },
-                                "N:650": {
-                                    "__children__": {},
-                                    "__type__": "asyncs/PyCodeAsyncTask",
-                                    "code": "nerve.query('/devices/player/previous')",
-                                    "repeat": 0.0
-                                },
-                                "N:690": {
-                                    "__children__": {},
-                                    "__type__": "asyncs/PyCodeAsyncTask",
-                                    "code": "nerve.query('/devices/player/next')",
-                                    "repeat": 0.0
-                                }
-                            },
-                            "__type__": "objects/ObjectNode"
                         }
                     },
                     "__type__": "objects/ObjectNode"
@@ -277,13 +246,11 @@
             "__children__": {
                 "datalog": {
                     "__children__": {},
-                    "__type__": "objects/Module",
-                    "name": "nerve.datalog"
+                    "__type__": "datalog/Module"
                 },
                 "medialib": {
                     "__children__": {},
-                    "__type__": "objects/Module",
-                    "name": "nerve.medialib",
+                    "__type__": "medialib/Module",
                     "medialib_dirs": [
                         "/media/media/Music",
                         "/media/media/Video",
@@ -300,11 +267,10 @@
                 },
                 "pages": {
                     "__children__": {},
-                    "__type__": "objects/Module",
-                    "name": "nerve.pages"
+                    "__type__": "pages/Module"
                 }
             },
-            "__type__": "objects/Module",
+            "__type__": "modules/Module",
             "name": "nerve"
         },
         "servers": {

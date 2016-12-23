@@ -21,12 +21,16 @@ class IRRemoteDevice (nerve.Device):
         self.db.select("code,object")
         for row in self.db.get('actions'):
             config = json.loads(row[1])
-            self.set_object(row[0], nerve.objects.Module.make_object(config['__type__'], config))
+            self.set_object(row[0], nerve.ObjectNode.make_object(config['__type__'], config))
+
+        for topic in self.get_setting('subscriptions'):
+            nerve.events.subscribe(topic, label=self.get_pathname(False), action=self.on_receive_code)
 
     @classmethod
     def get_config_info(cls):
         config_info = super().get_config_info()
         config_info.add_setting('max_history', "Max Code History", default=20)
+        config_info.add_setting('subscriptions', "Subscriptions", default=[], itemtype='str')
         return config_info
 
     def save_object_children(self):
@@ -136,6 +140,9 @@ class IRRemoteDevice (nerve.Device):
         self.code_history.insert(0, (time.time(), code) )
 
     def on_receive_code(self, code):
+        if type(code) == dict:
+            code = code['value']
+
         if code.startswith('x:'):
             nerve.log("received invalid IR code " + code)
             return
@@ -164,7 +171,7 @@ class IRRemoteDevice (nerve.Device):
         return json.loads(results[0][1])
 
     def set_action(self, code, obj):
-        self.set_object(code, nerve.objects.Module.make_object(obj['__type__'], obj))
+        self.set_object(code, nerve.ObjectNode.make_object(obj['__type__'], obj))
         data = { 'code': code, 'object': json.dumps(obj, sort_keys=True) }
         self.db.insert('actions', data, replace=True)
 

@@ -29,7 +29,7 @@ class RootNode (nerve.ObjectNode):
         config_info = super().get_config_info()
         config_info.add_default_child('devices', { '__type__': 'objects/ObjectNode' })
         config_info.add_default_child('events', { '__type__': 'objects/ObjectNode' })
-        config_info.add_default_child('modules', { '__type__': 'objects/Module' })
+        config_info.add_default_child('modules', { '__type__': 'modules/Module' })
         config_info.add_default_child('servers', { '__type__': 'objects/ObjectNode' })
         return config_info
 
@@ -52,24 +52,6 @@ class RootNode (nerve.ObjectNode):
 
     def save_system(self):
         self.save_config('settings.saved.json')
-
-    def run_init(self, filename):
-        try:
-            filename = nerve.files.find(filename)
-        except OSError:
-            return True
-
-        nerve.log("running init script located at " + filename)
-        try:
-            with open(filename, 'r') as f:
-                code = f.read()
-            self.init = { 'nerve' : nerve }
-            exec(code, self.init)
-            nerve.log(filename + " has completed sucessfully", logtype='success')
-            return True
-        except:
-            nerve.log("error running init from " + filename + "\n\n" + traceback.format_exc(), logtype='error')
-            return False
 
     def load_config(self, filename):
         try:
@@ -106,10 +88,28 @@ class RootNode (nerve.ObjectNode):
         else:
             modules_config = { '__type__': 'objects/Module' }
 
-        modules = nerve.Module.make_object(modules_config['__type__'], modules_config)
+        modules = nerve.ObjectNode.make_object(modules_config['__type__'], modules_config)
         self.set_child('modules', modules)
         """
         super().make_object_children(config)
+
+    def run_init(self, filename):
+        try:
+            filename = nerve.files.find(filename)
+        except OSError:
+            return True
+
+        nerve.log("running init script located at " + filename)
+        try:
+            with open(filename, 'r') as f:
+                code = f.read()
+            self.init = { 'nerve' : nerve }
+            exec(code, self.init)
+            nerve.log(filename + " has completed sucessfully", logtype='success')
+            return True
+        except:
+            nerve.log("error running init from " + filename + "\n\n" + traceback.format_exc(), logtype='error')
+            return False
 
 
 class Main (RootNode):
@@ -161,14 +161,15 @@ def loop():
     rootnodes.insert(0, main)
     main.start()
 
-def root():
+def new_root():
     global rootnodes
 
     root = RootNode()
     rootnodes.insert(0, root)
     root.init_system()
+    return root
 
-def get_root():
+def root():
     global rootnodes
     if len(rootnodes) > 0:
         return rootnodes[0]
@@ -211,72 +212,8 @@ def has_object(name):
         pass
     return False
 
-""""
-def query(urlstring, *args, **kwargs):
-    global rootnodes
 
-    url = urllib.parse.urlparse(urlstring)
 
-    if url.netloc:
-        if url.scheme == 'http':
-            # TODO we ignore args and kwargs when querying a http server.  We could automatically make a query string of kwargs, and possible
-            #      still ignore args, or we could use a POST request instead, and send the json of the arguments (possible JSON-RPC style)
-
-            nerve.log("executing query: " + url.path + " " + repr(args) + " " + repr(kwargs), logtype='query')
-
-            # TODO is this valid?  To have query options in the kwargs?  Might that cause problems for some things?  Should the key be deleted here if
-            # present, so that it doesn't get encoded.
-            #if 'query_method' in kwargs:
-            #   method = kwargs['query_method']
-            #   del kwargs['query_method']
-            #else:
-            #   method = 'POST'
-
-            #method = kwargs['query_method'] if 'query_method' in kwargs else 'POST'
-
-            for i in range(len(args)):
-                #if '$'+str(i) in kwargs:
-                #   raise ValueError("positional argument " + '$'+str(i) + " already exists in kwargs")
-                kwargs['$'+str(i)] = args[i]
-
-            method = 'GET' if len(kwargs) <= 0 else 'POST'
-            nerve.log("remote query: " + method + " " + urlstring, logtype='query')
-            # TODO should there be an option to encode the args as json?
-            #options = { }
-            r = requests.request(method, urlstring, json=None if method == 'GET' else kwargs)
-
-            if r.status_code != 200:
-                raise Exception("request to " + urlstring + " failed. " + str(r.status_code) + ": " + r.reason, r.text)
-
-            (mimetype, pdict) = cgi.parse_header(r.headers['content-type'])
-            if mimetype == 'application/json':
-                return r.json()
-            elif mimetype == 'application/x-www-form-urlencoded':
-                return urllib.parse.parse_qs(r.text, keep_blank_values=True)
-            else:
-                return r.text
-
-        else:
-            raise Exception("unsupported url scheme: " + url.scheme)
-
-    else:
-        path = urllib.parse.unquote_plus(url.path)
-        kwargs = nerve.Request.parse_query_args(url, kwargs)
-        args = nerve.Request.parse_positional_args(args, kwargs)
-
-        nerve.log("executing query: " + path + " " + repr(args) + " " + repr(kwargs), logtype='query')
-
-        #obj = rootnodes[0].get_object(url.path.lstrip('/'))
-        #if callable(obj):
-        #    result = obj(*args, **kwargs)
-        #else:
-        #    result = obj
-        result = rootnodes[0].query(path.lstrip('/'), *args, **kwargs)
-
-        rstr = str(result)
-        nerve.log("result: " + ( rstr[:75] + '...' if len(rstr) > 75 else rstr ), logtype='debug')
-        return result
-"""
 
 _scheme_handlers = { }
 
@@ -297,19 +234,19 @@ def query(urlstring, *args, **kwargs):
 
 def LocalQueryHandler(_queryurl, *args, **kwargs):
     path = urllib.parse.unquote_plus(_queryurl.path)
-    kwargs = nerve.Request.parse_query_args(_queryurl, kwargs)
-    args = nerve.Request.parse_positional_args(args, kwargs)
+    kwargs = nerve.Request.add_query_args(_queryurl, kwargs)
+    args = nerve.Request.get_positional_args(args, kwargs)
 
     nerve.log("executing query: " + path + " " + repr(args) + " " + repr(kwargs), logtype='query')
 
     """
-    obj = rootnodes[0].get_object(_queryurl.path.lstrip('/'))
+    obj = nerve.root().get_object(_queryurl.path.lstrip('/'))
     if callable(obj):
         result = obj(*args, **kwargs)
     else:
         result = obj
     """
-    result = rootnodes[0].query(path.lstrip('/'), *args, **kwargs)
+    result = nerve.root().query(path.lstrip('/'), *args, **kwargs)
 
     rstr = str(result)
     nerve.log("result: " + ( rstr[:75] + '...' if len(rstr) > 75 else rstr ), logtype='debug')
@@ -319,11 +256,6 @@ register_scheme('local', LocalQueryHandler)
 
 
 def HTTPQueryHandler(_queryurl, *args, **kwargs):
-    # TODO we ignore args and kwargs when querying a http server.  We could automatically make a query string of kwargs, and possible
-    #      still ignore args, or we could use a POST request instead, and send the json of the arguments (possible JSON-RPC style)
-
-    #nerve.log("executing query: " + _queryurl.path + " " + repr(args) + " " + repr(kwargs), logtype='query')
-
     # TODO is this valid?  To have query options in the kwargs?  Might that cause problems for some things?  Should the key be deleted here if
     # present, so that it doesn't get encoded.
     #if 'query_method' in kwargs:
@@ -334,18 +266,12 @@ def HTTPQueryHandler(_queryurl, *args, **kwargs):
 
     #method = kwargs['query_method'] if 'query_method' in kwargs else 'POST'
 
-    for i in range(len(args)):
-        #if '$'+str(i) in kwargs:
-        #   raise ValueError("positional argument " + '$'+str(i) + " already exists in kwargs")
-        kwargs['$'+str(i)] = args[i]
-
+    args = nerve.Request.put_positional_args(args, kwargs)
     method = 'GET' if len(kwargs) <= 0 else 'POST'
     urlstring = urllib.parse.urlunparse((_queryurl.scheme, _queryurl.netloc, _queryurl.path, '', '', ''))
-    #nerve.log("remote query: " + method + " " + urlstring, logtype='debug')
+
     nerve.log("executing query: " + method + " " + urlstring + " " + repr(args) + " " + repr(kwargs), logtype='query')
 
-    # TODO should there be an option to encode the args as json?
-    #options = { }
     r = requests.request(method, urlstring, json=None if method == 'GET' else kwargs)
 
     if r.status_code != 200:
@@ -365,8 +291,6 @@ def HTTPQueryHandler(_queryurl, *args, **kwargs):
 
 register_scheme('http', HTTPQueryHandler)
 register_scheme('https', HTTPQueryHandler)
-
-
 
 
 

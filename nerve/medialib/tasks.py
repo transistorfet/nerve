@@ -19,7 +19,7 @@ def start_updater(updaters):
     #updater_task.add('youtube', YoutubePlaylistUpdater())
     for updater in updaters:
         names = updater.split('/')
-        classtype = nerve.Module.get_class(updater)
+        classtype = nerve.modules.get_class(updater)
         updater_task.add(names[-2] if len(names) >= 2 else '', classtype())
     updater_task.start()
 

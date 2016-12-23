@@ -4,8 +4,7 @@
             "__children__": {
                 "medialib": {
                     "__children__": {},
-                    "__type__": "objects/Module",
-                    "name": "nerve.medialib",
+                    "__type__": "medialib/Module",
                     "medialib_dirs": [
                         "/media/media/Torrents",
                         "/media/media/Music",
@@ -20,8 +19,7 @@
                     ]
                 }
             },
-            "__type__": "objects/Module",
-            "name": "nerve"
+            "__type__": "modules/Module"
         },
         "devices": {
             "__children__": {
@@ -43,21 +41,6 @@
         },
         "events": {
             "__children__": {
-                "serial": {
-                    "__children__": {
-                        "irrecv": {
-                            "__children__": {
-                                "print_code": {
-                                    "__children__": {},
-                                    "__type__": "asyncs/PyCodeAsyncTask",
-                                    "code": "nerve.log(\"Received IR code \" + args[0])",
-                                    "repeat": 0.0
-                                }
-                            }
-                        }
-                    },
-                    "__type__": "objects/ObjectNode"
-                }
             },
             "__type__": "objects/ObjectNode"
         },

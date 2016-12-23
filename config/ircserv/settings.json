@@ -19,34 +19,6 @@
         },
         "events": {
             "__children__": {
-                "ir": {
-                    "__children__": {
-                        "irrecv": {
-                            "__children__": {
-                                "N:628": {
-                                    "__children__": {},
-                                    "__type__": "asyncs/PyCodeAsyncTask",
-                                    "code": "nerve.query('/devices/player/toggle')",
-                                    "repeat": 0.0
-                                },
-                                "N:650": {
-                                    "__children__": {},
-                                    "__type__": "asyncs/PyCodeAsyncTask",
-                                    "code": "nerve.query('/devices/player/previous')",
-                                    "repeat": 0.0
-                                },
-                                "N:690": {
-                                    "__children__": {},
-                                    "__type__": "asyncs/PyCodeAsyncTask",
-                                    "code": "nerve.query('/devices/player/next')",
-                                    "repeat": 0.0
-                                }
-                            },
-                            "__type__": "objects/ObjectNode"
-                        }
-                    },
-                    "__type__": "objects/ObjectNode"
-                }
             },
             "__type__": "objects/ObjectNode"
         },
@@ -54,17 +26,14 @@
             "__children__": {
                 "pages": {
                     "__children__": {},
-                    "__type__": "objects/Module",
-                    "name": "nerve.pages"
+                    "__type__": "pages/Module"
                 },
                 "irc": {
                     "__children__": {},
-                    "__type__": "objects/Module",
-                    "name": "nerve.irc"
+                    "__type__": "irc/Module"
                 }
             },
-            "__type__": "objects/Module",
-            "name": "nerve"
+            "__type__": "modules/Module"
         },
         "servers": {
             "__children__": {
