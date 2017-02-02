@@ -52,10 +52,13 @@ class MediaLibDevice (nerve.Device):
             return [ ]
 
         if search and len(search) > 0:
-            whereorder = order
-            if order == 'random':
-                whereorder = 'title'
-            self.db.where_like(whereorder, '%' + str(search).replace('*', '%') + '%')
+            #whereorder = order
+            #if order == 'random':
+            #    whereorder = 'title'
+            searchterm = '%' + str(search).replace('*', '%') + '%'
+            self.db.where_like('artist', searchterm)
+            self.db.or_where_like('title', searchterm)
+            self.db.or_where_like('album', searchterm)
 
         if tags and len(tags) > 0:
             tags = shlex.split(tags)

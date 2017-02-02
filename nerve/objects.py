@@ -153,7 +153,7 @@ class ObjectNode (object):
             root = root._parent
         return root
 
-    def get_pathname(self, absolute=True):
+    def get_pathname(self, absolute=False):
         path = self._name
         obj = self._parent
         while obj:

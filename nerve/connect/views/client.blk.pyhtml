@@ -30,8 +30,10 @@
 
             $('#nerve-shell-input').change(function ()
             {
-                server.send($(this).val() + '\n');
+                var command = $(this).val() + '\n';
                 $(this).val('');
+                server.send(command);
+                $('#nerve-shell-output').append(command);
             });
         });
     </script>

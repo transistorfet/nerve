@@ -51,23 +51,6 @@
                     },
                     "__type__": "objects/ObjectNode"
                 },
-                "events": {
-                    "__children__": {
-                        "change": {
-                            "__children__": {
-                                "test": {
-                                    "__type__": "core/PyCodeQuery",
-                                    "code": "print(args[0])"
-                                }
-                            },
-                            "__type__": "events/EventListener",
-                            "topic": "$/#",
-                            "eventmask": {
-                            }
-                        }
-                    },
-                    "__type__": "events/EventRouter"
-                },
                 "irremote": {
                     "__children__": {},
                     "__type__": "irremote/devices/IRRemoteDevice",
@@ -102,9 +85,12 @@
                     "__type__": "tinythings/morse/devices/MorseCodeDevice"
                 },
                 "notify": {
-                    "__children__": {},
+                    "__children__": {
+                    },
                     "__type__": "notify/devices/NotifyDevice",
-                    "forwards": []
+                    "forwards": [
+                        "/tasks/email-notify"
+                    ]
                 },
                 "playlists": {
                     "__children__": {},
@@ -212,6 +198,23 @@
         },
         "events": {
             "__children__": {
+                "change": {
+                    "__children__": {
+                        "test": {
+                            "__type__": "core/PyCodeQuery",
+                            "code": "print(args[0])"
+                        }
+                    },
+                    "__type__": "events/EventListener",
+                    "topic": "$/#",
+                    "eventmask": {
+                    }
+                }
+            },
+            "__type__": "events/EventRouter"
+        },
+        "tasks": {
+            "__children__": {
                 "serial": {
                     "__children__": {
                         "irrecv": {
@@ -238,6 +241,13 @@
                     "__type__": "asyncs/PyCodeAsyncTask",
                     "code": "if len(args) <= 0:\n  return\n\nself.start = time.time()\nself.target = args[0]\nfor i in range(0, 100):\n  nerve.query(self.target)\nprint(str(100 / (time.time() - self.start)) + ' requests per second')\n",
                     "repeat": 0.0
+                },
+                "email-notify": {
+                    "__type__": "email/devices/EmailNotifierQuery",
+                    "server": "raccoon",
+                    "from": "info@jabberwocky.ca",
+                    "to": "philosophizer@gmail.com",
+                    "severity": "serious"
                 }
             },
             "__type__": "objects/ObjectNode"
@@ -270,8 +280,7 @@
                     "__type__": "pages/Module"
                 }
             },
-            "__type__": "modules/Module",
-            "name": "nerve"
+            "__type__": "modules/Module"
         },
         "servers": {
             "__children__": {
@@ -311,7 +320,7 @@
                         },
                         "medialib": {
                             "__type__": "medialib/MediaLibController",
-                            "device": "/devices/medialibrem"
+                            "device": "/devices/medialib"
                         },
                         "mithril": {
                             "__type__": "base/FileController",

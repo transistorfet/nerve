@@ -28,7 +28,7 @@ class ShellController (nerve.Controller, nerve.connect.ControllerMixIn):
         self.conn.send_message(nerve.connect.Message(text="Welcome to the nerve webshell...\n"))
 
     def on_message(self, msg):
-        self.conn.send_message(msg)
+        #self.conn.send_message(msg)
         if msg.text == 'quit':
             raise nerve.connect.QuitException()
         self.load_plaintext_view('')
@@ -41,6 +41,8 @@ class ShellController (nerve.Controller, nerve.connect.ControllerMixIn):
 
     def run_command(self, command_line):
         args = shlex.split(command_line)
+        if len(args) <= 0:
+            return
         command = "cmd_" + args[0]
 
         if hasattr(self, command):
@@ -72,6 +74,9 @@ class ShellController (nerve.Controller, nerve.connect.ControllerMixIn):
                         return base + sep + name
         """
         return 0
+
+    def cmd_exit(self, args):
+        raise nerve.connect.QuitException()
 
     def cmd_query(self, args):
         ref = args.pop(0)

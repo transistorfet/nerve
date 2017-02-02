@@ -151,22 +151,6 @@ class IRRemoteController (nerve.http.Controller):
         if not code:
             raise nerve.ControllerError("You must provide a valid object name")
 
-        """
-        path = '/events/ir/irrecv/' + code
-        try:
-            obj = nerve.get_object(path)
-            config = obj.get_config_info().validate(request.args)
-            obj.update_config_data(config)
-        except AttributeError:
-            defaults = nerve.ObjectNode.get_class_config_info('asyncs/PyCodeAsyncTask')
-            config = defaults.validate(request.args)
-            obj = nerve.ObjectNode.make_object('asyncs/PyCodeAsyncTask', config)
-            nerve.set_object(path, obj)
-
-        nerve.save_config()
-        self.load_json_view({ 'notice': "Event added" })
-        """
-
         irremote = nerve.get_object('/devices/irremote')
         defaults = nerve.ObjectNode.get_class_config_info('asyncs/PyCodeAsyncTask')
         config = defaults.validate(request.args)

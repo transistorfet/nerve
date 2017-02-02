@@ -110,7 +110,8 @@
                 },
                 "irremote": {
                     "__children__": {},
-                    "__type__": "irremote/devices/IRRemoteDevice"
+                    "__type__": "irremote/devices/IRRemoteDevice",
+                    "subscriptions": [ "devices/+/irrecv" ]
                 },
                 "medialib": {
                     "__children__": {},
@@ -279,7 +280,9 @@
                 "notify": {
                     "__children__": {},
                     "__type__": "notify/devices/NotifyDevice",
-                    "forwards": []
+                    "forwards": [
+                        "/tasks/email-notify"
+                    ]
                 },
                 "player": {
                     "__children__": {
@@ -315,7 +318,7 @@
                 }
             }
         },
-        "events": {
+        "tasks": {
             "__children__": {
                 "serial": {
                     "__children__": {
@@ -324,7 +327,7 @@
                                 "irremote_dispatch": {
                                     "__children__": {},
                                     "__type__": "asyncs/PyCodeAsyncTask",
-                                    "code": "nerve.query('/devices/irremote/on_receive_code', *args)",
+                                    "code": "nerve.log(\"old ir code\")\nnerve.query('/devices/irremote/on_receive_code', *args)",
                                     "repeat": 0.0
                                 }
                             }
@@ -338,11 +341,18 @@
                             "__children__": {},
                             "__type__": "asyncs/PyCodeAsyncTask",
                             "autorun": true,
-                            "code": "import humanize\nmysensors = nerve.get_object('/devices/mysensors')\ncurrent_time = time.time()\n\nfor nodename in mysensors.keys_children():\n  node = mysensors.get_child(nodename)\n  if current_time > node.last_recv + 7200:\n    nerve.query('/devices/notify/send', \"haven't heard from mysensors node {0} in {1} minutes.\".format(node.nodeid, humanize.naturaltime(current_time - node.last_recv)), label='mysensors-loss-of-signal-' + str(node.nodeid))\n",
+                            "code": "import humanize\nmysensors = nerve.get_object('/devices/mysensors')\ncurrent_time = time.time()\n\nfor nodename in mysensors.keys_children():\n  node = mysensors.get_child(nodename)\n  if current_time > node.last_recv + 7200:\n    nerve.query('/devices/notify/send', \"haven't heard from mysensors node {0} in {1} minutes.\".format(node.nodeid, humanize.naturaltime(current_time - node.last_recv)), severity='serious', label='mysensors-loss-of-signal-' + str(node.nodeid))\n",
                             "repeat": 300.0
                         }
                     },
                     "__type__": "objects/ObjectNode"
+                },
+                "email-notify": {
+                    "__type__": "email/devices/EmailNotifierQuery",
+                    "server": "raccoon",
+                    "from": "info@jabberwocky.ca",
+                    "to": "philosophizer@gmail.com",
+                    "severity": "serious"
                 }
             }
         },

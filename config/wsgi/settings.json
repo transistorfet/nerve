@@ -27,7 +27,7 @@
             },
             "__type__": "objects/ObjectNode"
         },
-        "events": {
+        "tasks": {
             "__children__": {},
             "__type__": "objects/ObjectNode"
         },

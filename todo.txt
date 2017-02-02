@@ -1,29 +1,23 @@
 
+    * integrate loss of signal into mysensors such that the last value will go to None if the sensor has not been heard from
+
     * add publish method, and possibly subscribe method?? to ObjectNode?  It would really just publish(self.get_pathname() + topic, ...)
-    * in events, add support for topic '#' catchall?
     * should event routing/dispatching be moved to a separate thread to decouple it from the publish call?
-    * change irremote to use the new publish hook, rather than a fixed query objnode
-    * add publishing of deskclock IR code
-    * make a way of subscribing to events published by other computers on the network. what about symlinks specifically? is it possible to
-      subscribe to the value of a symlink and have it forward the subscription to the remote machine?
+    * make a way of subscribing to events published by other computers on the network. It would need a return address of some kind.  What
+      about symlinks specifically? is it possible to subscribe to the value of a symlink and have it forward the subscription to the
+      remote machine?
 
 
-    * queries using http don't use Request.parse_positional_args() and I don't know why
+    * add on_setting_update callback? (maybe already done)
     * move query code somewhere else than main?
+    * fix alternate module location support, it can't load modules from the 'modules' toplevel dir
+    * add readline support to tcpserver/shell
 
-    * add zoom and pan control to vertical scale too?
-    * add ability to have live trends
-    * fix datalog to allow variable periods per datalog (right now it's always 60 seconds)
-    * add optional limits to how long the datalog data is kept
-    * add way to analyze, integrate, differentiate, etc, by selecting a range of time (more on asana)
-    * make datalogs reorderable, colour selectable; this could be done through config, but should also be doable directly through interface
-      (see it, change it; rather than hunting in a config somewhere)
-
+    * add notifications to the db so that they persist across restarts.  Maybe make a systemdb for users, notifications, and anything else
     * what about making notify a static module so that it's easily accessible
     * add a system of notifications/messages that's global to the system but specific to a user (ie. can leave messages for individual users)
     * add alarms, such that you can notify that something's gone wrong.  Like if a mysensors node hasn't sent any data and hasn't responded to
       pings for more than 30 minutes, you raise an alarm so I can fix it in a timely manner
-    * make it configurable to send an email for serious alarms
     * need a way to send a ping to a mysensors node when it hasn't responeded, so we can *accurately* know when a sensor is not responding
     * there still isn't a clean way of notifying that a medialib update on another machine (remote medialib) has finished updating.  It only
       works locally but notifications aren't sent to all the other machines
@@ -35,9 +29,19 @@
     * make backups of settings file when saving, or possible add a revision control type system to it
     * make sure it creates a sane default settings file if the config dir doesn't have a file already
     * add run and config instructions to the readme (so that somebody could actually run the thing)
-    * fix pyhtml to ignore tags in comments
 
 
+    * add zoom and pan control to vertical scale too?
+    * add ability to have live trends
+    * fix datalog to allow variable periods per datalog (right now it's always 60 seconds)
+    * add optional limits to how long the datalog data is kept
+    * add way to analyze, integrate, differentiate, etc, by selecting a range of time (more on asana)
+    * make datalogs reorderable, colour selectable; this could be done through config, but should also be doable directly through interface
+      (see it, change it; rather than hunting in a config somewhere)
+
+
+    * a common feature is to use mqtt through websockets, so it can be directly connected to the browser/client to get push updates. There
+      are already some javascript client libraries.  Might even be possible to have an off the shelf mqtt broker, tied into nerve
     * you could run the sensors handling and collection using a different process on the panther, running in the background, with the
       webserver/controllers being in the main process that vlc is controlled through.  It should be possible with symlinks to add all
       the sensor process's data to local references.  You may want to add/improve another protocol for data transfer rather than HTTP/POST
@@ -51,8 +55,10 @@
     * add publish/subscribe to things like connect module, irc module etc
     * make a separate 'actions' module, like irremote, which can take ir codes, or button presses, or any other condition, and run associated
       code.  At this point, I guess this is just an objnode which subscribes to an event, but I need a nice way of setting them up, like irremote
+    * fix pyhtml to ignore tags in comments
 
-    * add support for sending ir codes with irremote
+    * add support for sending ir codes with irremote. It should use the irremote device, with a setting for target, and rgbnode needs to accept
+      the colon separated code, or irremote must send a space separated code
     * add a description field to each mysensors node so it can be labelled (ie. which relay switch is which)
     * add a morse code device of some sorts, which could be used by notify or by anything, to encode/decode/play/etc morse code
     * add power consumption measurement
@@ -108,12 +114,6 @@
 
   Modules:
 
-    * make sure when loading config with saved module data that it gets used
-    * what if you had a class in __init__.py that could be instantiated to get the module definition, rather than having a get_config_data
-      function
-    * there needs to be a way to convert a normal module into a Module object if it contains 'get_config_data'...  Right now, only modules
-      that have config data in the settings file get created as Module objects, and the rest are just regular modules
-
     * you need to address the modules system as it's currently implemented. the issue of config data would be the same if tasks were objnodes
     * you kinda need a way to organize modules into subdirectories, so these types of modules don't clutter the system
 
@@ -138,14 +138,9 @@
 
     * should it be allowed to have special arguments passed to nerve.query() so that an http request can have options specified?  It will conflict
       with the kwargs, unfortunately.  Could there be a special way of refering to them?  They would have to be removed before encoding the query.
-    * make make_object automatically get the typeinfo, and/or make it a static module function instead of a class method
     * should multiquery/notify use get_object/keys_queries+keys_children?  Should it selectively recurse or always recurse?  How should a subobject
       be allowed to override that behaviour
-    * fix query() to do something consistent with the arguments passed to it when for an HTTP request in particular.
 
-    * implement symbolic link style redirect.  It has to be really versitile...  Right now it doesn't work with remote references because
-      it implements the getattr, so it has to be able to reference a real object.  It's possible to create a special redirect object though,
-      that's returned when trying to get any subobject from a SymbolicLink object, or AliasObject??
     * re-evaluate use of getattr for getting objects on ObjectNode and stuff... does it cause too many potential conflicts? or does
       it simplify objects such as Main where attributes are directly on the object but should also be accessible through the ObjectNode
       system

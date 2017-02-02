@@ -8,7 +8,7 @@ import time
 
 
 _event_listeners = { }
-allowed_subscribe = re.compile(r"^([^/#]+)(|/[+]|/[^/$#]+)*(|/#)*$")        # this doesn't allow '#' on its own
+allowed_subscribe = re.compile(r"^#$|^([^/#]+)(|/[+]|/[^/$#]+)*(|/#)*$")
 allowed_publish = re.compile(r"^([^/#]+)(|/[^/$#]+)*$")
 
 def subscribe(topic, action, label='', **eventmask):

@@ -8,6 +8,7 @@ import time
 import requests
 import json
 
+from ..devices import MediaLibDevice
 from ..tasks import MediaLibUpdater
 
 
@@ -67,6 +68,12 @@ class YoutubePlaylistUpdater (MediaLibUpdater):
     def hash_video(self, meta):
         url = 'http://www.youtube.com/watch?v=%s' % (meta['encrypted_id'],)
 
+        rows = list(self.db.get('media', 'id,last_modified,tags', self.db.inline_expr('filename', url)))
+        if len(rows) > 0:
+            tags = MediaLibDevice.join_tags(set(MediaLibDevice.split_tags(meta['keywords']) + MediaLibDevice.split_tags(rows[0][2])))
+        else:
+            tags = meta['keywords']
+
         parts = meta['title'].split("-", 1)
         if len(parts) < 2:
             artist = ''
@@ -74,6 +81,7 @@ class YoutubePlaylistUpdater (MediaLibUpdater):
         else:
             artist = parts[0].strip()
             title = parts[1].strip()
+
         data = {
             'filename' : url,
             'rootlen' : 0,
@@ -82,14 +90,13 @@ class YoutubePlaylistUpdater (MediaLibUpdater):
             'album' : 'YouTube',
             'track_num' : '',
             'genre' : '',
-            'tags' : meta['keywords'],
+            'tags': tags,
             'media_type' : 'video',
             'duration' : float(meta['length_seconds']),
             'file_size' : '',
             'last_modified' : meta['time_created'],
         }
 
-        rows = list(self.db.get('media', 'id,last_modified', self.db.inline_expr('filename', url)))
         if len(rows) > 0 and rows[0][1] >= meta['time_created']:
             #nerve.log("Skipping " + url)
             return data
@@ -101,6 +108,7 @@ class YoutubePlaylistUpdater (MediaLibUpdater):
             nerve.log(u"Updating " + url)
             self.db.where('id', rows[0][0])
             self.db.update('media', data)
+
         return data
 
  

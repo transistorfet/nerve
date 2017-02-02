@@ -5,11 +5,7 @@ from .controllers import PagesController
 from .views.block import BlockView
 from .views.page import PageView
 
-
-#def init():
-#    pass
-
-import nerve
+import nerve.modules
 
 class Module (nerve.modules.Module):
     def __init__(self, **config):

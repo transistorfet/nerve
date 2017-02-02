@@ -5,14 +5,7 @@ from .controllers import DatalogController
 from .devices import DatalogDevice
 from .tasks import DatalogTask
 
-
-#def init():
-#    DatalogTask().start()
-
-#def get_config_info(config_info):
-#    return config_info
-
-import nerve
+import nerve.modules
 
 class Module (nerve.modules.Module):
     def __init__(self, **config):

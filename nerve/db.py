@@ -45,6 +45,9 @@ class Database (object):
     def add_column(self, table, column, datatype, default=None):
         self.query("ALTER TABLE %s ADD COLUMN %s %s" % (table, column, datatype))
 
+    def last_insert_id(self):
+        return self.dbcon.last_insert_rowid()
+
     def escape(self, text):
         if text is None:
             return ""

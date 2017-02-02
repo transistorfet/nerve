@@ -54,17 +54,18 @@ class DeskClock (nerve.serial.SerialDevice):
         elif line == "B3=0" or line == 'I0=N:A25D07F8':
             self.relay_toggle()
         elif line == "B2=0":
-            nerve.events.publish(self.get_pathname(False) + '/B2', name='B2', value=True)
+            nerve.events.publish(self.get_pathname() + '/B2', name='B2', value=True)
         elif line == "B1=0":
             nerve.query("/devices/player/sort")
         elif line == "B0=0":
             nerve.query("/devices/player/shuffle")
         elif line.startswith('I0=N:A25D'):
             nerve.query("/devices/rgb/key", "0x2" + line[9:11])
+            nerve.events.publish(self.get_pathname() + '/ir', name='ir', value=line[3:])
         elif line.startswith('T0='):
             self.temp = float(line[3:])
             nerve.log('deskclock: ' + str(self.temp) + 'C', logtype='info')
-            nerve.events.publish(self.get_pathname(False) + '/t0', name='t0', value=self.temp)
+            nerve.events.publish(self.get_pathname() + '/t0', name='t0', value=self.temp)
 
 nerve.set_object('/devices/deskclock', DeskClock(file="/dev/ttyACM0", baud=115200))
 

@@ -21,11 +21,14 @@ class NotifyDevice (nerve.Device):
 
 
     def get_child(self, index):
-        nid = int(index)
-        for note in self.notifications:
-            if note['id'] == nid:
-                return note
-        super().get_child(index)
+        try:
+            nid = int(index)
+            for note in self.notifications:
+                if note['id'] == nid:
+                    return note
+        except:
+            pass
+        return super().get_child(index)
 
     def keys_children(self):
         return sorted([ str(note['id']) for note in self.notifications ]) + super().keys_children()

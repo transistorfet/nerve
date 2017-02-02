@@ -28,9 +28,9 @@ class RootNode (nerve.ObjectNode):
     def get_config_info(cls):
         config_info = super().get_config_info()
         config_info.add_default_child('devices', { '__type__': 'objects/ObjectNode' })
-        config_info.add_default_child('events', { '__type__': 'objects/ObjectNode' })
         config_info.add_default_child('modules', { '__type__': 'modules/Module' })
         config_info.add_default_child('servers', { '__type__': 'objects/ObjectNode' })
+        config_info.add_default_child('tasks', { '__type__': 'objects/ObjectNode' })
         return config_info
 
     def del_child(self, index):

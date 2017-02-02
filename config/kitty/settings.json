@@ -36,10 +36,13 @@
                 },
                 "medialib": {
                     "__type__": "medialib/MediaLibDevice"
+                },
+                "notify": {
+                    "__type__": "notify/devices/NotifyDevice"
                 }
             }
         },
-        "events": {
+        "tasks": {
             "__children__": {
             },
             "__type__": "objects/ObjectNode"

@@ -24,13 +24,13 @@ class IRRemoteDevice (nerve.Device):
             self.set_object(row[0], nerve.ObjectNode.make_object(config['__type__'], config))
 
         for topic in self.get_setting('subscriptions'):
-            nerve.events.subscribe(topic, label=self.get_pathname(False), action=self.on_receive_code)
+            nerve.events.subscribe(topic, label=self.get_pathname(), action=self.on_receive_code)
 
     @classmethod
     def get_config_info(cls):
         config_info = super().get_config_info()
         config_info.add_setting('max_history', "Max Code History", default=20)
-        config_info.add_setting('subscriptions', "Subscriptions", default=[], itemtype='str')
+        config_info.add_setting('subscriptions', "Subscriptions", default=['devices/rgb/ir'], itemtype='str')
         return config_info
 
     def save_object_children(self):
@@ -147,6 +147,7 @@ class IRRemoteDevice (nerve.Device):
             nerve.log("received invalid IR code " + code)
             return
 
+        nerve.log("received code " + code, logtype='info')
         self.add_code_to_history(code)
         (_, remote_name, button_name) = self.get_button_name(code)
 
@@ -157,10 +158,10 @@ class IRRemoteDevice (nerve.Device):
                 pass
 
             # TODO isn't this just for legacy support?  We can remove this
-            try:
-                return nerve.query('/events/ir/irrecv/' + code)
-            except AttributeError:
-                nerve.log("No action set for IR code " + code)
+            #try:
+            #    return nerve.query('/events/ir/irrecv/' + code)
+            #except AttributeError:
+            #    nerve.log("No action set for IR code " + code)
 
     def get_action(self, code):
         self.db.select("id, object")
