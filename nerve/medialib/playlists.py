@@ -46,7 +46,9 @@ class Playlist (object):
                 if line and line.startswith('#'):
                     if line.startswith('#EXTINF:'):
                         (duration, info) = line[8:].split(', ', 1)
-                        (artist, title) = info.split(' - ', 1)
+                        parts = info.split(' - ', 1)
+                        artist = parts[0] if len(parts) > 1 else ''
+                        title = parts[1] if len(parts) > 1 else parts[0]
                 elif line != '':
                     media = {
                         'artist' : artist,

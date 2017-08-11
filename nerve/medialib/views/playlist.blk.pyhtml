@@ -18,6 +18,10 @@
         <button type="submit" class="pl_shuffle">Shuffle</button>
         &nbsp;&nbsp;<button class="pl_current">Current</button>
     </div>
+
+    <div>
+        <button type="update" class="pl_update">Update</button>
+    </div>
 </div>
 
 <div class="medialib-playlist">

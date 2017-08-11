@@ -13,6 +13,7 @@
         <a href="/medialib/search_youtube">YouTube</a>
         <a href="/medialib/search?mode=filename&order=last_modified&recent=312&media_type=video&tags=!watched">Videos</a>
         <a href="/medialib/search?mode=filename&order=filename&recent=156&media_type=video&tags=!watched">To Watch</a>
+        <a href="/medialib/search?mode=filename&order=filename&tags=helena">H</a>
     </div>
 
     <div class="medialib-links">

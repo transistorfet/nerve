@@ -9,6 +9,7 @@ import urllib
 import urllib.parse
 
 import json
+import os.path
 import requests
 
 
@@ -157,6 +158,22 @@ class MediaLibController (nerve.http.Controller):
                 self.load_json_view({ 'notice' : "Playlist deleted successfully" })
                 return
         self.load_json_view({ 'error' : "That playlist no longer exists" })
+
+    @nerve.public
+    def update_playlist(self, request):
+        medialib = nerve.get_object(self.get_setting('device'))
+        playlist = nerve.medialib.Playlist(request.arg('playlist'))
+
+        media_list = [ ]
+        for media in playlist.get_list():
+            if not os.path.exists(media['filename']) and media['filename'].startswith('/'):
+                selected = next((m for m in medialib.get_media_query(media) if int(m['duration']) == int(media['duration'])), None)
+                if selected:
+                    nerve.log("Updating playlist {} with {}: {} - {} ({})".format(request.arg('playlist'), selected['id'], selected['artist'], selected['title'], selected['filename']), logtype='info')
+                    media['filename'] = selected['filename']
+            media_list.append(media)
+
+        playlist.set_list(media_list)
 
     @nerve.public
     def add_media_items(self, request):

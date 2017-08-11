@@ -123,6 +123,8 @@ class MediaLibDevice (nerve.Device):
         if 'album' in criteria:
             self.db.where('album', criteria['album'])
             self.db.where_not('album', '')
+        if 'title' in criteria:
+            self.db.where('title', criteria['title'])
         if 'id' in criteria:
             self.db.where('id', criteria['id'])
         self.db.order_by('artist,album,title ASC')

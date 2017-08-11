@@ -8,6 +8,7 @@
                     "medialib_dirs": [
                         "/media/media/Torrents",
                         "/media/media/Music",
+                        "/media/media/Unsorted/Music",
                         "/media/media/Comedy",
                         "/media/media/Video"
                     ],
@@ -33,6 +34,10 @@
                 },
                 "player": {
                     "__type__": "player/xmms2cli/Xmms2CLI"
+                },
+                "playlists": {
+                    "__children__": {},
+                    "__type__": "medialib/devices/PlaylistsDevice"
                 },
                 "medialib": {
                     "__type__": "medialib/MediaLibDevice"

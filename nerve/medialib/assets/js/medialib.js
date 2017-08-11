@@ -80,6 +80,11 @@ function MediaLibPlaylist(element)
         $.post('/query/player/load_playlist', { 'url' : $('#select-playlist').val() }, function (response) { }, 'json');
     }
 
+    that.update_playlist = function ()
+    {
+        $.post('/medialib/update_playlist', { 'playlist' : $('#select-playlist').val() }, that.update, 'html');
+    }
+
     $('#select-playlist').change(that.update);
     that.update();
 
@@ -89,6 +94,7 @@ function MediaLibPlaylist(element)
     //$('.pl_create').click(that.create_playlist);
     $('.pl_delete').click(that.delete_playlist);
     $('.pl_load').click(that.load_playlist);
+    $('.pl_update').click(that.update_playlist);
 
     $('.pl_current').click(function() {
         $('html, body').animate({ scrollTop: $('.nerve-highlight').offset().top - 100 }, 500);
