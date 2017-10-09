@@ -9,7 +9,7 @@ import requests
 import json
 
 from ..devices import MediaLibDevice
-from ..tasks import MediaLibUpdater
+from ..threads import MediaLibUpdater
 
 
 class YoutubePlaylistUpdater (MediaLibUpdater):

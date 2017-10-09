@@ -10,9 +10,9 @@ from gi.repository import GObject, Gst
 from .devices import GstreamerPipeline
 
 
-class GObjectTask (nerve.Task):
+class GObjectThread (nerve.Thread):
     def __init__(self):
-        super().__init__(name='GobjectTask')
+        super().__init__(name='GobjectThread')
 
         GObject.threads_init()
         Gst.init(None)

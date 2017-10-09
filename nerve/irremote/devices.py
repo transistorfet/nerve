@@ -78,7 +78,7 @@ class IRRemoteDevice (nerve.Device):
         self.db.delete('codenames')
 
     def get_recent_codes(self, last_update=0, wait=0):
-        while not nerve.Task.quit:
+        while not nerve.Thread.quit:
             if wait <= 0 or (len(self.code_history) > 0 and self.code_history[0][0] > last_update):
                 break
             wait -= 1

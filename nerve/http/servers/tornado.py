@@ -21,7 +21,7 @@ class TornadoWSGIServer (nerve.Server):
         self.password = self.get_setting("password")
         self.port = self.get_setting('port')
 
-        self.thread = nerve.Task('TornadoWSGIServerTask:' + str(self.port), target=self.run)
+        self.thread = nerve.Thread('TornadoWSGIServerThread:' + str(self.port), target=self.run)
         self.thread.daemon = True
         self.thread.start()
 

@@ -16,7 +16,7 @@ class UDPServer (nerve.Server):
         super().__init__(**config)
 
         port = self.get_setting('port')
-        self.thread = nerve.Task('UDPServerTask:' + str(port), target=self.run)
+        self.thread = nerve.Thread('UDPServerThread:' + str(port), target=self.run)
         self.thread.daemon = True
         self.thread.start()
 

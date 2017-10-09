@@ -44,7 +44,7 @@ class HTTPServer (nerve.Server, socketserver.ThreadingMixIn, http.server.HTTPSer
         sa = self.socket.getsockname()
         nerve.log('starting http(s) on port ' + str(sa[1]))
 
-        self.thread = nerve.Task('HTTPServerTask', target=self.serve_forever)
+        self.thread = nerve.Thread('HTTPServerThread', target=self.serve_forever)
         self.thread.daemon = True
         self.thread.start()
 

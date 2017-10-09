@@ -63,7 +63,7 @@ class IRCClient (nerve.Device):
         self.channels = { }
         self.lastcontact = time.time()
 
-        self.thread = IRCClientTask(self)
+        self.thread = IRCClientThread(self)
         self.thread.start()
 
     def connect(self, hostname, port):
@@ -191,9 +191,9 @@ class IRCClient (nerve.Device):
         pass
 
 
-class IRCClientTask (nerve.Task):
+class IRCClientThread (nerve.Thread):
     def __init__(self, client):
-        super().__init__('IRCClientTask')
+        super().__init__('IRCClientThread')
         self.client = client
 
     def connect_any(self):

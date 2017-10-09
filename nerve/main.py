@@ -125,7 +125,7 @@ class Main (RootNode):
             self.shutdown()
 
         try:
-            nerve.Task.start_all()
+            nerve.Thread.start_all()
 
             #print (dir(nerve))
             while not self.stopflag.wait(0.5):
@@ -147,8 +147,8 @@ class Main (RootNode):
     def shutdown(self):
         self.stopflag.set()
         nerve.log("shutting down all threads")
-        nerve.Task.stop_all()
-        nerve.Task.join_all()
+        nerve.Thread.stop_all()
+        nerve.Thread.join_all()
         os.system('stty sane')
         sys.exit(self.exitcode)
 
@@ -308,7 +308,7 @@ class WebsocketConnection (websocket.WebSocketApp):
         self.seq = 0
         self.queue = [ ]
         self.connected = False
-        self.thread = nerve.Task('WebsocketConnectionTask', target=self.run_forever)
+        self.thread = nerve.Thread('WebsocketConnectionThread', target=self.run_forever)
         self.thread.daemon = True
         self.thread.start()
 

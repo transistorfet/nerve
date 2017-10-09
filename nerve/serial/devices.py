@@ -20,7 +20,7 @@ class SerialDevice (nerve.Device):
         if not self.get_setting('enabled'):
             return
 
-        self.thread = nerve.Task('SerialTask', self.run)
+        self.thread = nerve.Thread('SerialThread', self.run)
 
         if sys.platform == 'win32':
             self.thread.daemon = True

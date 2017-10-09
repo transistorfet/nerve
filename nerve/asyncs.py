@@ -67,7 +67,7 @@ class PyCodeAsyncTask (AsyncTask, nerve.PyCodeQuery):
         self._compiledfunc(self, *args, **kwargs)
 
 
-class AsyncTaskThreadPool (nerve.Task):
+class AsyncTaskThreadPool (nerve.Thread):
     _singleton = None
 
     def __new__(cls):

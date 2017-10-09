@@ -14,7 +14,7 @@ import threading
 #import mutagen
 import subprocess
 
-from ..tasks import MediaLibUpdater
+from ..threads import MediaLibUpdater
 
 skiptypes = [
     'audio/x-mpegurl'

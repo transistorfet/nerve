@@ -3,14 +3,14 @@
 
 from .controllers import DatalogController
 from .devices import DatalogDevice
-from .tasks import DatalogTask
+from .threads import DatalogThread
 
 import nerve.modules
 
 class Module (nerve.modules.Module):
     def __init__(self, **config):
         super().__init__(**config)
-        DatalogTask().start()
+        DatalogThread().start()
 
     @classmethod
     def get_config_info(cls):

@@ -17,7 +17,7 @@ class Xmms2 (nerve.Device):
         self.title = ""
         self.reply = None
 
-        self.thread = nerve.Task('Xmms2Task', self.run)
+        self.thread = nerve.Thread('Xmms2Thread', self.run)
         self.thread.start()
 
     def run(self):

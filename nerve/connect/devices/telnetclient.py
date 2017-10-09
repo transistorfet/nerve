@@ -34,7 +34,7 @@ class TelnetClient (nerve.Device, nerve.connect.Connection):
         if not self.get_child('event_message'):
             self.set_child('event_message', nerve.ObjectNode.make_object('objects/ObjectNode', dict()))
 
-        self.thread = TelnetClientTask(self)
+        self.thread = TelnetClientThread(self)
         self.thread.start()
 
     def connect(self, hostname, port):
@@ -86,9 +86,9 @@ class TelnetClient (nerve.Device, nerve.connect.Connection):
         return self.hostname + ":" + str(self.port)
 
 
-class TelnetClientTask (nerve.Task):
+class TelnetClientThread (nerve.Thread):
     def __init__(self, client):
-        super().__init__('TelnetClientTask')
+        super().__init__('TelnetClientThread')
         self.client = client
 
     def connect_any(self):

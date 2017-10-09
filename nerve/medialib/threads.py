@@ -14,7 +14,7 @@ def start_updater(updaters):
     global updater_task
     if updater_task:
         return
-    updater_task = MediaLibUpdaterTask()
+    updater_task = MediaLibUpdaterThread()
     #updater_task.add('files', MediaFilesUpdater())
     #updater_task.add('youtube', YoutubePlaylistUpdater())
     for updater in updaters:
@@ -47,9 +47,9 @@ class MediaLibUpdater (object):
         raise NotImplementedError
 
 
-class MediaLibUpdaterTask (nerve.Task):
+class MediaLibUpdaterThread (nerve.Thread):
     def __init__(self):
-        super().__init__("MediaLibUpdaterTask")
+        super().__init__("MediaLibUpdaterThread")
         self.updaters = { }
         self.interrupt = threading.Event()
 

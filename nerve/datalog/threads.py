@@ -6,9 +6,9 @@ import nerve
 from .devices import DatalogDevice
 
 
-class DatalogTask (nerve.Task):
+class DatalogThread (nerve.Thread):
     def __init__(self):
-        super().__init__("DatalogTask")
+        super().__init__("DatalogThread")
 
     def run(self):
         while not self.stopflag.wait(60):

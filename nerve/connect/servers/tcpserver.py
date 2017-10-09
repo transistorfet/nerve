@@ -16,7 +16,7 @@ class TCPServer (nerve.Server):
         super().__init__(**config)
 
         port = self.get_setting('port')
-        self.thread = nerve.Task('TCPServerTask:' + str(port), self.run)
+        self.thread = nerve.Thread('TCPServerThread:' + str(port), self.run)
         self.thread.daemon = True
         self.thread.start()
 
@@ -70,7 +70,7 @@ class TCPConnection (nerve.connect.Connection):
         (self.hostname, self.port) = addr
         self.rfile = self.socket.makefile(mode='r', encoding='utf-8', newline='\n')
 
-        self.thread = nerve.Task('TCPConnectionTask:' + self.hostname + ':' + str(self.port), self.run)
+        self.thread = nerve.Thread('TCPConnectionThread:' + self.hostname + ':' + str(self.port), self.run)
         self.thread.daemon = True
         self.thread.start()
 

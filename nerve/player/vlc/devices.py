@@ -32,7 +32,7 @@ class VLCHTTP (nerve.Device):
         content = nerve.files.load('player-states.json')
         self.saved_states = json.loads(content) if content else [ ]
 
-        self.thread = nerve.Task('VLCTask', self.run)
+        self.thread = nerve.Thread('VLCThread', self.run)
         self.thread.start()
 
     def toggle(self):

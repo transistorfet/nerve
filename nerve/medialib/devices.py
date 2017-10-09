@@ -9,7 +9,7 @@ import shlex
 import random
 import urllib.parse
 
-from . import tasks
+from . import threads
 from .playlists import Playlist
 
 
@@ -27,10 +27,10 @@ class MediaLibDevice (nerve.Device):
         self.db.create_table('media', "id INTEGER PRIMARY KEY, filename TEXT, rootlen INTEGER, artist TEXT, album TEXT, title TEXT, track_num NUMERIC, genre TEXT, tags TEXT, duration NUMERIC, media_type TEXT, mimetype TEXT, file_hash TEXT, file_size INTEGER, last_modified NUMERIC")
         self.db.create_table('info', "name TEXT PRIMARY KEY, value TEXT")
 
-        tasks.start_updater([ 'medialib/updaters/files/MediaFilesUpdater', 'medialib/updaters/youtube/YoutubePlaylistUpdater' ])
+        threads.start_updater([ 'medialib/updaters/files/MediaFilesUpdater', 'medialib/updaters/youtube/YoutubePlaylistUpdater' ])
 
     def rehash(self):
-        tasks.run_updater()
+        threads.run_updater()
 
     def search(self, mode, order, offset, limit, search=None, recent=None, media_type=None, tags=None):
         if mode == 'artist':

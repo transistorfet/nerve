@@ -3,9 +3,9 @@
 
 
 def init():
-    from .tasks import GObjectTask
+    from .threads import GObjectThread
 
-    thread = GObjectTask()
+    thread = GObjectThread()
     thread.start()
 
 

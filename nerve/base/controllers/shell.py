@@ -181,7 +181,7 @@ class ShellController (nerve.Controller, nerve.connect.ControllerMixIn):
         self.print(str(nerve.users.thread_count()))
 
     def cmd_thread_list(self, args):
-        for thread in nerve.Task.threads:
+        for thread in nerve.Thread.threads:
             self.print('<{0}>'.format(thread.name))
 
     def cmd_su(self, args):

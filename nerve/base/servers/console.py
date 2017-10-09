@@ -12,7 +12,7 @@ import traceback
 class Console (nerve.Server):
     def __init__(self, **config):
         super().__init__(**config)
-        self.thread = nerve.Task('ConsoleTask', target=self.run)
+        self.thread = nerve.Thread('ConsoleThread', target=self.run)
         self.thread.daemon = True
         self.thread.start()
 
