@@ -3,6 +3,7 @@
 
 import nerve
 
+import json
 import os.path
 import traceback
 
@@ -22,12 +23,14 @@ class ControllerMixIn (object):
 
     def handle_connection(self, request):
         self.conn = request.source
+        self.protocol = request.get_header('Sec-Websocket-Protocol', 'text/plain')
+        print(self.protocol.split(';')[0])
         self.on_connect()
         #while not self.conn.stopflag.is_set():
         #while not self.thread.stopflag.is_set():
         while True:
             try:
-                msg = self.conn.read_message()
+                msg = self.conn.read_message(mimetype=self.protocol.split(';')[0])
                 if not msg:
                     break
                 self.on_message(msg)
@@ -51,11 +54,17 @@ class ControllerMixIn (object):
 
 
 class Message (object):
-    def __init__(self, text, mimetype='text/plain', **kwargs):
+    def __init__(self, mimetype='text/plain', text=None, data=None, **kwargs):
         for name in kwargs:
             setattr(self, kwargs[name])
-        self.text = text
         self.mimetype = mimetype
+        self.text = text
+        self.data = data
+        if mimetype == 'application/json':
+            if text:
+                self.data = json.loads(text)
+            elif data:
+                self.text = json.dumps(data)
 
 
 class Connection (object):
@@ -68,7 +77,7 @@ class Connection (object):
         raise NotImplementedError
     """
 
-    def read_message(self):
+    def read_message(self, mimetype='text/plain'):
         raise NotImplementedError
 
     def send_message(self, msg):    # (self, text, params=dict())

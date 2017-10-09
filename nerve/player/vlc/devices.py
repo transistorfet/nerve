@@ -289,6 +289,7 @@ class VLCHTTP (nerve.Device):
                         if 'current' in song:
                             self.current_pos = i
                             break
+                    nerve.events.publish(topic=self.get_pathname() + '/getsong', type='change', value=self._get_title(), pos=self.current_pos)
 
             except requests.ConnectionError:
                 nerve.log("Error connecting to vlc http server...", logtype='error')

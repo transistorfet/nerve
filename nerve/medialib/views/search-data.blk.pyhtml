@@ -35,12 +35,13 @@
         <div id="medialib-search-results" class="medialib-list">
             <%
             has_artist = True if 'artist' in media_list[0] else False
-            has_album = True if 'album' in media_list[0] else False
-            has_genre = True if 'genre' in media_list[0] else False
             has_title = True if 'title' in media_list[0] else False
             has_duration = True if 'duration' in media_list[0] else False
-            has_filename = True if 'filename' in media_list[0] else False
+            has_album = True if 'album' in media_list[0] else False
+            has_count = True if 'count(id)' in media_list[0] else False
             has_track_num = True if 'track_num' in media_list[0] else False
+            has_genre = True if 'genre' in media_list[0] else False
+            has_filename = True if 'filename' in media_list[0] else False
             has_tags = True if 'tags' in media_list[0] else False
 
             def format_duration(duration):
@@ -65,6 +66,9 @@
                 <% if has_album: %>
                     <th>Album</th>
                 <% end %>
+                <% if has_count: %>
+                    <th>Σ</th>
+                <% end %>
                 <% if has_track_num: %>
                     <th>#</th>
                 <% end %>
@@ -85,7 +89,7 @@
                         if mode == 'artist':
                             dataval = 'artist=' + urlencode(media['artist'])
                         elif mode == 'album' or mode == 'genre':
-                            dataval = 'artist=' + urlencode(media['artist']) + '&album=' + urlencode(media['album'])
+                            dataval = 'album=' + urlencode(media['album'])
                         elif mode == 'title' or mode == 'filename':
                             dataval = 'id=' + str(media['id'])
                         end
@@ -102,6 +106,9 @@
                         <% end %>
                         <% if has_album: %>
                             <td><%= media['album'] %></td>
+                        <% end %>
+                        <% if has_count: %>
+                            <td><%= media['count(id)'] %></td>
                         <% end %>
                         <% if has_track_num: %>
                             <td><%= media['track_num'] %></td>

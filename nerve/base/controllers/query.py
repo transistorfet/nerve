@@ -30,7 +30,7 @@ class QueryController (nerve.Controller):
         self.load_json_view(result)
 
     def execute_query(self, querystr, **args):
-        if querystr[0] != '/' and not querystr.startswith('http:'):
+        if querystr[0] != '/' and '://' not in querystr:
             querystr = self.get_setting('root') + '/' + querystr
         return nerve.query(querystr, **args)
 

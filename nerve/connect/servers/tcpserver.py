@@ -74,13 +74,13 @@ class TCPConnection (nerve.connect.Connection):
         self.thread.daemon = True
         self.thread.start()
 
-    def read_message(self):
+    def read_message(self, mimetype='text/plain'):
         line = self.rfile.readline()
         if not line:
             return None
         line = line.strip('\n')
         nerve.log("RECV <- " + str(self.hostname) + ":" + str(self.port) + ": " + line)
-        return nerve.connect.Message(text=line)
+        return nerve.connect.Message(text=line, mimetype=mimetype)
 
     def send_message(self, msg):
         #nerve.log("SEND -> " + str(self.hostname) + ":" + str(self.port) + ": " + data)

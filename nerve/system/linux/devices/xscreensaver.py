@@ -36,3 +36,7 @@ class ScreenSaverDevice (nerve.Device):
     def demo(self):
         os.system("xscreensaver-command -demo")
 
+    def pause(self, duration=60):
+        self.exit()
+
+

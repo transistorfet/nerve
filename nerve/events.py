@@ -25,14 +25,23 @@ def subscribe(topic, action, label='', **eventmask):
         cur['/'] = [ ]
     cur['/'].append( (label, eventmask, action) )
 
-    publish('$SYS/subscribe', subtopic=topic, action=action)
+    publish('$SYS/subscribe', subtopic=topic, label=label, action=action)
+
+    """
+    # TODO for debugging
+    import json
+    def json_default(obj):
+        return str(obj)
+    print(json.dumps(_event_listeners, sort_keys=True, indent=4, default=json_default))
+    """
 
 
-def unsubscribe(topic, action=None, label=''):
-    if not allowed_subscribe.match(topic):
+# TODO this is an old version, to be removed
+def unsubscribe_old(topic, action=None, label=''):
+    if topic and not allowed_subscribe.match(topic):
         raise Exception("invalid event topic in unsubscribe: " + topic)
 
-    publish('$SYS/unsubscribe', subtopic=topic, action=action)
+    publish('$SYS/unsubscribe', subtopic=topic, label=label, action=action)
 
     parts = topic.split('/')
     levels = [ _event_listeners ]
@@ -45,7 +54,7 @@ def unsubscribe(topic, action=None, label=''):
         return False
     for i in range(0, len(levels[-1]['/'])):
         (listlabel, eventmask, callback) = levels[-1]['/'][i]
-        if (label and listlabel == label) or (action and action == callback):
+        if (label and label == listlabel) or (action and action == callback):
             del levels[-1]['/'][i]
             # TODO you should probably delete all entries instead of just one
             break
@@ -55,6 +64,50 @@ def unsubscribe(topic, action=None, label=''):
     for i in range(len(levels) - 1, -1, -1):
         if len(levels[i]) <= 0 and i >= 1:
             del levels[i - 1][parts[i - 1]]
+
+# TODO this version doesn't publish the unsubscribed... and that might be a lot of work to do that for every single topic, rather than the wildcard
+def unsubscribe(topic=None, action=None, label='', base=_event_listeners):
+    if topic and not allowed_subscribe.match(topic):
+        raise Exception("invalid event topic in unsubscribe: " + topic)
+
+    publish('$SYS/unsubscribe', subtopic=topic, label=label, action=action)
+    return _unsubscribe(topic, action, label, _event_listeners)
+
+    """
+    _unsubscribe(topic, action, label, _event_listeners)
+    # TODO for debugging
+    import json
+    def json_default(obj):
+        return str(obj)
+    print(json.dumps(_event_listeners, sort_keys=True, indent=4, default=json_default))
+    """
+
+def _unsubscribe(topic=None, action=None, label='', base=_event_listeners):
+    if topic:
+        parts = topic.split('/', 1)
+        if parts[0] in base:
+            return _unsubscribe(parts[1] if len(parts) > 1 else None, action, label, base[parts[0]])
+        return 0
+    else:
+        count = 0
+        to_delete = []
+        for name in base:
+            if name != '/':
+                count += _unsubscribe(None, action, label, base[name])
+            else:
+                for i in range(0, len(base['/'])):
+                    (listlabel, eventmask, callback) = base['/'][i]
+                    if (not label or label == listlabel) and (not action or action == callback):
+                        del base['/'][i]
+                        count += 1
+                        i -= 1      # hack the index, given that we removed an element
+
+            if len(base[name]) <= 0:
+                to_delete.append(name)
+
+        for name in to_delete:
+            del base[name]
+        return count
 
 
 def publish(topic, **event):
@@ -135,4 +188,15 @@ class EventListener (nerve.ObjectNode):
     def __call__(self, event):
         self.query('*', event)
 
+
+"""
+def thing():
+    print("Hey")
+subscribe('devices/coolthing', thing, label='doodad')
+subscribe('devices/+/stuff', thing, label='crazy')
+#unsubscribe_all('', label='doodad')
+unsubscribe_all('devices', label='doodad')
+unsubscribe_all('', action=thing)
+#subscribe('devices/+', thing, label='ended')
+"""
 

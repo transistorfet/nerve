@@ -80,7 +80,7 @@ class ShellController (nerve.Controller, nerve.connect.ControllerMixIn):
 
     def cmd_query(self, args):
         ref = args.pop(0)
-        if ref.startswith('/') or ref.startswith('http:'):
+        if ref.startswith('/') or '://' in ref:
             self.print(nerve.query(ref, *args))
         else:
             self.print(nerve.query(self.pwd + "/" + ref, *args))

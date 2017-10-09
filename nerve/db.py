@@ -88,8 +88,8 @@ class Database (object):
     def where_not_like(self, where, val):
         self.where(where, val, "NOT LIKE")
 
-    def or_where(self, where, val):
-        self.where(where, val, "=", "OR")
+    def or_where(self, where, val, compare='='):
+        self.where(where, val, compare, "OR")
 
     def or_where_not(self, where, val):
         self.where(where, val, "<>", "OR")

@@ -34,15 +34,16 @@ class MediaLibDevice (nerve.Device):
 
     def search(self, mode, order, offset, limit, search=None, recent=None, media_type=None, tags=None):
         if mode == 'artist':
-            self.db.select('artist')
+            self.db.select('artist,count(id)')
             self.db.where_not('artist', '')
             self.db.group_by('artist')
         elif mode == 'album':
-            self.db.select('artist,album')
+            self.db.select('artist,album,count(id)')
             self.db.where_not('album', '')
-            self.db.group_by('artist,album')
+            #self.db.group_by('artist,album')
+            self.db.group_by('album')
         elif mode == 'genre':
-            self.db.select('artist,album,genre')
+            self.db.select('artist,album,genre,count(id)')
             self.db.group_by('artist,album')
         elif mode == 'title':
             self.db.select('artist,album,title,track_num,duration,tags,id')
@@ -52,13 +53,20 @@ class MediaLibDevice (nerve.Device):
             return [ ]
 
         if search and len(search) > 0:
-            #whereorder = order
-            #if order == 'random':
-            #    whereorder = 'title'
-            searchterm = '%' + str(search).replace('*', '%') + '%'
-            self.db.where_like('artist', searchterm)
-            self.db.or_where_like('title', searchterm)
-            self.db.or_where_like('album', searchterm)
+            searchterm = str(search)
+            if searchterm.startswith('!'):
+                op = 'not like'
+                cond = 'AND'
+                searchterm = searchterm[1:]
+            else:
+                op = 'like'
+                cond = 'OR'
+
+            searchterm = '%' + searchterm.replace('*', '%') + '%'
+            self.db.where('artist', searchterm, op, cond)
+            self.db.where('title', searchterm, op, cond)
+            self.db.where('album', searchterm, op, cond)
+            self.db.where('filename', searchterm, op, cond)
 
         if tags and len(tags) > 0:
             tags = shlex.split(tags)

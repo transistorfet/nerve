@@ -372,10 +372,14 @@
                         "/media/media/Video"
                     ],
                     "Dignore_dirs": [
-			"/media/media/Torrents/zz Incomplete zz"
+			"/media/media/Torrents/zz Incomplete zz",
+			"/media/media/Torrents/zz Seed Only zz",
+			"/media/media/Unsorted/Music/0000_Duplicates",
+			"/media/media/Unsorted/Music/0000_Don't Like, Wont Keep"
                     ],
-                    "Dyoutube_playlists": [
-                        "FL_VkJGWFV9ZEIv87E-0NM5w"
+                    "youtube_playlists": [
+                        "FL_VkJGWFV9ZEIv87E-0NM5w",
+                        "PLXiV7lYF22oEBB1z2tiQBBli6SJJ1ZZ-T"
                     ]
                 },
                 "pages": {
@@ -398,9 +402,22 @@
                 },
                 "http": {
                     "__children__": {},
+                    "__type__": "http/servers/http/HTTPServer",
                     "username": "",
                     "password": "",
                     "port": 8888,
+                    "controllers": null,
+                    "parent": "/servers/routes"
+                },
+                "wsgi": {
+                    "__children__": {},
+                    "__type__": "http/servers/wsgi/WSGIHandler",
+                    "controllers": null,
+                    "parent": "/servers/routes"
+                },
+                "routes": {
+                    "__children__": {},
+                    "__type__": "core/Server",
                     "controllers": {
                         "__default__": {
                             "__type__": "base/controllers/files/FileController",
@@ -439,7 +456,6 @@
                             "__type__": "base/controllers/shell/ShellController"
                         }
                     },
-                    "__type__": "http/servers/http/HTTPServer",
                     "template": {
                         "__type__": "pages/views/page/PageView",
                         "theme": "dark"
@@ -454,6 +470,17 @@
                         }
                     },
                     "port": 6060
+                },
+                "tornadohttp": {
+                    "__children__": {},
+                    "__type__": "http/servers/tornado/TornadoWSGIServer",
+                    "allow_guest": true,
+                    "controllers": null,
+                    "password": "",
+                    "port": 9000,
+                    "use_usersdb": true,
+                    "username": "",
+                    "gateway": "/servers/wsgi"
                 },
                 "udp": {
                     "__children__": {},

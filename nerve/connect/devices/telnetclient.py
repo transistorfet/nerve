@@ -57,13 +57,14 @@ class TelnetClient (nerve.Device, nerve.connect.Connection):
             self.socket.close()
             self.connected = False
 
-    def read_message(self):
+    def read_message(self, mimetype='text/plain'):
+        # TODO should you check mimetype and die if not text?
         line = self.rfile.readline()
         if not line:
             return None
         line = line.rstrip('\r\n')
         nerve.log(" IN: " + line)
-        return nerve.connect.Message(text=line + '\n')
+        return nerve.connect.Message(text=line + '\n', mimetype=mimetype)
 
     def send_message(self, msg):
         text = msg.text.rstrip()

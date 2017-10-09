@@ -52,8 +52,8 @@ class YoutubePlaylistUpdater (MediaLibUpdater):
                 pl.set_list(playlist)
 
         self.db.insert('info', { 'name' : 'youtube_last_updated', 'value' : str(time.time()) }, replace=True)
-        #nerve.log("Youtube medialib update complete")
-        nerve.query('/devices/notify/send', 'youtube medialib update complete')
+        nerve.log("Youtube medialib update complete")
+        #nerve.query('/devices/notify/send', 'youtube medialib update complete')
 
     def fetch_json(self, list_id):
         url = 'http://www.youtube.com/list_ajax?action_get_list=1&style=json&list=%s' % (list_id,)
@@ -74,7 +74,7 @@ class YoutubePlaylistUpdater (MediaLibUpdater):
         else:
             tags = meta['keywords']
 
-        parts = meta['title'].split("-", 1)
+        parts = meta['title'].split(" - ", 1)
         if len(parts) < 2:
             artist = ''
             title = meta['title']

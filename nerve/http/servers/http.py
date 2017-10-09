@@ -245,7 +245,8 @@ class HTTPRequestHandler (http.server.BaseHTTPRequestHandler):
             conn.websocket_write_message(str(error))
             conn.websocket_write_close(500, repr(error))
 
-        conn.websocket_wait_for_close()
+        if not conn.closed:
+            conn.websocket_wait_for_close()
         return
 
 
@@ -265,22 +266,23 @@ WS_B2_MASKBIT = 0x80
 WS_B2_LENGTH = 0x7f
 
 class WebSocketError (OSError): pass
+class WebSocketClose (Exception): pass
 
 
 class WebSocketConnection (nerve.connect.Connection):
     def __init__(self, rfile, wfile):
         self.rfile = rfile
         self.wfile = wfile
+        self.closed = False
 
-    def read_message(self):
-        data = self.websocket_read_message()
-        if not data:
+    def read_message(self, mimetype='text/plain'):
+        (opcode, data) = self.websocket_read_message()
+        if opcode == WS_OP_CLOSE or not data:
             return None
-        return nerve.connect.Message(text=data)
-        #if type(data) == str:
-        #    return nerve.connect.Message(text=data)
-        #else:
-        #    return nerve.connect.Message(text=data, mimetype='application/json', data=json.loads(data.decode('utf-8')))
+        #else if opcode == WS_OP_BIN:
+        #    return nerve.connect.Message(text=data, mimetype='application/json')
+        else:
+            return nerve.connect.Message(text=data, mimetype=mimetype)
 
     def send_message(self, msg):
         #if msg.mimetype == 'application/json':
@@ -309,7 +311,7 @@ class WebSocketConnection (nerve.connect.Connection):
     """
 
     def websocket_read_message(self):
-        data = b''
+        data = bytearray()
         msg_opcode = None
         while True:
             (opcode, payload, headbyte1, headbyte2) = self.websocket_read_frame()
@@ -321,7 +323,9 @@ class WebSocketConnection (nerve.connect.Connection):
 
             if opcode & WS_OP_CONTROL:
                 if opcode == WS_OP_CLOSE:
-                    return None
+                    self.websocket_write_close(1001, "")
+                    self.closed = True
+                    return (opcode, None)
                 elif opcode == WS_OP_PING:
                     nerve.log("websocket: recieved ping from " + ':'.join(self.client_address))
                     self.websocket_write_frame(WS_OP_PONG, payload)
@@ -343,9 +347,9 @@ class WebSocketConnection (nerve.connect.Connection):
                     break
 
         if msg_opcode == WS_OP_TEXT:
-            return data.decode('utf-8')
+            return (msg_opcode, data.decode('utf-8'))
         elif msg_opcode == WS_OP_BIN:
-            return data
+            return (msg_opcode, data)
         raise WebSocketError("websocket: expected non-control opcode, received " + hex(opcode))
 
     def websocket_read_frame(self):
@@ -360,7 +364,8 @@ class WebSocketConnection (nerve.connect.Connection):
 
         payload = self.websocket_read_bytes(length)
         if maskkey:
-            payload = bytes(b ^ maskkey[i % 4] for (i, b) in enumerate(payload))
+            #payload = bytes(b ^ maskkey[i % 4] for (i, b) in enumerate(payload))
+            payload = bytearray(b ^ maskkey[i % 4] for (i, b) in enumerate(payload))
 
         #print("RECV: " + hex(headbyte1) + " " + hex(headbyte2) + " " + str(payload))
         return (opcode, payload, headbyte1, headbyte2)
@@ -373,14 +378,14 @@ class WebSocketConnection (nerve.connect.Connection):
 
     def websocket_write_message(self, data, text=True):
         if text is True:
-            self.websocket_write_frame(WS_OP_TEXT, bytes(data, 'utf-8') if type(data) == str else data)
+            self.websocket_write_frame(WS_OP_TEXT, bytearray(data, 'utf-8') if type(data) == str else data)
         else:
             self.websocket_write_frame(WS_OP_BIN, data)
 
     def websocket_write_frame(self, opcode, data):
         length = len(data)
-        frame = b''
-        frame += struct.pack("!B", WS_B1_FINBIT | (0x0f & opcode))
+        frame = bytearray()
+        frame += struct.pack("!B", WS_B1_FINBIT | opcode)
         if length < 0x7e:
             frame += struct.pack("!B", length)
         elif length < 0xffff:
@@ -415,7 +420,11 @@ class WebSocketConnection (nerve.connect.Connection):
     """
 
     def websocket_write_close(self, statuscode, message):
-        self.websocket_write_frame(WS_OP_CLOSE, struct.pack("!H", statuscode) + bytes(message, 'utf-8'))
+        #self.websocket_write_frame(WS_OP_CLOSE, struct.pack("!H", statuscode) + bytes(message, 'utf-8'))
+        status = bytearray(2)
+        status[0] = (statuscode >> 8) & 0xff
+        status[1] = statuscode & 0xff
+        self.websocket_write_frame(WS_OP_CLOSE, status + bytearray(message, 'utf-8'))
 
     def websocket_wait_for_close(self):
         while True:

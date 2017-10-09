@@ -1,4 +1,7 @@
 
+    * add pulseaudio controls, so you can set them to specific amounts
+    * add a volume 80% button to vlc, if possible
+
     * medialib playlist can have a popup or something, when selecting a song?  That allows you to get info, search, add tags, maybe a ++ button?
 
     * integrate loss of signal into mysensors such that the last value will go to None if the sensor has not been heard from

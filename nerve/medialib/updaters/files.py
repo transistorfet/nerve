@@ -16,6 +16,9 @@ import subprocess
 
 from ..tasks import MediaLibUpdater
 
+skiptypes = [
+    'audio/x-mpegurl'
+]
 
 class MediaFilesUpdater (MediaLibUpdater):
     def __init__(self):
@@ -68,8 +71,8 @@ class MediaFilesUpdater (MediaLibUpdater):
 
         self.check_for_deleted()
         self.db.insert('info', { 'name' : 'last_updated', 'value' : str(time.time()) }, replace=True)
-        #nerve.log("Medialib update complete")
-        nerve.query('/devices/notify/send', 'medialib update complete')
+        nerve.log("Medialib update complete")
+        #nerve.query('/devices/notify/send', 'medialib update complete')
 
     def check_for_deleted(self):
         for libpath in self.path:
@@ -86,7 +89,7 @@ class MediaFilesUpdater (MediaLibUpdater):
     def update_file(self, filename, rootlen):
         (mimetype, encoding) = mimetypes.guess_type(filename)
 
-        if not mimetype or (not mimetype.startswith('audio/') and not mimetype.startswith('video/')):
+        if not mimetype or mimetype in skiptypes or (not mimetype.startswith('audio/') and not mimetype.startswith('video/')):
             return
         (media_type, _, _) = mimetype.partition('/')
 

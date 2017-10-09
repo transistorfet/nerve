@@ -13,10 +13,14 @@
                         "/media/media/Video"
                     ],
                     "ignore_dirs": [
-			"/media/media/Torrents/zz Incomplete zz"
+			"/media/media/Torrents/zz Incomplete zz",
+			"/media/media/Torrents/zz Seed Only zz",
+			"/media/media/Unsorted/Music/0000_Duplicates",
+			"/media/media/Unsorted/Music/0000_Don't Like, Wont Keep"
                     ],
                     "youtube_playlists": [
-                        "FL_VkJGWFV9ZEIv87E-0NM5w"
+                        "FL_VkJGWFV9ZEIv87E-0NM5w",
+                        "PLXiV7lYF22oEBB1z2tiQBBli6SJJ1ZZ-T"
                     ]
                 }
             },
@@ -30,7 +34,8 @@
                 "rgb": {
                     "__type__": "serial/NerveSerialDevice",
                     "baud": 19200,
-                    "file": "/dev/ttyACM1"
+                    "file": "/dev/ttyACM1",
+                    "publish": true
                 },
                 "player": {
                     "__type__": "player/xmms2cli/Xmms2CLI"

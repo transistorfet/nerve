@@ -232,6 +232,12 @@ def query(urlstring, *args, **kwargs):
     return _scheme_handlers[scheme](url, *args, **kwargs)
 
 
+class QueryHandler (object):
+    def debug_result(self, result):
+        rstr = str(result)
+        nerve.log("result: " + ( rstr[:75] + '...' if len(rstr) > 75 else rstr ), logtype='debug')
+
+
 def LocalQueryHandler(_queryurl, *args, **kwargs):
     path = urllib.parse.unquote_plus(_queryurl.path)
     kwargs = nerve.Request.add_query_args(_queryurl, kwargs)
@@ -292,5 +298,82 @@ def HTTPQueryHandler(_queryurl, *args, **kwargs):
 register_scheme('http', HTTPQueryHandler)
 register_scheme('https', HTTPQueryHandler)
 
+
+
+import websocket
+
+class WebsocketConnection (websocket.WebSocketApp):
+    def __init__(self, url):
+        super().__init__(url, subprotocols=['application/json'], on_open=self.on_open, on_close=self.on_close, on_message=self.on_message, on_error=self.on_error)
+        self.seq = 0
+        self.queue = [ ]
+        self.connected = False
+        self.thread = nerve.Task('WebsocketConnectionTask', target=self.run_forever)
+        self.thread.daemon = True
+        self.thread.start()
+
+    def on_open(self, ws):
+        self.connected = True
+        for msg in self.queue:
+            self.send(msg)
+        self.queue = [ ]
+
+    def on_close(self, ws):
+        self.connected = False
+
+    def on_message(self, ws, msg):
+        nerve.log(str(msg), logtype='debug')
+
+    def on_error(self, ws, msg):
+        nerve.log(str(msg), logtype='error')
+
+    def send_query(self, query, **kwargs):
+        self.seq += 1
+        msg = json.dumps({ 'type': 'query', 'query': query, 'args': kwargs, 'id': self.seq })
+        if not self.connected:
+            self.queue.append(msg)
+        else:
+            self.send(msg)
+
+
+class WebsocketQueryHandler (QueryHandler):
+    def __init__(self):
+        self.connlist = { }
+
+    def get_connection(self, url):
+        if url not in self.connlist:
+            # TODO you need to close the connection if it's sat idle for a certain time??
+            self.connlist[url] = WebsocketConnection(url)
+        return self.connlist[url]
+
+    def on_open(self, ws):
+        pass
+
+    def on_message(self, ws, msg):
+        nerve.log(str(msg), logtype='debug')
+
+    def on_error(self, ws, msg):
+        nerve.log(str(msg), logtype='error')
+
+    def __call__(self, _queryurl, *args, **kwargs):
+        args = nerve.Request.put_positional_args(args, kwargs)
+        #urlstring = urllib.parse.urlunparse((_queryurl.scheme, _queryurl.netloc, _queryurl.path, '', '', ''))
+        urlstring = urllib.parse.urlunparse((_queryurl.scheme, _queryurl.netloc, 'socket', '', '', ''))
+
+        nerve.log("executing query: " + urlstring + " " + _queryurl.path + " " + repr(args) + " " + repr(kwargs), logtype='query')
+
+        ws = self.get_connection(urlstring)
+        #self.seq += 1
+        #ws.send(json.dumps({ 'type': 'query', 'query': urlstring, 'args': kwargs, 'id': self.seq }))
+        ws.send_query(_queryurl.path, **kwargs)
+
+    def handle_reply(self, msg):
+        result = msg['result']
+
+        rstr = str(result)
+        nerve.log("result: " + ( rstr[:75] + '...' if len(rstr) > 75 else rstr ), logtype='debug')
+        return result
+
+register_scheme('ws', WebsocketQueryHandler())
 
 

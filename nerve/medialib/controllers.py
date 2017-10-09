@@ -171,6 +171,8 @@ class MediaLibController (nerve.http.Controller):
                 if selected:
                     nerve.log("Updating playlist {} with {}: {} - {} ({})".format(request.arg('playlist'), selected['id'], selected['artist'], selected['title'], selected['filename']), logtype='info')
                     media['filename'] = selected['filename']
+                else:
+                    nerve.log("No media item found for {}: {} - {}".format(media['filename'], media['artist'], media['title']), logtype='warning')
             media_list.append(media)
 
         playlist.set_list(media_list)
