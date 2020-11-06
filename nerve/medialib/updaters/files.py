@@ -8,11 +8,12 @@ import os
 import os.path
 
 import time
+import struct
 import mimetypes
 import traceback
 import threading
 
-#import mutagen
+import mutagen
 import subprocess
 
 from ..threads import MediaLibUpdater
@@ -131,6 +132,7 @@ class MediaFilesUpdater (MediaLibUpdater):
             'file_size' : size,
             'last_modified' : mtime,
         }
+        print(json.dumps(data, sort_keys=True, indent=4, separators=(',', ': ')))
         if existing_id == None:
             nerve.log("Adding " + filename)
             data['tags'] = ''
@@ -140,6 +142,7 @@ class MediaFilesUpdater (MediaLibUpdater):
             self.db.where('id', existing_id)
             self.db.update('media', data)
 
+import json
 
 class MetaData (object):
     formats = [
@@ -151,62 +154,61 @@ class MetaData (object):
     def __init__(self, filename, media_type=None):
         self.filename = filename
         self.media_type = media_type
+
         self.meta = { }
         self.info = None
 
-        """
-        try:
-            self.meta = mutagen.File(filename, None, True)
-            if filename.endswith('.mp3'):
-                self.info = mutagen.mp3.MP3(filename)
-        except ValueError:
-            pass
-        """
+        self.fninfo = { }
+        self.mminfo = { }
 
-        self.fetch_mminfo()
+        self.parse_fninfo()
+        self.calculate_hash()
 
-        (_, _, name) = self.filename.rpartition('/')
-        (title, _, _) = name.rpartition('.')
-        self.fninfo = { 'title': title }
-        if self.media_type == 'audio':
-            for fmt in self.formats:
-                m = fmt[0].match(name)
-                if m:
-                    self.fninfo = fmt[1](m)
-                    break
+        #self.fetch_mminfo()
+        self.fetch_mutagen()
+        print(self.filename)
 
     def get(self, name, default=None):
-        """
-        if name == 'length' and self.info != None:
-            return self.info.info.length
-        if self.meta and name in self.meta and len(self.meta[name]) > 0:
-            return self.meta[name][0]
-        """
-
-        if self.mminfo and name in self.mminfo and self.mminfo[name]:
-            return self.mminfo[name]
-
+        # Filename Derived Data
         if name == 'genre':
             for segment in reversed(self.filename.split('/')):
                 if segment.lower() in self.genres:
                     return self.genres[segment.lower()]
-        elif name == 'title':
-            #(_, _, value) = self.filename.rpartition('/')
-            #(value, _, _) = value.rpartition('.')
-            #if self.media_type == 'audio':
-            #    (_, _, value) = value.partition("-")
-            #return value
+
+        # Mutagen Data
+        if name == 'length' and self.info != None:
+            return self.info.info.length
+        if name == 'trackno' and self.meta and 'tracknumber' in self.meta and len(self.meta['tracknumber']) > 0:
+            (track, *_) = self.meta['tracknumber'][0].partition('/')
+            return int(track)
+        if self.meta and name in self.meta and len(self.meta[name]) > 0 and self.meta[name][0]:
+            return self.meta[name][0]
+
+
+        ## MM Info Data
+        if self.mminfo and name in self.mminfo and self.mminfo[name]:
+            return self.mminfo[name]
+
+        if name == 'title':
             return self.fninfo['title'] if 'title' in self.fninfo else ''
-        elif name == 'artist' and self.media_type == 'audio':
-            #(_, _, value) = self.filename.rpartition('/')
-            #(value, _, _) = value.rpartition('.')
-            #(value, _, _) = value.partition("-")
-            #return value
+        if name == 'artist' and self.media_type == 'audio':
             return self.fninfo['artist'] if 'artist' in self.fninfo else ''
-        elif name == 'track_num' and self.media_type == 'audio':
+        if name == 'track_num' and self.media_type == 'audio':
             return self.fninfo['track_num'] if 'track_num' in self.fninfo else None
 
+        if name == 'hash':
+            return self.hash
+
         return default
+
+
+    def fetch_mutagen(self):
+        try:
+            self.meta = mutagen.File(self.filename, None, True)
+            if self.filename.endswith('.mp3'):
+                self.info = mutagen.mp3.MP3(self.filename)
+        except ValueError:
+            pass
 
     def fetch_mminfo(self):
         proc = subprocess.Popen(["mminfo", self.filename], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -223,6 +225,33 @@ class MetaData (object):
             if name:
                 self.mminfo[name] = value.lstrip()
         #print(self.mminfo)
+
+    def parse_fninfo(self):
+        (_, _, name) = self.filename.rpartition('/')
+        (title, _, _) = name.rpartition('.')
+        self.fninfo = { 'title': title }
+        if self.media_type == 'audio':
+            for fmt in self.formats:
+                m = fmt[0].match(name)
+                if m:
+                    self.fninfo = fmt[1](m)
+                    break
+
+    def calculate_hash(self):
+        # this code was copied from kaa-metadata to preserve the same hash format as was used by mminfo
+        # create a hash for the file based on hashes from
+        # http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
+        with open(self.filename,'rb') as f:
+            qwsize = struct.calcsize('q')
+            filehash = filesize = os.path.getsize(self.filename)
+            for fpos in (0, max(0, filesize - 65536)):
+                f.seek(fpos)
+                # Read up to 64k, but skip the last few bytes if we can't get a
+                # full 64-bit value.
+                buf = f.read(65536)
+                for qw in struct.unpack('%dq' % (len(buf) / qwsize), buf[:len(buf) & ~7]):
+                    filehash = (filehash + qw) & 0xFFFFFFFFFFFFFFFF
+            self.hash =  "%016x" % filehash
 
     genres = {
         'documentaries' : "Documentary",
