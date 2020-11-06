@@ -112,9 +112,10 @@ def _login(username, password):
     # set the thread record to this user: (uid, username, list of groupids)
     _user_threads[threading.current_thread()] = ( results[0][0], results[0][1], [ int(gid) for gid in results[0][2].split(',') ] )
 
+    # TODO this was commented out because it caused too many updates
     # update the last login field
-    _user_db.where('uid', results[0][0])
-    _user_db.update('users', { 'last_login' : time.time() })
+    #_user_db.where('uid', results[0][0])
+    #_user_db.update('users', { 'last_login' : time.time() })
     return True
 
 

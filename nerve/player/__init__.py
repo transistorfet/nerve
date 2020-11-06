@@ -3,3 +3,7 @@
 
 from .devices import PlayerDevice
 
+def init():
+    import nerve.mithril
+    nerve.mithril.register_js('Player', 'nerve/player/assets/js/components.js')
+

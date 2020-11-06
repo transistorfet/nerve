@@ -3,6 +3,7 @@
 
 import nerve
 
+import re
 import os
 import os.path
 
@@ -98,7 +99,7 @@ class MediaFilesUpdater (MediaLibUpdater):
         existing_id = None
         rows = list(self.db.get('media', 'id,last_modified', self.db.inline_expr('filename', filename)))
         if len(rows) > 0:
-            if mtime <= rows[0][1]:
+            if rows[0][1] and mtime <= rows[0][1]:
                 #nerve.log("Skipping " + filename)
                 return
             existing_id = rows[0][0]
@@ -141,6 +142,12 @@ class MediaFilesUpdater (MediaLibUpdater):
 
 
 class MetaData (object):
+    formats = [
+        ( re.compile(r'^(.*?)\s*-\s*(\d+)\s*-\s*(.*)\.(\w+)$'), lambda m: { 'artist': m.group(1), 'track_num': m.group(2), 'title': m.group(3) } ),
+        ( re.compile(r'^(\d+)\s*-\s*(.*?)\s*-\s*(.*)\.(\w+)$'), lambda m: { 'track_num': m.group(1), 'artist': m.group(2), 'title': m.group(3) } ),
+        ( re.compile(r'^(.*?)\s*-\s*(.*)\.(\w+)$'), lambda m: { 'artist': m.group(1), 'title': m.group(2) } ),
+    ]
+
     def __init__(self, filename, media_type=None):
         self.filename = filename
         self.media_type = media_type
@@ -158,6 +165,16 @@ class MetaData (object):
 
         self.fetch_mminfo()
 
+        (_, _, name) = self.filename.rpartition('/')
+        (title, _, _) = name.rpartition('.')
+        self.fninfo = { 'title': title }
+        if self.media_type == 'audio':
+            for fmt in self.formats:
+                m = fmt[0].match(name)
+                if m:
+                    self.fninfo = fmt[1](m)
+                    break
+
     def get(self, name, default=None):
         """
         if name == 'length' and self.info != None:
@@ -174,16 +191,20 @@ class MetaData (object):
                 if segment.lower() in self.genres:
                     return self.genres[segment.lower()]
         elif name == 'title':
-            (_, _, value) = self.filename.rpartition('/')
-            (value, _, _) = value.rpartition('.')
-            if self.media_type == 'audio':
-                (_, _, value) = value.partition("-")
-            return value
+            #(_, _, value) = self.filename.rpartition('/')
+            #(value, _, _) = value.rpartition('.')
+            #if self.media_type == 'audio':
+            #    (_, _, value) = value.partition("-")
+            #return value
+            return self.fninfo['title'] if 'title' in self.fninfo else ''
         elif name == 'artist' and self.media_type == 'audio':
-            (_, _, value) = self.filename.rpartition('/')
-            (value, _, _) = value.rpartition('.')
-            (value, _, _) = value.partition("-")
-            return value
+            #(_, _, value) = self.filename.rpartition('/')
+            #(value, _, _) = value.rpartition('.')
+            #(value, _, _) = value.partition("-")
+            #return value
+            return self.fninfo['artist'] if 'artist' in self.fninfo else ''
+        elif name == 'track_num' and self.media_type == 'audio':
+            return self.fninfo['track_num'] if 'track_num' in self.fninfo else None
 
         return default
 

@@ -26,6 +26,12 @@ def find_source(filename):
             return fullpath
     raise OSError("No source file found: \'{0}\'".format(filename))
 
+def load_source(filename):
+    filename = find_source(filename)
+    with open(filename, 'r') as f:
+        contents = f.read()
+    return contents
+
 
 def add_config_path(path):
     global nerve_config_path

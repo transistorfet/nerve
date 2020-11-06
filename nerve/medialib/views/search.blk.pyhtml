@@ -8,12 +8,11 @@
         <a href="/medialib/search?mode=genre&order=genre">By Genre</a>
         <a href="/medialib/search?mode=title&order=artist">By Title</a>
         <a href="/medialib/search?mode=album&order=last_modified">By Modified Date</a>
-        <a href="/medialib/search?mode=album&order=last_modified&recent=52">Most Recent</a>
+        <a href="/medialib/search?mode=album&order=last_modified&recent=52">52 Weeks</a>
         <a href="/medialib/search?mode=album&order=random">Random</a>
         <a href="/medialib/search_youtube">YouTube</a>
         <a href="/medialib/search?mode=filename&order=last_modified&recent=312&media_type=video&tags=!watched">Videos</a>
-        <a href="/medialib/search?mode=filename&order=filename&recent=156&media_type=video&tags=!watched">To Watch</a>
-        <a href="/medialib/search?mode=filename&order=filename&tags=helena%20!helenawatched">H</a>
+        <a href="/medialib/search?mode=filename&order=filename&tags=helena%20!helenawatched">Helena</a>
     </div>
 
     <div class="medialib-links">

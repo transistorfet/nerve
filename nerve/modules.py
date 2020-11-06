@@ -7,6 +7,14 @@ import types
 import traceback
 import importlib
 
+#_imported_modules = [ ]
+_hold_inits = True
+_list_inits = [ ]
+
+def run_module_inits():
+    _hold_inits = False
+    for init in _list_inits:
+        init()
 
 def get_types(classtype, module=nerve):
     typelist = set()
@@ -80,7 +88,10 @@ def import_module(modulename):
             module = eval(currentname)
             if hasattr(module, 'init'):
                 init = getattr(module, 'init')
-                init()
+                if _hold_inits:
+                    _list_inits.append(init)
+                else:
+                    init()
             if hasattr(module, 'Module'):
                 moduleclass = getattr(module, 'Module')
                 moduleclass(__type__=modulename.replace('.', '/') + '/Module')

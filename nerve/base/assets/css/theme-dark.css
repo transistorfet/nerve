@@ -53,6 +53,11 @@ canvas {
     background: #A0A0A0;
 }
 
+table td,
+table th {
+    padding: 3px;
+}
+
 #nerve-notice {
     border: 1px solid #333;
     background-color: #090;
@@ -83,6 +88,7 @@ canvas {
 .nerve-tabs .tab {
     border-right: 1px solid #3A8ECD;
     background-color: #2E2E2E;
+    color: #CCC;
 }
 
 .nerve-tabs .selected {

@@ -52,7 +52,8 @@ class DeskClock (nerve.serial.SerialDevice):
         elif line == "B4=0":
             nerve.query("/devices/rgb/key", "0x248")
         elif line == "B3=0" or line == 'I0=N:A25D07F8':
-            self.relay_toggle()
+            #self.relay_toggle()
+            nerve.query("http://panther:8888/devices/mysensors/12/3/toggle")
         elif line == "B2=0":
             nerve.events.publish(self.get_pathname() + '/B2', name='B2', value=True)
         elif line == "B1=0":

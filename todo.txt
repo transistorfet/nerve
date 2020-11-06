@@ -1,6 +1,22 @@
 
+    * going to playlist page and then back to remote left the player popup on the bottom of the page
+
+    * issue with dialog boxes not being centred =/
+    * fix tabs
+    * make sure errors are handled in callbacks
+    * should you use promises
+    * somehow make it possible to have module-specific javascript... should they all be programmed like components?
+    * get medialib stuff working
+    * separate player state stuff into its own device
+    * where should RGB component go?
+
+
     * add pulseaudio controls, so you can set them to specific amounts
     * add a volume 80% button to vlc, if possible
+    * add timer object thing to async tasks?
+    * when subscribing to an aliased object, it doesn't create a remote subscription... (slider subscribes to rrgb/intensity which does nothing,
+      instead of subscribing to the target of rrgb, ws://kitty:8889/devices/rgb)
+    * should remote subscriptions use id() or the url, would the url have to be encoded to remove [+#$]
 
     * medialib playlist can have a popup or something, when selecting a song?  That allows you to get info, search, add tags, maybe a ++ button?
 

@@ -18,16 +18,8 @@ def init():
 
 
 class AsyncTask (nerve.ObjectNode):
-    #asynctasks = [ ]
-
     def __init__(self, **config):
         super().__init__(**config)
-        #AsyncTask.asynctasks.append(self)
-
-        #repeat = self.get_setting('repeat')
-        #if repeat and repeat > 0.0:
-        #    self.repeat_in(repeat)
-
         if self.get_setting('autorun'):
             self()
 

@@ -26,6 +26,9 @@
                 <option value="❤" />
                 <option value="watched" />
                 <option value="!watched" />
+                <option value="helena" />
+                <option value="helenawatched" />
+                <option value="!helenawatched" />
             </datalist>
             <a href="#top">Top</a>
         </div>
@@ -38,7 +41,7 @@
             has_title = True if 'title' in media_list[0] else False
             has_duration = True if 'duration' in media_list[0] else False
             has_album = True if 'album' in media_list[0] else False
-            has_count = True if 'count(id)' in media_list[0] else False
+            has_count = True if 'count' in media_list[0] else False
             has_track_num = True if 'track_num' in media_list[0] else False
             has_genre = True if 'genre' in media_list[0] else False
             has_filename = True if 'filename' in media_list[0] else False
@@ -108,7 +111,7 @@
                             <td><%= media['album'] %></td>
                         <% end %>
                         <% if has_count: %>
-                            <td><%= media['count(id)'] %></td>
+                            <td><%= media['count'] %></td>
                         <% end %>
                         <% if has_track_num: %>
                             <td><%= media['track_num'] %></td>

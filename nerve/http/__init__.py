@@ -4,4 +4,5 @@
 from .views.pyhtml import PyHTML
 from .views.template import TemplateView
 from .controllers import Controller, SessionMixIn, SessionController
+from .handlers import HTTPQueryHandler, WebsocketQueryHandler
 

@@ -2,6 +2,10 @@
     "__children__": {
         "devices": {
             "__children__": {
+                "components": {
+                    "__children__": {},
+                    "__type__": "mithril/devices/ComponentsDevice"
+                },
                 "datalogs": {
                     "__children__": {
                         "testlog": {
@@ -108,7 +112,7 @@
                 "rrgb": {
                     "__children__": {},
                     "__type__": "core/SymbolicLink",
-                    "target": "http://192.168.1.102:8889/query/rgb"
+                    "target": "ws://192.168.1.102:8889/devices/rgb"
                 },
                 "system": {
                     "__children__": {
@@ -300,6 +304,9 @@
                         "datalog": {
                             "__type__": "datalog/DatalogController"
                         },
+                        "devices": {
+                            "__type__": "base/QueryController"
+                        },
                         "home": {
                             "__type__": "base/controllers/redirect/RedirectController",
                             "redirect": "/pages/remote"
@@ -309,9 +316,12 @@
                         },
                         "medialib": {
                             "__type__": "medialib/MediaLibController",
-                            "device": "/devices/medialib"
+                            "device": "/devices/medialibrem"
                         },
                         "mithril": {
+                            "__type__": "mithril/controllers/MithrilController"
+                        },
+                        "mithrilbasic": {
                             "__type__": "base/FileController",
                             "root": "nerve/mithril"
                         },

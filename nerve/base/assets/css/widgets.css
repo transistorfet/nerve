@@ -97,12 +97,12 @@ div.nerve-editor {
     margin-bottom: 2em;
 }
 
-div.nerve-editor > #editor-area {
+div.nerve-editor > .editor-area {
     width: 100%;
     height: 40em;
 }
 
-div.nerve-editor > #editor-save {
+div.nerve-editor > .editor-save {
     float: right;
 }
 
@@ -273,12 +273,22 @@ label.nerve-form-tree .alt-label {
 }
 
 .nerve-floatingbar-top {
+    position: sticky;
+    top: 0px;
     left: 0px;
     right: 0px;
     padding: 4px;
     z-index: 1000;
 }
 
+.nerve-floatingbar-bottom {
+    position: sticky;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    padding: 4px;
+    z-index: 1000;
+}
 
 /*** Nerve BigFonts ***/
 
@@ -304,7 +314,7 @@ label.nerve-form-tree .alt-label {
 
 .nerve-dialog {
     display: none;
-    position: absolute;
+    position: fixed;
     top: 0px;
     left: 0px;
     /* background: rgba(0,0,0,0.2); */

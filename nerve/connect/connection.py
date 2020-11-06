@@ -11,6 +11,11 @@ import traceback
 class QuitException (Exception): pass
 
 
+protocols = {
+    'text': 'text/plain',
+    'json': 'application/json',
+}
+
 class ControllerMixIn (object):
     def on_connect(self):
         return
@@ -23,14 +28,14 @@ class ControllerMixIn (object):
 
     def handle_connection(self, request):
         self.conn = request.source
-        self.protocol = request.get_header('Sec-Websocket-Protocol', 'text/plain')
-        print(self.protocol.split(';')[0])
+        self.protocol = request.get_header('Sec-Websocket-Protocol', 'text')
+        mimetype = protocols[self.protocol] if self.protocol in protocols else 'text/plain'
         self.on_connect()
         #while not self.conn.stopflag.is_set():
         #while not self.thread.stopflag.is_set():
         while True:
             try:
-                msg = self.conn.read_message(mimetype=self.protocol.split(';')[0])
+                msg = self.conn.read_message(mimetype=mimetype)
                 if not msg:
                     break
                 self.on_message(msg)
@@ -65,6 +70,14 @@ class Message (object):
                 self.data = json.loads(text)
             elif data:
                 self.text = json.dumps(data)
+
+    @staticmethod
+    def to_json(data):
+        return Message(mimetype='application/json', text=json.dumps(data))
+
+    @staticmethod
+    def from_json(text):
+        return Message(mimetype='application/json', data=json.loads(text))
 
 
 class Connection (object):

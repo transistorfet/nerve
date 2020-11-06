@@ -6,14 +6,12 @@ import nerve
 import os
 import sys
 import time
+import json
 import signal
 import os.path
 import traceback
 import threading
 
-import cgi
-import json
-import requests
 import urllib.parse
 
 
@@ -43,6 +41,7 @@ class RootNode (nerve.ObjectNode):
 
             if not self.load_config('settings.json'):
                 return False
+            nerve.modules.run_module_inits()
             if not self.run_init('init.py'):
                 return False
             return True
@@ -229,151 +228,56 @@ def query(urlstring, *args, **kwargs):
     scheme = url.scheme if url.scheme else 'local' if not url.netloc else 'http'
     if not scheme in _scheme_handlers:
         raise Exception("unsupported url scheme: " + scheme)
-    return _scheme_handlers[scheme](url, *args, **kwargs)
+    return _scheme_handlers[scheme].query(url, *args, **kwargs)
 
+def subscribe(topic, action, label=None, **eventmask):
+    url = urllib.parse.urlparse(topic)
 
-class QueryHandler (object):
-    def debug_result(self, result):
-        rstr = str(result)
-        nerve.log("result: " + ( rstr[:75] + '...' if len(rstr) > 75 else rstr ), logtype='debug')
+    scheme = url.scheme if url.scheme else 'local' if not url.netloc else 'ws'
+    if not scheme in _scheme_handlers:
+        raise Exception("unsupported url scheme: " + scheme)
+    return _scheme_handlers[scheme].subscribe(url, action, label, **eventmask)
 
+def unsubscribe(topic=None, action=None, label=None, **eventmask):
+    url = urllib.parse.urlparse(topic)
 
-def LocalQueryHandler(_queryurl, *args, **kwargs):
-    path = urllib.parse.unquote_plus(_queryurl.path)
-    kwargs = nerve.Request.add_query_args(_queryurl, kwargs)
-    args = nerve.Request.get_positional_args(args, kwargs)
-
-    nerve.log("executing query: " + path + " " + repr(args) + " " + repr(kwargs), logtype='query')
-
-    """
-    obj = nerve.root().get_object(_queryurl.path.lstrip('/'))
-    if callable(obj):
-        result = obj(*args, **kwargs)
-    else:
-        result = obj
-    """
-    result = nerve.root().query(path.lstrip('/'), *args, **kwargs)
-
-    rstr = str(result)
-    nerve.log("result: " + ( rstr[:75] + '...' if len(rstr) > 75 else rstr ), logtype='debug')
-    return result
-
-register_scheme('local', LocalQueryHandler)
-
-
-def HTTPQueryHandler(_queryurl, *args, **kwargs):
-    # TODO is this valid?  To have query options in the kwargs?  Might that cause problems for some things?  Should the key be deleted here if
-    # present, so that it doesn't get encoded.
-    #if 'query_method' in kwargs:
-    #   method = kwargs['query_method']
-    #   del kwargs['query_method']
-    #else:
-    #   method = 'POST'
-
-    #method = kwargs['query_method'] if 'query_method' in kwargs else 'POST'
-
-    args = nerve.Request.put_positional_args(args, kwargs)
-    method = 'GET' if len(kwargs) <= 0 else 'POST'
-    urlstring = urllib.parse.urlunparse((_queryurl.scheme, _queryurl.netloc, _queryurl.path, '', '', ''))
-
-    nerve.log("executing query: " + method + " " + urlstring + " " + repr(args) + " " + repr(kwargs), logtype='query')
-
-    r = requests.request(method, urlstring, json=None if method == 'GET' else kwargs)
-
-    if r.status_code != 200:
-        raise Exception("request to " + urlstring + " failed. " + str(r.status_code) + ": " + r.reason, r.text)
-
-    (mimetype, pdict) = cgi.parse_header(r.headers['content-type'])
-    if mimetype == 'application/json':
-        result = r.json()
-    elif mimetype == 'application/x-www-form-urlencoded':
-        result = urllib.parse.parse_qs(r.text, keep_blank_values=True)
-    else:
-        result = r.text
-
-    rstr = str(result)
-    nerve.log("result: " + ( rstr[:75] + '...' if len(rstr) > 75 else rstr ), logtype='debug')
-    return result
-
-register_scheme('http', HTTPQueryHandler)
-register_scheme('https', HTTPQueryHandler)
+    scheme = url.scheme if url.scheme else 'local' if not url.netloc else 'ws'
+    if not scheme in _scheme_handlers:
+        raise Exception("unsupported url scheme: " + scheme)
+    return _scheme_handlers[scheme].unsubscribe(url, action, label, **eventmask)
 
 
 
-import websocket
+@nerve.singleton
+class LocalQueryHandler (nerve.QueryHandler):
+    def query(self, _queryurl, *args, **kwargs):
+        path = urllib.parse.unquote_plus(_queryurl.path)
+        kwargs = nerve.Request.add_query_args(_queryurl, kwargs)
+        args = nerve.Request.get_positional_args(args, kwargs)
 
-class WebsocketConnection (websocket.WebSocketApp):
-    def __init__(self, url):
-        super().__init__(url, subprotocols=['application/json'], on_open=self.on_open, on_close=self.on_close, on_message=self.on_message, on_error=self.on_error)
-        self.seq = 0
-        self.queue = [ ]
-        self.connected = False
-        self.thread = nerve.Thread('WebsocketConnectionThread', target=self.run_forever)
-        self.thread.daemon = True
-        self.thread.start()
+        nerve.log("executing query: " + path + " " + repr(args) + " " + repr(kwargs), logtype='query')
 
-    def on_open(self, ws):
-        self.connected = True
-        for msg in self.queue:
-            self.send(msg)
-        self.queue = [ ]
-
-    def on_close(self, ws):
-        self.connected = False
-
-    def on_message(self, ws, msg):
-        nerve.log(str(msg), logtype='debug')
-
-    def on_error(self, ws, msg):
-        nerve.log(str(msg), logtype='error')
-
-    def send_query(self, query, **kwargs):
-        self.seq += 1
-        msg = json.dumps({ 'type': 'query', 'query': query, 'args': kwargs, 'id': self.seq })
-        if not self.connected:
-            self.queue.append(msg)
+        """
+        obj = nerve.root().get_object(_queryurl.path.lstrip('/'))
+        if callable(obj):
+            result = obj(*args, **kwargs)
         else:
-            self.send(msg)
+            result = obj
+        """
+        result = nerve.root().query(path.lstrip('/'), *args, **kwargs)
 
-
-class WebsocketQueryHandler (QueryHandler):
-    def __init__(self):
-        self.connlist = { }
-
-    def get_connection(self, url):
-        if url not in self.connlist:
-            # TODO you need to close the connection if it's sat idle for a certain time??
-            self.connlist[url] = WebsocketConnection(url)
-        return self.connlist[url]
-
-    def on_open(self, ws):
-        pass
-
-    def on_message(self, ws, msg):
-        nerve.log(str(msg), logtype='debug')
-
-    def on_error(self, ws, msg):
-        nerve.log(str(msg), logtype='error')
-
-    def __call__(self, _queryurl, *args, **kwargs):
-        args = nerve.Request.put_positional_args(args, kwargs)
-        #urlstring = urllib.parse.urlunparse((_queryurl.scheme, _queryurl.netloc, _queryurl.path, '', '', ''))
-        urlstring = urllib.parse.urlunparse((_queryurl.scheme, _queryurl.netloc, 'socket', '', '', ''))
-
-        nerve.log("executing query: " + urlstring + " " + _queryurl.path + " " + repr(args) + " " + repr(kwargs), logtype='query')
-
-        ws = self.get_connection(urlstring)
-        #self.seq += 1
-        #ws.send(json.dumps({ 'type': 'query', 'query': urlstring, 'args': kwargs, 'id': self.seq }))
-        ws.send_query(_queryurl.path, **kwargs)
-
-    def handle_reply(self, msg):
-        result = msg['result']
-
-        rstr = str(result)
-        nerve.log("result: " + ( rstr[:75] + '...' if len(rstr) > 75 else rstr ), logtype='debug')
+        self.print_result(result)
         return result
 
-register_scheme('ws', WebsocketQueryHandler())
+    def subscribe(self, url, action, label=None, **eventmask):
+        topic = urllib.parse.unquote_plus(url.path).lstrip('/')
+        nerve.events.subscribe(topic, action, label, **eventmask)
+
+    def unsubscribe(self, url=None, action=None, label=None, **eventmask):
+        topic = urllib.parse.unquote_plus(url.path).lstrip('/')
+        nerve.events.unsubscribe(topic, action, label, **eventmask)
+
+
+register_scheme('local', LocalQueryHandler)
 
 

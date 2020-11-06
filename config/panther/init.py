@@ -50,6 +50,9 @@ class Television (nerve.Device):
     def voldown(self):
         self.serial.send("ir P 0x4004 0x1008485")
 
+    def mute(self):
+        self.serial.send("ir P 0x4004 0x1004C4D")
+
     def ps3(self):
         self.serial.send("ir P 0x4004 0x100A0A1")
         self.serial.send("ir P 0x4004 0x1008889")
@@ -61,6 +64,10 @@ class Television (nerve.Device):
     def computer(self):
         self.serial.send("ir P 0x4004 0x100A0A1")
         self.serial.send("ir P 0x4004 0x1004849")
+
+    def appletv(self):
+        self.serial.send("ir P 0x4004 0x100A0A1")
+        self.serial.send("ir P 0x4004 0x100C8C9")
 
 
 rgb = nerve.get_object('/devices/rgb')

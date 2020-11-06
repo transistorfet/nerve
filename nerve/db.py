@@ -3,6 +3,7 @@
 
 import nerve
 
+import re
 import apsw
 import os.path
 
@@ -68,8 +69,8 @@ class Database (object):
 
     def where(self, where, val, compare='=', cond='AND'):
         where_sql = self.inline_expr(where, val, compare)
-        if not self.cache_where:
-            self.cache_where = where_sql
+        if re.match(r'^[(\s]*$', self.cache_where):
+            self.cache_where += where_sql
         else:
             self.cache_where += " %s %s" % (cond, where_sql)
 
@@ -108,6 +109,12 @@ class Database (object):
 
     def set_where(self, where):
         self.cache_where = where
+
+    def open_bracket(self):
+        self.cache_where += '('
+
+    def close_bracket(self):
+        self.cache_where += ')'
 
     def group_by(self, group):
         self.cache_group = group
@@ -163,7 +170,7 @@ class Database (object):
 
     def get_assoc(self, table, select=None, where=None):
         query = self.compile_select(table, select, where)
-        #print (query)
+        print (query)
         result = self.query(query)
 
         keys = self.columns

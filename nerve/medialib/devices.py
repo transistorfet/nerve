@@ -32,18 +32,19 @@ class MediaLibDevice (nerve.Device):
     def rehash(self):
         threads.run_updater()
 
-    def search(self, mode, order, offset, limit, search=None, recent=None, media_type=None, tags=None):
+    def search(self, mode, order, offset=0, limit=None, search=None, recent=None, media_type=None, tags=None):
+
         if mode == 'artist':
-            self.db.select('artist,count(id)')
+            self.db.select('artist,count(id) AS count')
             self.db.where_not('artist', '')
             self.db.group_by('artist')
         elif mode == 'album':
-            self.db.select('artist,album,count(id)')
+            self.db.select('artist,album,count(id) AS count')
             self.db.where_not('album', '')
             #self.db.group_by('artist,album')
             self.db.group_by('album')
         elif mode == 'genre':
-            self.db.select('artist,album,genre,count(id)')
+            self.db.select('artist,album,genre,count(id) AS count')
             self.db.group_by('artist,album')
         elif mode == 'title':
             self.db.select('artist,album,title,track_num,duration,tags,id')
@@ -53,6 +54,7 @@ class MediaLibDevice (nerve.Device):
             return [ ]
 
         if search and len(search) > 0:
+            self.db.open_bracket()
             searchterm = str(search)
             if searchterm.startswith('!'):
                 op = 'not like'
@@ -62,11 +64,13 @@ class MediaLibDevice (nerve.Device):
                 op = 'like'
                 cond = 'OR'
 
-            searchterm = '%' + searchterm.replace('*', '%') + '%'
+            if '%' not in searchterm:
+                searchterm = '%' + searchterm.replace('*', '%') + '%'
             self.db.where('artist', searchterm, op, cond)
             self.db.where('title', searchterm, op, cond)
             self.db.where('album', searchterm, op, cond)
             self.db.where('filename', searchterm, op, cond)
+            self.db.close_bracket()
 
         if tags and len(tags) > 0:
             tags = shlex.split(tags)
@@ -75,6 +79,7 @@ class MediaLibDevice (nerve.Device):
                     self.db.where_like('tags', '%' + tag + '%')
                 else:
                     self.db.where_not_like('tags', '%' + tag[1:] + '%')
+
 
         if order == 'artist':
             self.db.order_by('artist ASC')
@@ -96,7 +101,7 @@ class MediaLibDevice (nerve.Device):
         if recent:
             self.db.where_gt('last_modified', time.time() - (float(recent) * (60*60*24*7)))
 
-        if media_type:
+        if media_type and media_type.lower() != 'any':
             self.db.where('media_type', media_type)
 
         if offset:
@@ -221,12 +226,14 @@ class PlaylistsDevice (nerve.Device):
         super().__init__(**config)
         self.current = 'default'
 
+    """
     def __getattr__(self, name):
         try:
             return super().__getattr__(name)
         except AttributeError:
             pass
         return Playlist(name)
+    """
 
     """
     def set_child(self, index, obj):
@@ -236,32 +243,56 @@ class PlaylistsDevice (nerve.Device):
         return False
     """
 
-    def get_playlist_list(self):
+    def create(self, name):
+        for pname in Playlist.listnames():
+            if name == pname:
+                raise nerve.ControllerError("A playlist by that name already exists")
+        Playlist.create(name)
+        return true
+
+    def delete(self, name):
+        Playlist.delete(name)
+        return true
+
+    def list(self):
         playlist_list = Playlist.listnames()
         if 'default' in playlist_list:
             playlist_list.remove('default')
         playlist_list.insert(0, 'default')
         return playlist_list
 
-    def get_playlist(self, name=None):
+    def get(self, name=None):
         if name is None:
             name = self.current
         playlist = Playlist(name)
         media_list = playlist.get_list()
         return media_list
 
-    def sort_playlist(self, name=None):
+    def clear(self, name=None):
+        if name is None:
+            name = self.current
+        playlist = Playlist(name)
+        media_list = playlist.clear()
+        return media_list
+
+    def sort(self, name=None):
         if name is None:
             name = self.current
         playlist = Playlist(name)
         playlist.sort()
         return playlist.get_size()
 
-    def shuffle_playlist(self, name=None):
+    def shuffle(self, name=None):
         if name is None:
             name = self.current
         playlist = Playlist(name)
         playlist.shuffle()
         return playlist.get_size()
 
+    def remove(self, name, urls):
+        if name is None:
+            name = self.current
+        playlist = Playlist(name)
+        count = playlist.remove_files([ urllib.parse.unquote(url) for url in urls ])
+        return count
 

@@ -241,4 +241,8 @@ class ObjectNode (object):
                 results.append(self.query(path, *args, **kwargs))
             return results
 
+    def subscribe(self, topic, action, label=None, **eventmask):
+        # TODO you could have this, and local resolution will do this, which ends in nerve.events.subscribe(self.get_pathname())
+        pass
+
 

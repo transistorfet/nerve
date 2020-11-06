@@ -35,37 +35,6 @@ def subscribe(topic, action, label='', **eventmask):
     print(json.dumps(_event_listeners, sort_keys=True, indent=4, default=json_default))
     """
 
-
-# TODO this is an old version, to be removed
-def unsubscribe_old(topic, action=None, label=''):
-    if topic and not allowed_subscribe.match(topic):
-        raise Exception("invalid event topic in unsubscribe: " + topic)
-
-    publish('$SYS/unsubscribe', subtopic=topic, label=label, action=action)
-
-    parts = topic.split('/')
-    levels = [ _event_listeners ]
-    for part in parts:
-        if part not in levels[-1]:
-            return False
-        levels.append(levels[-1][part])
-
-    if '/' not in levels[-1]:
-        return False
-    for i in range(0, len(levels[-1]['/'])):
-        (listlabel, eventmask, callback) = levels[-1]['/'][i]
-        if (label and label == listlabel) or (action and action == callback):
-            del levels[-1]['/'][i]
-            # TODO you should probably delete all entries instead of just one
-            break
-
-    if len(levels[-1]['/']) <= 0:
-        del levels[-1]['/']
-    for i in range(len(levels) - 1, -1, -1):
-        if len(levels[i]) <= 0 and i >= 1:
-            del levels[i - 1][parts[i - 1]]
-
-# TODO this version doesn't publish the unsubscribed... and that might be a lot of work to do that for every single topic, rather than the wildcard
 def unsubscribe(topic=None, action=None, label='', base=_event_listeners):
     if topic and not allowed_subscribe.match(topic):
         raise Exception("invalid event topic in unsubscribe: " + topic)
@@ -95,12 +64,14 @@ def _unsubscribe(topic=None, action=None, label='', base=_event_listeners):
             if name != '/':
                 count += _unsubscribe(None, action, label, base[name])
             else:
-                for i in range(0, len(base['/'])):
+                i = 0
+                while i < len(base['/']):
                     (listlabel, eventmask, callback) = base['/'][i]
                     if (not label or label == listlabel) and (not action or action == callback):
                         del base['/'][i]
                         count += 1
-                        i -= 1      # hack the index, given that we removed an element
+                    else:
+                        i += 1
 
             if len(base[name]) <= 0:
                 to_delete.append(name)

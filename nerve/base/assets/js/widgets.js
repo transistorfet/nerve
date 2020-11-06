@@ -13,7 +13,7 @@ Nerve.query = function (query, success, error, returntype)
     else
         postvars['requests[]'] = [ query ];
 
-    $.post('/query', postvars, success, error, returntype);
+    $.post('/devices', postvars, success, error, returntype);
 }
 
 Nerve.request = function (url, data, success, error, returntype, method, contenttype)

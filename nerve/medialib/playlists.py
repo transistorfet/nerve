@@ -6,6 +6,7 @@ import nerve
 import os
 import os.path
 import random
+import urllib.parse
 
 
 class Playlist (object):
@@ -54,7 +55,7 @@ class Playlist (object):
                         'artist' : artist,
                         'title' : title,
                         'duration' : duration,
-                        'filename' : line
+                        'filename' : urllib.parse.unquote(line)
                     }
                     self.media_list.append(media)
 
@@ -63,7 +64,7 @@ class Playlist (object):
             f.write("#EXTM3U\n")
             for media in self.media_list:
                 f.write("#EXTINF:%d, %s - %s\n" % (float(media['duration']), media['artist'], media['title']))
-                f.write(media['filename'] + "\n")
+                f.write(urllib.parse.quote(media['filename'], safe=':/&=?') + "\n")
 
     def get_size(self):
         self.load()

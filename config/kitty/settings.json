@@ -101,6 +101,9 @@
                         "query": {
                             "__type__": "base/QueryController"
                         },
+                        "devices": {
+                            "__type__": "base/QueryController"
+                        },
                         "config": {
                             "__type__": "base/ConfigController"
                         },
@@ -109,6 +112,9 @@
                         },
                         "pages": {
                             "__type__": "pages/controllers/PagesController"
+                        },
+                        "socket": {
+                            "__type__": "base/controllers/socket/SocketController"
                         }
                     },
                     "template": {

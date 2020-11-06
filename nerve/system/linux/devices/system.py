@@ -19,4 +19,7 @@ class SystemDevice (nerve.Device):
     def xdotool(self, commands):
         os.system("xdotool " + commands)
 
+    def browser(self, url):
+        os.system("sensible-browser " + url)
+
 

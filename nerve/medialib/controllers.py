@@ -31,7 +31,7 @@ class MediaLibController (nerve.http.Controller):
         playlist = request.args['playlist'] if 'playlist' in request.args else 'default'
 
         data = { }
-        data['list_of_playlists'] = playlists.get_playlist_list()
+        data['list_of_playlists'] = playlists.list()
         self.load_template_view('nerve/medialib/views/playlist.blk.pyhtml', data, request)
         self.template_add_to_section('jsfiles', '/medialib/assets/js/medialib.js')
         self.template_add_to_section('cssfiles', '/medialib/assets/css/medialib.css')
@@ -42,7 +42,7 @@ class MediaLibController (nerve.http.Controller):
         playlist = request.args['playlist'] if 'playlist' in request.args else 'default'
 
         data = { }
-        data['playlist'] = playlists.get_playlist(playlist)
+        data['playlist'] = playlists.get(playlist)
         try:
             data['current_pos'] = nerve.query('/devices/player/get_position')
         except:
@@ -56,7 +56,7 @@ class MediaLibController (nerve.http.Controller):
 
         data = { }
         data['medialib'] = medialib
-        data['list_of_playlists'] = playlists.get_playlist_list()
+        data['list_of_playlists'] = playlists.list()
         data['mode'] = request.arg('mode', default='album')
         data['order'] = request.arg('order', default='artist')
         data['offset'] = request.arg('offset', default=0)
@@ -84,7 +84,7 @@ class MediaLibController (nerve.http.Controller):
 
         data = { }
         data['medialib'] = medialib
-        data['list_of_playlists'] = playlists.get_playlist_list()
+        data['list_of_playlists'] = playlists.list()
         data['mode'] = request.arg('mode', default='album')
         data['order'] = request.arg('order', default='artist')
         data['offset'] = request.arg('offset', default=0)
@@ -107,7 +107,7 @@ class MediaLibController (nerve.http.Controller):
         playlists = nerve.get_object(self.get_setting('playlists'))
 
         data = { }
-        data['list_of_playlists'] = playlists.get_playlist_list()
+        data['list_of_playlists'] = playlists.list()
         data['media_list'] = None
         data['search'] = request.arg('search', default='')
 
@@ -129,19 +129,19 @@ class MediaLibController (nerve.http.Controller):
     def shuffle_playlist(self, request):
         playlists = nerve.get_object(self.get_setting('playlists'))
         playlist_name = request.args['playlist']
-        playlists.shuffle_playlist(playlist_name)
+        playlists.shuffle(playlist_name)
 
     @nerve.public
     def sort_playlist(self, request):
         playlists = nerve.get_object(self.get_setting('playlists'))
         playlist_name = request.args['playlist']
-        playlists.sort_playlist(playlist_name)
+        playlists.sort(playlist_name)
 
     @nerve.public
     def create_playlist(self, request):
         playlists = nerve.get_object(self.get_setting('playlists'))
         playlist_name = request.args['playlist']
-        for name in playlists.get_playlist_list():
+        for name in playlists.list():
             if name == playlist_name:
                 raise nerve.ControllerError("A playlist by that name already exists")
 
@@ -152,7 +152,7 @@ class MediaLibController (nerve.http.Controller):
     def delete_playlist(self, request):
         playlists = nerve.get_object(self.get_setting('playlists'))
         playlist_name = request.args['playlist']
-        for name in playlists.get_playlist_list():
+        for name in playlists.list():
             if name == playlist_name:
                 nerve.medialib.Playlist.delete(playlist_name)
                 self.load_json_view({ 'notice' : "Playlist deleted successfully" })

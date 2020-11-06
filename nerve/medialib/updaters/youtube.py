@@ -97,7 +97,7 @@ class YoutubePlaylistUpdater (MediaLibUpdater):
             'last_modified' : meta['time_created'],
         }
 
-        if len(rows) > 0 and rows[0][1] >= meta['time_created']:
+        if len(rows) > 0 and rows[0][1] and rows[0][1] >= meta['time_created']:
             #nerve.log("Skipping " + url)
             return data
 

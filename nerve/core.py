@@ -14,6 +14,27 @@ import urllib.parse
 import email.utils
 
 
+
+def singleton(cls):
+    return cls()
+
+
+
+class QueryHandler (object):
+    def print_result(self, result):
+        rstr = str(result)
+        nerve.log("result: " + ( rstr[:75] + '...' if len(rstr) > 75 else rstr ), logtype='debug')
+
+    def query(self, _queryurl, *args, **kwargs):
+        raise NotImplementedError("query is not implemented for this url scheme")
+
+    def subscribe(self, topic, action, label=None, **eventmask):
+        raise NotImplementedError("subscribe is not implemented for this url scheme")
+
+    def unsubscribe(self, topic=None, action=None, label=None, **eventmask):
+        raise NotImplementedError("unsubscribe is not implemented for this url scheme")
+
+
 def delistify(kwargs):
     for name in kwargs.keys():
         if not name.endswith("[]") and isinstance(kwargs[name], list) and len(kwargs[name]) == 1:
@@ -251,6 +272,9 @@ class View (nerve.ObjectNode):
 
     def get_mimetype(self):
         return (self._mimetype, self._encoding)
+
+    def set_mimetype(self, mimetype):
+        self._mimetype = mimetype
 
     def add_header(self, name, value):
         self._headers.append( (name, value) )

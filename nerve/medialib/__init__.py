@@ -12,7 +12,11 @@ def init():
 
     #nerve.register_server_type('http', HTTPServer, "HTTP Server")
     #nerve.register_controller('medialib', MediaLibController)
-    pass
+
+    #nerve.query('devices/components/register', 'MediaLib', 'nerve/medialib/assets/js/components.js')
+    import nerve.mithril
+    nerve.mithril.register_js('MediaLib', 'nerve/medialib/assets/js/components.js')
+    nerve.mithril.register_css('nerve/medialib/assets/css/medialib.css')
 
 import nerve.modules
 

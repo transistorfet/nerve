@@ -21,6 +21,12 @@
     width: 1.5em;
 }
 
+/*
+.medialib-list td {
+    white-space: nowrap;
+}
+*/
+
 .medialib-list div.tags {
     white-space: nowrap;
 }

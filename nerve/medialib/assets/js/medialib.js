@@ -77,7 +77,7 @@ function MediaLibPlaylist(element)
 
     that.load_playlist = function ()
     {
-        $.post('/query/player/load_playlist', { 'url' : $('#select-playlist').val() }, function (response) { }, 'json');
+        $.post('/devices/player/load_playlist', { 'url' : $('#select-playlist').val() }, function (response) { }, 'json');
     }
 
     that.update_playlist = function ()
@@ -103,7 +103,7 @@ function MediaLibPlaylist(element)
     $('#medialib-playlist-contents').on('click', 'td:last-child', function (event) {
         event.stopPropagation();
         var element = this;
-        $.post('/query/player/goto', { 'pos' : $(element).parent().parent().children().index($(element).parent()) }, function (response) {
+        $.post('/devices/player/goto', { 'pos' : $(element).parent().parent().children().index($(element).parent()) }, function (response) {
             $('.medialib-list tr.nerve-highlight').removeClass('nerve-highlight');
             $(element).parent().addClass('nerve-highlight');
         }, 'json');
@@ -126,7 +126,7 @@ function MediaLibPlaylist(element)
     $('.medialib-query-songname').click(that.query_songname.trigger);
 
     $('.medialib-button-next').click(function () {
-        $.post('/query/'+$(this).attr('data-query'), {}, function(response) {
+        $.post('/devices/'+$(this).attr('data-query'), {}, function(response) {
             var element = $('.medialib-list tr.nerve-highlight');
             $(element).removeClass('nerve-highlight');
             if ($(element).next().length)
@@ -136,7 +136,7 @@ function MediaLibPlaylist(element)
     });
 
     $('.medialib-button-previous').click(function () {
-        $.post('/query/'+$(this).attr('data-query'), {}, function(response) {
+        $.post('/devices/'+$(this).attr('data-query'), {}, function(response) {
             var element = $('.medialib-list tr.nerve-highlight');
             $(element).removeClass('nerve-highlight');
             if ($(element).prev().length)

@@ -23,3 +23,6 @@ xmms2:
     python-xmmsclient       # on debian, this is currently only available for python2.  The xmms2cli submodule uses the command
                             # line program to communicate with a running xmms2 instance
 
+
+http:
+    python-websocket

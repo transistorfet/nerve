@@ -10,6 +10,10 @@
                     },
                     "__type__": "system/linux/devices/system/SystemDevice"
                 },
+                "components": {
+                    "__children__": {},
+                    "__type__": "mithril/devices/ComponentsDevice"
+                },
                 "computer": {
                     "__children__": {},
                     "__type__": "core/SymbolicLink",
@@ -326,7 +330,8 @@
                             "__children__": {
                                 "irremote_dispatch": {
                                     "__children__": {},
-                                    "__type__": "asyncs/PyCodeAsyncTask",
+                                    "__type__": "objects/ObjectNode",
+                                    "#__type__": "asyncs/PyCodeAsyncTask",
                                     "code": "nerve.log(\"old ir code\")\nnerve.query('/devices/irremote/on_receive_code', *args)",
                                     "repeat": 0.0
                                 }
@@ -339,7 +344,8 @@
                     "__children__": {
                         "loss_on_signal": {
                             "__children__": {},
-                            "__type__": "asyncs/PyCodeAsyncTask",
+                            "__type__": "objects/ObjectNode",
+                            "#__type__": "asyncs/PyCodeAsyncTask",
                             "autorun": true,
                             "code": "import humanize\nmysensors = nerve.get_object('/devices/mysensors')\ncurrent_time = time.time()\n\nfor nodename in mysensors.keys_children():\n  node = mysensors.get_child(nodename)\n  if current_time > node.last_recv + 7200:\n    nerve.query('/devices/notify/send', \"haven't heard from mysensors node {0} in {1} minutes.\".format(node.nodeid, humanize.naturaltime(current_time - node.last_recv)), severity='serious', label='mysensors-loss-of-signal-' + str(node.nodeid))\n",
                             "repeat": 300.0
@@ -443,11 +449,24 @@
                             "__type__": "medialib/controllers/MediaLibController",
                             "device": "/devices/medialib_kitty"
                         },
+                        "mithril": {
+                            "__type__": "mithril/controllers/MithrilController"
+                        },
+                        "mithrilbasic": {
+                            "__type__": "base/FileController",
+                            "root": "nerve/mithril"
+                        },
                         "notify": {
                             "__type__": "notify/controllers/NotifyController"
                         },
                         "query": {
                             "__type__": "base/controllers/query/QueryController"
+                        },
+                        "devices": {
+                            "__type__": "base/controllers/query/QueryController"
+                        },
+                        "socket": {
+                            "__type__": "base/controllers/socket/SocketController"
                         },
                         "pages": {
                             "__type__": "pages/controllers/PagesController"
@@ -470,17 +489,6 @@
                         }
                     },
                     "port": 6060
-                },
-                "tornadohttp": {
-                    "__children__": {},
-                    "__type__": "http/servers/tornado/TornadoWSGIServer",
-                    "allow_guest": true,
-                    "controllers": null,
-                    "password": "",
-                    "port": 9000,
-                    "use_usersdb": true,
-                    "username": "",
-                    "gateway": "/servers/wsgi"
                 },
                 "udp": {
                     "__children__": {},

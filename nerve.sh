@@ -2,7 +2,7 @@
 
 while [ 1 ]
 do
-	python3 -m nerve -f -c $1
+	python3 -m nerve -c $1 -f
 
         if [ $? -ne 42 ]
         then
