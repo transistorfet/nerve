@@ -71,6 +71,9 @@ class Database (object):
         where_sql = self.inline_expr(where, val, compare)
         if re.match(r'^[(\s]*$', self.cache_where):
             self.cache_where += where_sql
+        elif re.match(r'.*\(\s*$', self.cache_where):
+            self.cache_where = re.sub(r'\(\s*', '', self.cache_where)
+            self.cache_where += " %s ( %s" % (cond, where_sql)
         else:
             self.cache_where += " %s %s" % (cond, where_sql)
 

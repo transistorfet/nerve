@@ -11,6 +11,7 @@
         <a href="/medialib/search?mode=album&order=last_modified&recent=52">52 Weeks</a>
         <a href="/medialib/search?mode=album&order=random">Random</a>
         <a href="/medialib/search_youtube">YouTube</a>
+        <a href="/medialib/search?mode=filename&order=filename&media_type=video&search=Movies">Movies</a>
         <a href="/medialib/search?mode=filename&order=last_modified&recent=312&media_type=video&tags=!watched">Videos</a>
         <a href="/medialib/search?mode=filename&order=filename&tags=helena%20!helenawatched">Helena</a>
     </div>

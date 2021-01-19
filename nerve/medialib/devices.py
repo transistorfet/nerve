@@ -33,6 +33,7 @@ class MediaLibDevice (nerve.Device):
         threads.run_updater()
 
     def search(self, mode, order, offset=0, limit=None, search=None, recent=None, media_type=None, tags=None):
+        self.db.reset_cache()
 
         if mode == 'artist':
             self.db.select('artist,count(id) AS count')
@@ -66,7 +67,7 @@ class MediaLibDevice (nerve.Device):
 
             if '%' not in searchterm:
                 searchterm = '%' + searchterm.replace('*', '%') + '%'
-            self.db.where('artist', searchterm, op, cond)
+            self.db.where('artist', searchterm, op, "AND")
             self.db.where('title', searchterm, op, cond)
             self.db.where('album', searchterm, op, cond)
             self.db.where('filename', searchterm, op, cond)
