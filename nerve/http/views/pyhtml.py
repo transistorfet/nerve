@@ -11,7 +11,7 @@ import traceback
 import io
 import re
 
-import cgi
+import html
 import json
 import mimetypes
 
@@ -128,7 +128,7 @@ class PyHTML (nerve.HTMLView):
 
     @staticmethod
     def htmlspecialchars(text):
-        return cgi.escape(text, True)
+        return html.escape(text, True)
 
     ### Parser and Execution Code ###
 

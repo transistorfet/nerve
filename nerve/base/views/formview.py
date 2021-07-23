@@ -3,7 +3,7 @@
 
 import nerve
 
-import cgi
+import html
 import random
 import urllib.parse
 
@@ -59,7 +59,7 @@ class FormView (nerve.HTMLView):
         self.write('</li>\n', tab=-1)
 
     def build_scalar_item(self, basename, name, propername, datatype, data):
-        formatted_data = cgi.escape(datatype.render(data), True)
+        formatted_data = html.escape(datatype.render(data), True)
 
         if datatype.htmltype == 'hidden':
             self.write('<div class="nerve-form-item" style="display: none;"><input type="hidden" name="{0}" value="{1}" /></div>\n'.format(nerve.join_path(basename, name), formatted_data))
@@ -72,7 +72,7 @@ class FormView (nerve.HTMLView):
         if options:
             self.write('<span><select name="{0}"{1}>\n'.format(nerve.join_path(basename, name), ' class="nerve-form-change-type"' if datatype.is_type('object-type') else ''))
             for (propername, value) in options:
-                self.write('<option value="{0}"{1}>{2}</option>\n'.format(cgi.escape(str(value)), ' selected' if value == data else '', propername))
+                self.write('<option value="{0}"{1}>{2}</option>\n'.format(html.escape(str(value)), ' selected' if value == data else '', propername))
             self.write('</select></span>\n')
 
         elif datatype.htmltype == 'textarea':
