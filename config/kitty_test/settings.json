@@ -401,21 +401,6 @@
                         "__type__": "pages/views/page/PageView",
                         "theme": "dark"
                     }
-                },
-                "tornadohttp": {
-                    "__children__": {},
-                    "__type__": "http/servers/tornado/TornadoWSGIServer",
-                    "allow_guest": true,
-                    "controllers": null,
-                    "parent": "/servers/default",
-                    "password": "",
-                    "port": 9000,
-                    "ssl_cert": "ssl/nerve.test.cert",
-                    "ssl_enable": false,
-                    "ssl_key": "ssl/nerve.test.key",
-                    "use_usersdb": true,
-                    "username": "",
-                    "gateway": "/servers/wsgi"
                 }
             },
             "__type__": "objects/ObjectNode"
