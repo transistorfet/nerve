@@ -3,7 +3,11 @@
 
 import sys
 import time
+import queue
 import nerve
+
+thread = None
+thread_queue = queue.Queue()
 
 stdin = sys.stdin
 stdout = sys.stderr
@@ -18,7 +22,7 @@ colours = { }
 colours_reset = ''
 
 def init_colour():
-    global colours, colours_reset
+    global thread, colours, colours_reset
 
     import colorama
 
@@ -36,6 +40,9 @@ def init_colour():
         'notify': colorama.Style.BRIGHT + colorama.Fore.MAGENTA
     }
 
+    thread = nerve.Thread('SerialThread', run_logger)
+    thread.start()
+
 def redirect(dest):
     global logto
     logto = dest
@@ -49,10 +56,17 @@ def log_to_file(enable):
     logtofile = True if enable is True else False
 
 def log(text, logtype='info'):
+    global thread_queue
+
+    thread_queue.put((logtype, text))
+    # TODO for debugging, if an error occurs before the threads start
+    #log_direct(text, logtype)
+
+def log_direct(text, logtype='info'):
     global logbuffer
 
-    output = "%s [%s] %s\n" % (time.strftime("%Y-%m-%d %H:%M"), logtype, text)
     #output = "%s %s\n" % (time.strftime("%Y-%m-%d %H:%M"), text)
+    output = "%s [%s] %s\n" % (time.strftime("%Y-%m-%d %H:%M"), logtype, text)
 
     logbuffer.append(output)
     if len(logbuffer) > logbuffermax:
@@ -66,4 +80,13 @@ def log(text, logtype='info'):
         colour = colours[logtype] if logtype in colours else ''
         print(colour + output + colours_reset, end='', file=logto)
 
+def run_logger():
+    global thread, thread_queue
+
+    while not thread.stopflag.is_set():
+        try:
+            (logtype, text) = thread_queue.get()
+            log_direct(text, logtype)
+        except queue.Empty as e:
+            pass
 
