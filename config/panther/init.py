@@ -81,6 +81,24 @@ class SonyTelevision (nerve.Device):
         self.serial.send("ir S 0xC10")
 
 
+
+class HDMISelector (nerve.Device):
+    def __init__(self, serial, **config):
+        nerve.Device.__init__(self, **config)
+        self.serial = serial
+
+    def s1(self):
+        self.serial.send("ir N 0x1FE58A7")
+
+    def s2(self):
+        self.serial.send("ir N 0x1FE20DF")
+
+    def s3(self):
+        self.serial.send("ir N 0x1FE609F")
+
+
+
+
 class SonyStereo (nerve.Device):
     def __init__(self, serial, **config):
         nerve.Device.__init__(self, **config)
@@ -144,5 +162,6 @@ class PanasonicTelevision (nerve.Device):
 rgb = nerve.get_object('/devices/rgb')
 nerve.set_object('/devices/stereo', OnkyoStereo(rgb))
 nerve.set_object('/devices/tv', SonyTelevision(rgb))
+nerve.set_object('/devices/hdmi', HDMISelector(rgb))
 
 

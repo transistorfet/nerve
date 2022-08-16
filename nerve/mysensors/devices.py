@@ -3,6 +3,7 @@
 
 import nerve
 import nerve.serial
+import nerve.events
 
 import time
 
@@ -53,6 +54,9 @@ class MySensorsSerialGateway (nerve.serial.SerialDevice):
 
         if msgtype == MsgType.PRESENTATION:
             nerve.log("mysensors: new sensor presented itself: " + str(nodeid) + ":" + str(sensorid))
+            # TODO this is a hack because the internet is connected to sensor 6 remote receptacle
+            if sensorid == 6:
+                return
             self._add_sensor(nodeid, sensorid, subtype, payload)
 
         elif msgtype == MsgType.SET:
@@ -63,7 +67,7 @@ class MySensorsSerialGateway (nerve.serial.SerialDevice):
             sensor.last_recv = current_time
             sensor.last_type = subtype
             sensor.last_value = payload
-            # TODO publish event? maybe even have a per sensor or per node flag for whether to publish
+            sensor._on_receive()
 
         elif msgtype == MsgType.REQ:
             pass
@@ -150,6 +154,7 @@ class MySensorsSensor (nerve.Device):
         self.sensorid = self.get_setting('sensorid')
         self.type = self.get_setting('type')
         self.version = self.get_setting('version')
+        self.should_publish = self.get_setting('should_publish', default=False)
         self.last_recv = 0
         self.last_type = None
         self.last_value = None
@@ -164,6 +169,9 @@ class MySensorsSensor (nerve.Device):
 
     def del_child(self, index):
         return False
+
+    def publish(self, enable):
+        self.should_publish = enable
 
     def set_value(self, val, subtype=None):
         if subtype == None:
@@ -196,6 +204,11 @@ class MySensorsSensor (nerve.Device):
 
     def last_value(self):
         return self.last_value
+
+    def _on_receive(self):
+        # TODO publish event? maybe even have a per sensor or per node flag for whether to publish
+        if self.should_publish:
+            nerve.events.publish(self.get_pathname(), value=self.last_value)
 
 
 

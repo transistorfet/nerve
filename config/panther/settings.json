@@ -242,7 +242,8 @@
                                     "__type__": "mysensors/devices/MySensorsSensor",
                                     "sensorid": "20",
                                     "type": 6,
-                                    "version": "1.4.1"
+                                    "version": "1.4.1",
+                                    "should_publish": true
                                 },
                                 "255": {
                                     "__children__": {},
@@ -321,6 +322,24 @@
                     }
                 }
             }
+        },
+        "events": {
+            "__children__": {
+                "change": {
+                    "__children__": {
+                        "test": {
+                            "__type__": "core/PyCodeQuery",
+                            "code": "nerve.query('http://192.168.1.102:8889/query/deskclock2/update_outdoor_temp', args[0]['value'])",
+                            "_code": "print(args[0])"
+                        }
+                    },
+                    "__type__": "events/EventListener",
+                    "topic": "devices/mysensors/13/20",
+                    "eventmask": {
+                    }
+                }
+            },
+            "__type__": "events/EventRouter"
         },
         "tasks": {
             "__children__": {

@@ -8,6 +8,7 @@ import nerve
 
 thread = None
 thread_queue = queue.Queue()
+thread_running = False
 
 stdin = sys.stdin
 stdout = sys.stderr
@@ -56,11 +57,13 @@ def log_to_file(enable):
     logtofile = True if enable is True else False
 
 def log(text, logtype='info'):
-    global thread_queue
+    global thread_queue, thread_running
 
-    thread_queue.put((logtype, text))
-    # TODO for debugging, if an error occurs before the threads start
-    #log_direct(text, logtype)
+    # Log messages directly until the logging thread has started
+    if not thread_running:
+        log_direct(text, logtype)
+    else:
+        thread_queue.put((logtype, text))
 
 def log_direct(text, logtype='info'):
     global logbuffer
@@ -81,8 +84,9 @@ def log_direct(text, logtype='info'):
         print(colour + output + colours_reset, end='', file=logto)
 
 def run_logger():
-    global thread, thread_queue
+    global thread, thread_queue, thread_running
 
+    thread_running = True
     while not thread.stopflag.is_set():
         try:
             (logtype, text) = thread_queue.get()

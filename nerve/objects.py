@@ -112,10 +112,10 @@ class ObjectNode (object):
         except:
             nerve.log(traceback.format_exc(), logtype='error')
 
-    def get_setting(self, name, typename=None):
+    def get_setting(self, name, default=None):
         if name in self._config:
             return self._config[name]
-        return None
+        return default
 
     ### Direct ObjectNode Children ###
 
