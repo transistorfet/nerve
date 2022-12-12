@@ -89,12 +89,12 @@
                 },
                 "player": {
                     "__children__": {
-                        "xmms2": {
-                            "__type__": "player/xmms2cli/devices/Xmms2CLI"
+                        "mpc": {
+                            "__type__": "player/mpc/devices/MPC"
                         }
                     },
                     "__type__": "player/devices/PlayerDevice",
-                    "backend": "xmms2",
+                    "backend": "mpc",
                     "backendold": "player/gstreamer/devices/GstreamerPlayer"
                 },
                 "realtime": {

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+import unicodedata
 
 import nerve.serial
 import nerve.events
@@ -68,7 +69,7 @@ class DeskClock (nerve.serial.SerialDevice):
             nerve.log('deskclock: ' + str(self.temp) + 'C', logtype='info')
             nerve.events.publish(self.get_pathname() + '/t0', name='t0', value=self.temp)
 
-nerve.set_object('/devices/deskclock', DeskClock(file="/dev/ttyACM0", baud=115200))
+#nerve.set_object('/devices/deskclock', DeskClock(file="/dev/ttyACM0", baud=115200))
 
 
 
@@ -88,6 +89,10 @@ class DeskClock2 (nerve.serial.SerialDevice):
     def p1(self, value):
         self.send('P1=' + str(int(value, 16)) + '\n')
 
+    def t0(self):
+        #self.send('T0\n')
+        return self.temp
+
     def _update_temp(self, event):
         self.temp = event['value']
 
@@ -105,8 +110,8 @@ class DeskClock2 (nerve.serial.SerialDevice):
         player = nerve.get_object("/devices/player")
         if player != None:
             player.getsong()
-            artist = player.artist[:text_limit - 1]
-            title = player.title[:text_limit - 1]
+            artist = normalize(player.artist[:text_limit - 1])
+            title = normalize(player.title[:text_limit - 1])
 
             lines = [
                 "\x1b[2m{}".format(date),
@@ -149,14 +154,21 @@ class DeskClock2 (nerve.serial.SerialDevice):
             nerve.query("/devices/player/sort")
         elif line == "B0=1":
             nerve.query("/devices/player/shuffle")
-        elif line.startswith('I0=N:A25D'):
-            nerve.query("/devices/rgb/key", "0x2" + line[9:11])
+        elif line.startswith('I0=') and line[3] != 'x':
             nerve.events.publish(self.get_pathname() + '/ir', name='ir', value=line[3:])
         elif line.startswith('T0='):
             self.temp = float(line[3:])
             nerve.log('deskclock: ' + str(self.temp) + 'C', logtype='info')
             nerve.events.publish(self.get_pathname() + '/t0', name='t0', value=self.temp)
 
-nerve.set_object('/devices/deskclock2', DeskClock2(file="/dev/ttyACM2", baud=115200))
+
+def normalize(string):
+    s = unicodedata.normalize('NFKD', string)
+    return s.encode('ascii', 'ignore').decode('ascii')
+
+
+deskclock2 = DeskClock2(file="/dev/ttyACM0", baud=115200)
+nerve.set_object('/devices/deskclock', deskclock2)
+nerve.set_object('/devices/deskclock2', deskclock2)
 
 
